@@ -14,7 +14,7 @@ button{background:#ff3e3e;color:#fff;border:none;padding:12px 18px;border-radius
 let id=new URLSearchParams(location.search).get("id"),imgs=[],cur=0,isAutoScrolling=false;
 fetch("/api/gallery/"+id).then(r=>r.json()).then(g=>{
 imgs=g.images;const r=document.getElementById("reader");
-imgs.forEach((src,i)=>{const el=document.createElement("img");el.loading="lazy";el.src=src;el.dataset.index=i;r.appendChild(el)});
+imgs.forEach((src,i)=>{const el=document.createElement("img");el.loading="lazy";el.src="/api/proxy?url="+encodeURIComponent(src);el.dataset.index=i;r.appendChild(el)});
 updateInfo();
 });
 function updateInfo(){
