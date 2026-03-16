@@ -13,13 +13,13 @@
     
     fetch('/api/galleries').then(r=>r.json()).then(d=>{
         document.getElementById('grid').innerHTML = d.items.map(g=>{
-            // Ensure URL is clean
+            // Force clean the URL before sending to proxy
             let thumb = g.images[0].replace('i3.', 't.').replace('i5.', 'i.');
             return `
             <div class="cover" onclick="location.href='reader.html?id=${g.id}'" style="background:#222; border-radius:5px; overflow:hidden;">
                 <img src="${PROXY}${encodeURIComponent(thumb)}" 
                      style="width:100%; aspect-ratio:45/64; object-fit:cover;"
-                     onerror="console.error('Failed to load:', this.src)">
+                     onerror="this.src='https://placehold.co/200x300?text=Error'">
                 <div class="caption" style="padding:5px; font-size:12px; height:35px; overflow:hidden;">${g.title}</div>
             </div>`;
         }).join('');
