@@ -2,40 +2,42 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="referrer" content="no-referrer">
     <link rel="stylesheet" href="style.css">
-    <title>Reader - Hentyx</title>
+    <title>Reader</title>
     <style>
         body { background: #000; margin: 0; display: flex; flex-direction: column; align-items: center; }
-        img { width: 100%; max-width: 1000px; display: block; min-height: 300px; background: #111; margin-bottom: 2px; }
-        .nav-float { position: fixed; bottom: 20px; right: 20px; display: flex; gap: 10px; }
-        .nav-btn { background: #ed2553; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; }
+        img { width: 100%; max-width: 800px; display: block; min-height: 300px; background: #111; }
+        .controls { position: fixed; bottom: 20px; display: flex; gap: 10px; z-index: 10; }
+        .btn { background: rgba(237, 37, 83, 0.8); color: white; border: none; padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div id="reader"></div>
-    <div class="nav-float">
-        <button class="nav-btn" onclick="window.scrollTo(0,0)">↑ Top</button>
-        <button class="nav-btn" onclick="location.href='/'">Home</button>
+    <div id="pages"></div>
+    <div class="controls">
+        <a href="/" class="btn">Home</a>
+        <button class="btn" onclick="window.scrollTo(0,0)">Top</button>
     </div>
     <script>
-        const PROXY = "https://hentyx-proxy.vaibhavyadav8900.workers.dev/?url=";
+        const PROXY = "https://images.weserv.nl/?url=";
         const id = new URLSearchParams(location.search).get("id");
 
-        async function loadPages() {
-            const r = await fetch("/api/gallery/" + id);
+        async function load() {
+            const r = await fetch(`/api/gallery/${id}`);
             const g = await r.json();
-            const container = document.getElementById("reader");
+            const container = document.getElementById("pages");
             
+            // Logic: Load all pages using the mirror proxy
             g.images.forEach(src => {
-                // Ensure we use the correct image server (i. instead of t. for high res)
-                const cleanSrc = src.replace('t.nhentai.net', 'i.nhentai.net').replace('i3.', 'i.').replace('i5.', 'i.');
                 const img = document.createElement("img");
-                img.src = PROXY + encodeURIComponent(cleanSrc);
+                // Convert to high-res 'i' mirror for reading
+                const clean = src.replace('t.nhentai.net', 'i3.nhentai.net').replace('https://', '');
+                img.src = PROXY + clean;
                 img.loading = "lazy";
                 container.appendChild(img);
             });
         }
-        if(id) loadPages();
+        if(id) load();
     </script>
 </body>
 </html>

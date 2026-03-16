@@ -23,7 +23,7 @@
         const data = await r.json();
         
         // Since jq showed it's an object, we access .items
-        const galleries = data.items || data;
+        const galleries = data;
 
         document.getElementById('grid').innerHTML = galleries.map(g => {
             // Logic: Remove protocol and swap to i3 mirror via proxy
