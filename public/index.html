@@ -2,26 +2,24 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="referrer" content="no-referrer">
     <link rel="stylesheet" href="style.css">
     <title>Hentyx</title>
 </head>
-<body style="background:#1a1a1a; color:white; font-family:sans-serif;">
+<body style="background:#1a1a1a; color:white; font-family:sans-serif; margin:0;">
 
-<div id="drawer" style="position:fixed; left:-250px; width:250px; height:100%; background:#222; z-index:100; transition:0.3s; padding:20px;">
-    <h2 style="color:#ed2553;">HENTY_X</h2>
-    <hr style="border:0; border-top:1px solid #333; margin:20px 0;">
-    <a href="https://buymeachai.ezee.li/vybhvdev" target="_blank" style="display:block; background:#ed2553; color:white; padding:10px; border-radius:5px; text-decoration:none; text-align:center; font-weight:bold;">☕ Buy Me a Chai</a>
+<div id="drawer" style="position:fixed; left:-250px; width:250px; height:100%; background:#222; z-index:1000; transition:0.3s; padding:20px; box-shadow:5px 0 15px rgba(0,0,0,0.5);">
+    <h2 style="color:#ed2553; margin-top:0;">HENTY_X</h2>
+    <a href="https://buymeachai.ezee.li/vybhvdev" target="_blank" style="display:block; background:#ed2553; color:white; padding:12px; border-radius:8px; text-decoration:none; text-align:center; font-weight:bold; margin-top:20px;">☕ Buy Me a Chai</a>
+    <p style="font-size:12px; color:#666; margin-top:20px;">Developer: Vaibhav</p>
 </div>
 
-<header style="background:#222; padding:15px; border-bottom:2px solid #ed2553; display:flex; justify-content:space-between; align-items:center;">
-    <span onclick="toggleDrawer()" style="cursor:pointer; font-size:24px;">☰</span>
-    <a href="/" style="color:#ed2553; text-decoration:none; font-weight:bold; font-size:20px;">HENTYX</a>
-    <span></span>
+<header style="background:#111; padding:15px; border-bottom:2px solid #ed2553; display:flex; align-items:center; position:sticky; top:0; z-index:100;">
+    <span onclick="toggleDrawer()" style="cursor:pointer; font-size:24px; margin-right:20px;">☰</span>
+    <span style="color:#ed2553; font-weight:bold; font-size:20px; letter-spacing:2px;">HENTYX</span>
 </header>
 
-<div class="container">
-    <div id="grid" class="gallery-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:10px;"></div>
-</div>
+<div id="grid" class="gallery-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:10px;"></div>
 
 <script>
     function toggleDrawer() {
@@ -29,21 +27,27 @@
         d.style.left = d.style.left === '0px' ? '-250px' : '0px';
     }
 
-    const PROXY = "https://hentyx-proxy.vaibhavyadav8900.workers.dev/?url=";
-    
-    fetch('/api/galleries?v=' + Date.now()).then(r => r.json()).then(d => {
+    // This is the most reliable public proxy left
+    const PROXY = "https://images.weserv.nl/?url=";
+
+    async function load() {
+        const r = await fetch('/api/galleries?v=' + Date.now());
+        const d = await r.json();
+        
         document.getElementById('grid').innerHTML = d.items.map(g => {
-            const thumb = g.images[0].replace('i3.', 't.').replace('i5.', 'i.');
+            // Remove https:// to make it a clean parameter for the proxy
+            const cleanUrl = g.images[0].replace('https://', '');
             return `
-            <div class="cover" onclick="location.href='reader.html?id=${g.id}'" style="background:#222; border-radius:8px; overflow:hidden; position:relative;">
-                <img src="${PROXY}${thumb}" 
-                     crossorigin="anonymous"
+            <div class="cover" onclick="location.href='reader.html?id=${g.id}'" style="background:#222; border-radius:10px; overflow:hidden; border:1px solid #333;">
+                <img src="${PROXY}${cleanUrl}&default=https://placehold.co/200x300?text=Wait..." 
+                     loading="lazy"
                      style="width:100%; aspect-ratio:45/64; object-fit:cover;"
-                     onerror="this.src='https://placehold.co/200x300?text=Retry_Reload'">
-                <div class="caption" style="padding:8px; font-size:11px; background:rgba(0,0,0,0.7); position:absolute; bottom:0; width:100%; box-sizing:border-box; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${g.title}</div>
+                     onerror="this.src='https://placehold.co/200x300?text=Reload'">
+                <div style="padding:10px; font-size:11px; height:40px; overflow:hidden; background:rgba(0,0,0,0.5);">${g.title}</div>
             </div>`;
         }).join('');
-    });
+    }
+    load();
 </script>
 </body>
 </html>
