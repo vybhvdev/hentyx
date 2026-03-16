@@ -6,22 +6,41 @@
     <title>Hentyx</title>
 </head>
 <body style="background:#1a1a1a; color:white; font-family:sans-serif;">
-<header style="background:#222; padding:15px; border-bottom:2px solid #ed2553;"><a href="/" style="color:#ed2553; text-decoration:none; font-weight:bold;">HENTYX</a></header>
-<div class="container"><div id="grid" class="gallery-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:10px;"></div></div>
+
+<div id="drawer" style="position:fixed; left:-250px; width:250px; height:100%; background:#222; z-index:100; transition:0.3s; padding:20px;">
+    <h2 style="color:#ed2553;">HENTY_X</h2>
+    <hr style="border:0; border-top:1px solid #333; margin:20px 0;">
+    <a href="https://buymeachai.ezee.li/vybhvdev" target="_blank" style="display:block; background:#ed2553; color:white; padding:10px; border-radius:5px; text-decoration:none; text-align:center; font-weight:bold;">☕ Buy Me a Chai</a>
+</div>
+
+<header style="background:#222; padding:15px; border-bottom:2px solid #ed2553; display:flex; justify-content:space-between; align-items:center;">
+    <span onclick="toggleDrawer()" style="cursor:pointer; font-size:24px;">☰</span>
+    <a href="/" style="color:#ed2553; text-decoration:none; font-weight:bold; font-size:20px;">HENTYX</a>
+    <span></span>
+</header>
+
+<div class="container">
+    <div id="grid" class="gallery-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:10px;"></div>
+</div>
+
 <script>
-    // Updated Proxy call to avoid triple-encoding
+    function toggleDrawer() {
+        const d = document.getElementById('drawer');
+        d.style.left = d.style.left === '0px' ? '-250px' : '0px';
+    }
+
     const PROXY = "https://hentyx-proxy.vaibhavyadav8900.workers.dev/?url=";
     
     fetch('/api/galleries?v=' + Date.now()).then(r => r.json()).then(d => {
         document.getElementById('grid').innerHTML = d.items.map(g => {
-            // Force the thumb URL to be standard
-            let thumb = g.images[0].replace('i3.', 't.').replace('i5.', 'i.');
+            const thumb = g.images[0].replace('i3.', 't.').replace('i5.', 'i.');
             return `
-            <div class="cover" onclick="location.href='reader.html?id=${g.id}'" style="background:#222; border-radius:5px; overflow:hidden;">
+            <div class="cover" onclick="location.href='reader.html?id=${g.id}'" style="background:#222; border-radius:8px; overflow:hidden; position:relative;">
                 <img src="${PROXY}${thumb}" 
+                     crossorigin="anonymous"
                      style="width:100%; aspect-ratio:45/64; object-fit:cover;"
-                     onerror="this.src='https://placehold.co/200x300?text=Reload_Page'">
-                <div class="caption" style="padding:5px; font-size:11px; height:30px; overflow:hidden;">${g.title}</div>
+                     onerror="this.src='https://placehold.co/200x300?text=Retry_Reload'">
+                <div class="caption" style="padding:8px; font-size:11px; background:rgba(0,0,0,0.7); position:absolute; bottom:0; width:100%; box-sizing:border-box; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${g.title}</div>
             </div>`;
         }).join('');
     });
