@@ -1,172 +1,38 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Reader</title>
-
-<style>
-
-body{
-background:black;
-margin:0;
-font-family:Arial;
-}
-
-/* TOP BAR */
-
-.topbar{
-position:fixed;
-top:0;
-left:0;
-right:0;
-height:40px;
-background:#111;
-color:#fff;
-display:flex;
-justify-content:space-between;
-align-items:center;
-padding:0 10px;
-z-index:1000;
-font-size:14px;
-}
-
-/* PROGRESS BAR */
-
-#progress{
-position:fixed;
-top:40px;
-left:0;
-height:3px;
-background:#e63946;
-width:0%;
-z-index:1000;
-}
-
-/* READER */
-
-#reader{
-margin-top:45px;
-}
-
-img{
-width:100%;
-display:block;
-}
-
-/* NAV BUTTONS */
-
-.nav{
-position:fixed;
-bottom:20px;
-left:0;
-right:0;
-display:flex;
-justify-content:center;
-gap:10px;
-}
-
-button{
-background:#222;
-color:white;
-border:0;
-padding:10px 14px;
-border-radius:6px;
-}
-
-</style>
-</head>
-
-<body>
-
-<div class="topbar">
-<span id="counter">1 / ?</span>
-<a href="/" style="color:white;text-decoration:none">Home</a>
-</div>
-
-<div id="progress"></div>
-
-<div id="reader"></div>
-
-<div class="nav">
-<button onclick="prev()">Prev</button>
-<button onclick="next()">Next</button>
-</div>
-
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hentyx Reader</title><style>
+body{background:#000;margin:0;color:#fff;font-family:sans-serif;overflow-x:hidden}
+.topbar{position:fixed;top:0;width:100%;height:45px;background:rgba(20,20,20,0.9);display:flex;justify-content:space-between;align-items:center;z-index:10;padding:0 15px;box-sizing:border-box}
+#progress{position:fixed;top:45px;height:3px;background:#ff3e3e;transition:width 0.2s;z-index:10}
+#reader{margin-top:45px;display:flex;flex-direction:column;align-items:center}
+img{width:100%;max-width:800px;height:auto;display:block;margin-bottom:2px;min-height:200px;background:#111}
+.nav{position:fixed;bottom:20px;right:20px;display:flex;gap:10px}
+button{background:#ff3e3e;color:#fff;border:none;padding:12px 18px;border-radius:50px;font-weight:bold;box-shadow:0 4px 10px rgba(0,0,0,0.5)}
+</style></head><body>
+<div class="topbar"><span id="counter">Loading...</span><a href="/" style="color:#eee;text-decoration:none">✕ Close</a></div>
+<div id="progress" style="width:0%"></div><div id="reader"></div>
+<div class="nav"><button onclick="step(-1)">Prev</button><button onclick="step(1)">Next</button></div>
 <script>
-
-let id=new URLSearchParams(location.search).get("id")
-
-let images=[]
-let current=0
-
-fetch("/api/gallery/"+id)
-.then(r=>r.json())
-.then(g=>{
-
-images=g.images
-
-const reader=document.getElementById("reader")
-
-images.forEach(src=>{
-let img=document.createElement("img")
-img.loading="lazy"
-img.src=src
-reader.appendChild(img)
-})
-
-update()
-
-})
-
-function update(){
-
-document.getElementById("counter").innerText=
-(current+1)+" / "+images.length
-
-document.getElementById("progress").style.width=
-((current+1)/images.length*100)+"%"
-
-window.scrollTo({
-top:document.querySelectorAll("#reader img")[current].offsetTop,
-behavior:"smooth"
-})
-
+let id=new URLSearchParams(location.search).get("id"),imgs=[],cur=0,isAutoScrolling=false;
+fetch("/api/gallery/"+id).then(r=>r.json()).then(g=>{
+imgs=g.images;const r=document.getElementById("reader");
+imgs.forEach((src,i)=>{const el=document.createElement("img");el.loading="lazy";el.src=src;el.dataset.index=i;r.appendChild(el)});
+updateInfo();
+});
+function updateInfo(){
+document.getElementById("counter").innerText=`${cur+1} / ${imgs.length}`;
+document.getElementById("progress").style.width=`${((cur+1)/imgs.length)*100}%`;
 }
-
-function next(){
-if(current<images.length-1){
-current++
-update()
+function step(dir){
+cur=Math.max(0,Math.min(imgs.length-1,cur+dir));
+isAutoScrolling=true;
+const target=document.querySelectorAll("img")[cur];
+window.scrollTo({top:target.offsetTop-50,behavior:"smooth"});
+setTimeout(()=>isAutoScrolling=false,1000);
+updateInfo();
 }
-}
-
-function prev(){
-if(current>0){
-current--
-update()
-}
-}
-
-window.addEventListener("scroll",()=>{
-
-let imgs=document.querySelectorAll("#reader img")
-
-imgs.forEach((img,i)=>{
-if(window.scrollY>=img.offsetTop-200){
-current=i
-}
-})
-
-document.getElementById("counter").innerText=
-(current+1)+" / "+images.length
-
-document.getElementById("progress").style.width=
-((current+1)/images.length*100)+"%"
-
-})
-
-</script>
-
-<script src="/ui-fix.js"></script>
-</body>
-</html>
+window.onscroll=()=>{
+if(isAutoScrolling)return;
+const stack=document.querySelectorAll("img");
+stack.forEach((img,i)=>{if(window.scrollY>=img.offsetTop-100)cur=i});
+updateInfo();
+};
+</script></body></html>
