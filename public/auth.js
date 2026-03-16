@@ -1,6 +1,6 @@
 const supabaseUrl = 'https://xsfyktusduhpyksucwqr.supabase.co';
 const supabaseKey = 'sb_publishable_w-pXx13cGW0BixJ6WAeCAQ_pKZm9yfM';
-const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+const supabase = supabasejs.createClient(supabaseUrl, supabaseKey);
 
 async function toggleBookmark(manga) {
     const { data: { user } } = await supabase.auth.getUser();
