@@ -3,22 +3,39 @@
 <head>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <link rel="stylesheet" href="style.css">
-    <title>Reader</title>
-    <style>body{background:#000;margin:0;} img{width:100%;display:block;margin-bottom:2px;}</style>
+    <title>Reader - Hentyx</title>
+    <style>
+        body { background: #000; margin: 0; display: flex; flex-direction: column; align-items: center; }
+        img { width: 100%; max-width: 1000px; display: block; min-height: 300px; background: #111; margin-bottom: 2px; }
+        .nav-float { position: fixed; bottom: 20px; right: 20px; display: flex; gap: 10px; }
+        .nav-btn { background: #ed2553; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; }
+    </style>
 </head>
 <body>
-<div id="reader"></div>
-<script>
-    const getProxyUrl = (url) => `https://images.weserv.nl/?url=${url.replace('https://', '')}`;
-    let id = new URLSearchParams(location.search).get("id");
-    fetch("/api/gallery/"+id).then(r=>r.json()).then(g=>{
-        const r = document.getElementById("reader");
-        g.images.forEach(src => {
-            let img = document.createElement("img");
-            img.src = getProxyUrl(src);
-            r.appendChild(img);
-        });
-    });
-</script>
+    <div id="reader"></div>
+    <div class="nav-float">
+        <button class="nav-btn" onclick="window.scrollTo(0,0)">↑ Top</button>
+        <button class="nav-btn" onclick="location.href='/'">Home</button>
+    </div>
+    <script>
+        const PROXY = "https://hentyx-proxy.vaibhavyadav8900.workers.dev/?url=";
+        const id = new URLSearchParams(location.search).get("id");
+
+        async function loadPages() {
+            const r = await fetch("/api/gallery/" + id);
+            const g = await r.json();
+            const container = document.getElementById("reader");
+            
+            g.images.forEach(src => {
+                // Ensure we use the correct image server (i. instead of t. for high res)
+                const cleanSrc = src.replace('t.nhentai.net', 'i.nhentai.net').replace('i3.', 'i.').replace('i5.', 'i.');
+                const img = document.createElement("img");
+                img.src = PROXY + encodeURIComponent(cleanSrc);
+                img.loading = "lazy";
+                container.appendChild(img);
+            });
+        }
+        if(id) loadPages();
+    </script>
 </body>
 </html>
