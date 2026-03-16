@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/auth.js"></script>
+    <title>My Bookmarks - Hentyx</title>
+</head>
+<body style="background:#1a1a1a; color:white; font-family:sans-serif;">
+    <header style="background:#222; padding:15px; border-bottom:2px solid #ed2553; display:flex; align-items:center;">
+        <a href="/" style="color:white; text-decoration:none; margin-right:15px;">←</a>
+        <span style="color:#ed2553; font-weight:bold;">MY BOOKMARKS</span>
+    </header>
+    <div class="container">
+        <div id="bookmarkGrid" class="gallery-grid" style="padding:10px;">
+            <p id="status" style="text-align:center; color:#666; margin-top:50px;">Loading your collection...</p>
+        </div>
+    </div>
+    <script>
+        async function loadBookmarks() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                document.getElementById('status').innerText = "Please login to see bookmarks.";
+                return;
+            }
+            const { data, error } = await supabase.from('bookmarks').select('*').eq('user_id', user.id);
+            if (data.length === 0) {
+                document.getElementById('status').innerText = "No bookmarks yet!";
+            } else {
+                document.getElementById('status').style.display = 'none';
+                document.getElementById('bookmarkGrid').innerHTML = data.map(b => `
+                    <div class="cover" onclick="location.href='reader.html?id=${b.manga_id}'">
+                        <img src="${b.cover}">
+                        <div class="caption">${b.title}</div>
+                    </div>
+                `).join('');
+            }
+        }
+        loadBookmarks();
+    </script>
+</body>
+</html>
