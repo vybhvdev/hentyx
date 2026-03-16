@@ -2,21 +2,20 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="referrer" content="no-referrer">
     <link rel="stylesheet" href="style.css">
     <title>Reader</title>
-    <style>body{background:#000;margin:0;} img{width:100%;display:block;}</style>
+    <style>body{background:#000;margin:0;} img{width:100%;display:block;margin-bottom:2px;}</style>
 </head>
 <body>
 <div id="reader"></div>
 <script>
+    const getProxyUrl = (url) => `https://images.weserv.nl/?url=${url.replace('https://', '')}`;
     let id = new URLSearchParams(location.search).get("id");
     fetch("/api/gallery/"+id).then(r=>r.json()).then(g=>{
         const r = document.getElementById("reader");
         g.images.forEach(src => {
             let img = document.createElement("img");
-            img.src = src;
-            img.setAttribute("crossorigin", "anonymous");
+            img.src = getProxyUrl(src);
             r.appendChild(img);
         });
     });
