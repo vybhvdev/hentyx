@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="stylesheet" href="style.css">
+    <title>Tags - Hentyx</title>
+</head>
+<body style="background:#1a1a1a; color:white; font-family:sans-serif;">
+    <header style="background:#222; padding:15px; border-bottom:2px solid #ed2553;">
+        <a href="/" style="color:#ed2553; text-decoration:none; font-weight:bold; font-size:20px;">HENTYX TAGS</a>
+    </header>
+    <div class="container" id="tagCloud" style="display:flex; flex-wrap:wrap; gap:10px; padding:20px;"></div>
+    <script>
+        fetch('/api/galleries').then(r=>r.json()).then(data=>{
+            const tags = [...new Set(data.items.flatMap(g => g.tags))].sort();
+            document.getElementById('tagCloud').innerHTML = tags.map(t => 
+                `<a href="/index.html?q=${t}" style="background:#333; color:#ccc; padding:8px 15px; border-radius:3px; text-decoration:none; font-size:14px;">${t}</a>`
+            ).join('');
+        });
+    </script>
+</body>
+</html>

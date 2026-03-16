@@ -1,101 +1,42 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hentyx</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
     <link rel="stylesheet" href="style.css">
-    <style>
-        :root { --brand: #ed2553; --bg: #1a1a1a; --nav-bg: #222; }
-        header { background: var(--nav-bg); height: 55px; display: flex; align-items: center; padding: 0 15px; position: sticky; top: 0; z-index: 100; border-bottom: 2px solid var(--brand); }
-        .logo { color: var(--brand); font-weight: bold; font-size: 24px; text-decoration: none; margin-right: 20px; }
-        .search-bar { flex-grow: 1; display: flex; max-width: 600px; }
-        .search-bar input { width: 100%; padding: 8px; border: none; border-radius: 4px 0 0 4px; background: #333; color: white; outline: none; }
-        .search-bar button { background: #444; border: none; padding: 0 15px; border-radius: 0 4px 4px 0; color: white; cursor: pointer; }
-        
-        /* Drawer Styles */
-        #drawer { position: fixed; left: -280px; top: 0; width: 280px; height: 100%; background: #111; transition: 0.3s; z-index: 200; box-shadow: 2px 0 10px rgba(0,0,0,0.5); display: flex; flex-direction: column; }
-        #drawer.open { left: 0; }
-        .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; z-index: 150; }
-        .drawer-overlay.show { display: block; }
-        
-        .drawer-links { padding: 20px; flex-grow: 1; }
-        .drawer-links a { display: block; color: #ccc; text-decoration: none; padding: 12px 0; border-bottom: 1px solid #222; font-size: 16px; }
-        .drawer-links a:hover { color: var(--brand); }
-        
-        .drawer-footer { padding: 15px; display: flex; justify-content: space-between; font-size: 12px; border-top: 1px solid #222; }
-        .auth-buttons { padding: 10px 15px; display: flex; justify-content: space-between; gap: 10px; }
-        .auth-buttons a { flex: 1; text-align: center; padding: 8px; border-radius: 4px; text-decoration: none; font-size: 14px; }
-        .btn-login { background: #333; color: white; }
-        .btn-reg { background: var(--brand); color: white; }
-        
-        .menu-toggle { font-size: 24px; cursor: pointer; margin-right: 15px; color: white; }
-    </style>
+    <title>Hentyx</title>
 </head>
 <body>
-
-<div class="drawer-overlay" onclick="toggleDrawer()"></div>
-<div id="drawer">
-    <div class="auth-buttons">
-        <a href="#" class="btn-login">Sign In</a>
-        <a href="#" class="btn-reg">Register</a>
-    </div>
-    <nav class="drawer-links">
-        <a href="/">Home</a>
-        <a href="#" onclick="openRandom()">Random</a>
-        <a href="/tags.html">Tags</a>
-        <a href="/popular.html">Popular</a>
-    </nav>
-    <div class="drawer-footer">
-        <a href="/info" style="color:#555">Info</a>
-        <a href="/support" style="color:#555">Support</a>
-    </div>
-</div>
-
 <header>
     <div class="menu-toggle" onclick="toggleDrawer()">☰</div>
     <a href="/" class="logo">HENTYX</a>
     <div class="search-bar">
-        <input type="text" id="searchInput" placeholder="Search for tags or titles...">
+        <input type="text" id="searchInput" placeholder="Search...">
         <button onclick="search()">🔍</button>
     </div>
 </header>
-
 <div class="container">
-    <div id="galleryGrid" class="gallery-grid">
-        </div>
+    <h2 style="color:#ed2553; padding-left:10px;">Popular Now</h2>
+    <div id="popularSection" class="gallery-grid" style="margin-bottom:40px;"></div>
+    <h2 style="color:#ed2553; padding-left:10px;">New Uploads</h2>
+    <div id="newSection" class="gallery-grid"></div>
 </div>
-
 <script>
-    function toggleDrawer() {
-        document.getElementById('drawer').classList.toggle('open');
-        document.querySelector('.drawer-overlay').classList.toggle('show');
-    }
-
-    async function openRandom() {
-        const r = await fetch('/api/galleries');
+    async function load() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const q = urlParams.get('q') || '';
+        const r = await fetch('/api/galleries?q=' + q);
         const data = await r.json();
-        const randomId = data.items[Math.floor(Math.random() * data.items.length)].id;
-        location.href = `/reader.html?id=${randomId}`;
-    }
+        
+        const popularItems = data.items.slice(0, 5);
+        const newItems = data.items.slice(5);
 
-    function search() {
-        const q = document.getElementById('searchInput').value;
-        loadGalleries(1, q);
-    }
+        const mapItem = g => `<div class="cover" onclick="location.href='reader.html?id=${g.id}'"><img src="${g.images[0]}"><div class="caption">${g.title}</div></div>`;
 
-    async function loadGalleries(page = 1, query = '') {
-        const r = await fetch(`/api/galleries?page=${page}&q=${query}`);
-        const data = await r.json();
-        const grid = document.getElementById('galleryGrid');
-        grid.innerHTML = data.items.map(g => `
-            <div class="cover" onclick="location.href='reader.html?id=${g.id}'">
-                <img src="${g.images[0]}" alt="${g.title}">
-                <div class="caption">${g.title}</div>
-            </div>
-        `).join('');
+        document.getElementById('popularSection').innerHTML = popularItems.map(mapItem).join('');
+        document.getElementById('newSection').innerHTML = newItems.map(mapItem).join('');
     }
-    loadGalleries();
+    function search() { location.href = '/index.html?q=' + document.getElementById('searchInput').value; }
+    load();
 </script>
 </body>
 </html>
