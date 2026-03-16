@@ -1,22 +1,23 @@
 name: Daily Scraper
 on:
   schedule:
-    - cron: '0 0 * * *' # Runs daily at midnight
+    - cron: '0 0 * * *'
   workflow_dispatch:
 jobs:
   scrape:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - uses: actions/checkout@v3
-      - name: Fetch Latest
+      - uses: actions/checkout@v4
+      - name: Fetch and Merge
         run: |
-          # Fetch the latest 5 entries from the API
           LATEST=$(curl -s "https://nhentai.net/api/galleries/all?page=1")
-          # This is a simplified logic gate for the Machine to process
           node -e "
             const fs = require('fs');
             const data = JSON.parse(fs.readFileSync('data/galleries.json'));
-            const incoming = JSON.parse(process.env.LATEST).result.map(g => ({
+            const incomingData = $LATEST;
+            const incoming = incomingData.result.map(g => ({
               id: g.id,
               title: g.title.pretty,
               pages: g.num_pages,
@@ -24,14 +25,15 @@ jobs:
               images: ['https://t.nhentai.net/galleries/' + g.media_id + '/cover.jpg']
             }));
             const filtered = incoming.filter(i => !data.find(d => d.id === i.id));
-            fs.writeFileSync('data/galleries.json', JSON.stringify([...filtered, ...data], null, 2));
+            if (filtered.length > 0) {
+              fs.writeFileSync('data/galleries.json', JSON.stringify([...filtered, ...data], null, 2));
+              console.log('Added ' + filtered.length + ' new items');
+            }
           "
-        env:
-          LATEST: ${{ steps.fetch.outputs.data }}
       - name: Commit & Push
         run: |
           git config user.name "Hentyx Bot"
           git config user.email "bot@hentyx.com"
           git add data/galleries.json
-          git commit -m "Automated Metadata Update" || exit 0
+          git commit -m "Automated Metadata Update [skip ci]" || echo "No changes"
           git push
