@@ -3,21 +3,24 @@
 <head>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/auth.js"></script>
     <title>Hentyx</title>
 </head>
 <body>
 <div class="drawer-overlay" onclick="toggleDrawer()"></div>
 <div id="drawer">
-    <div style="padding: 20px; border-bottom: 1px solid #222;">
-        <a href="#" style="background:var(--brand); color:white; display:block; text-align:center; padding:10px; border-radius:4px; text-decoration:none;">Sign In / Register</a>
+    <div id="authSection" style="padding: 20px; border-bottom: 1px solid #222;">
+        <button onclick="promptAuth()" style="background:var(--brand); color:white; width:100%; border:none; padding:10px; border-radius:4px;">Sign In / Register</button>
     </div>
     <nav style="flex-grow:1; padding:10px;">
         <a href="/" style="display:block; color:#ccc; padding:15px; text-decoration:none; border-bottom:1px solid #222;">Home</a>
+        <a href="/bookmarks.html" style="display:block; color:#ccc; padding:15px; text-decoration:none; border-bottom:1px solid #222;">My Bookmarks</a>
         <a href="#" onclick="openRandom()" style="display:block; color:#ccc; padding:15px; text-decoration:none; border-bottom:1px solid #222;">Random</a>
         <a href="/tags.html" style="display:block; color:#ccc; padding:15px; text-decoration:none; border-bottom:1px solid #222;">Tags</a>
     </nav>
     <div style="padding:15px; border-top:1px solid #222; text-align:center;">
-        <a href="/info" style="color:#666; text-decoration:none; font-size:13px;">Info & Support</a>
+        <a href="/info.html" style="color:#666; text-decoration:none; font-size:13px;">Info & Support</a>
     </div>
 </div>
 
@@ -26,17 +29,13 @@
     <a href="/" class="logo">HENTYX</a>
     <div class="search-bar">
         <input type="text" id="searchInput" placeholder="Search...">
-        <button onclick="search()" style="background:transparent; border:none; color:#aaa; padding:8px;">🔍</button>
+        <button onclick="search()">🔍</button>
     </div>
 </header>
 
 <div class="container">
-    <h3 style="color:var(--brand); padding:10px 10px 0;">Popular Now</h3>
     <div id="popularSection" class="gallery-grid"></div>
-    
-    <h3 style="color:var(--brand); padding:10px 10px 0;">New Uploads</h3>
     <div id="newSection" class="gallery-grid"></div>
-    
     <div class="pagination" id="pagination"></div>
 </div>
 
@@ -46,38 +45,29 @@
         document.querySelector('.drawer-overlay').classList.toggle('show');
     }
 
+    async function checkUser() {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+            document.getElementById('authSection').innerHTML = `<p style="font-size:12px; color:#888; margin-bottom:5px;">Logged in as:</p><p style="font-size:14px; margin-bottom:10px;">${user.email}</p><button onclick="supabase.auth.signOut().then(()=>location.reload())" style="background:#333; color:white; border:none; width:100%; padding:5px; border-radius:4px;">Logout</button>`;
+        }
+    }
+
+    function promptAuth() {
+        const email = prompt("Enter Email:");
+        const pass = prompt("Enter Password:");
+        const type = confirm("OK for Login, Cancel for Sign Up") ? 'login' : 'signup';
+        if(email && pass) handleAuth(email, pass, type);
+    }
+
     async function load() {
         const params = new URLSearchParams(location.search);
         const q = params.get('q') || '';
         const page = parseInt(params.get('page') || '1');
-        
         const r = await fetch(`/api/galleries?q=${q}&page=${page}`);
         const data = await r.json();
-        
         const mapItem = g => `<div class="cover" onclick="location.href='reader.html?id=${g.id}'"><img src="${g.images[0]}"><div class="caption">${g.title}</div></div>`;
-
-        // Logic for splitting Popular/New only on Page 1
-        if(page === 1 && !q) {
-            document.getElementById('popularSection').innerHTML = data.items.slice(0, 5).map(mapItem).join('');
-            document.getElementById('newSection').innerHTML = data.items.slice(5).map(mapItem).join('');
-        } else {
-            document.querySelector('h3').style.display = 'none'; // Hide "Popular" title
-            document.getElementById('newSection').innerHTML = data.items.map(mapItem).join('');
-        }
-
-        // Simple Pagination UI
-        let pgHtml = '';
-        if(page > 1) pgHtml += `<a href="?page=${page-1}&q=${q}">Prev</a>`;
-        pgHtml += `<a class="active">${page}</a>`;
-        if(page < data.totalPages) pgHtml += `<a href="?page=${page+1}&q=${q}">Next</a>`;
-        document.getElementById('pagination').innerHTML = pgHtml;
-    }
-
-    function search() { location.href = '/index.html?q=' + document.getElementById('searchInput').value; }
-    async function openRandom() {
-        const r = await fetch('/api/galleries');
-        const d = await r.json();
-        location.href = `/reader.html?id=${d.items[Math.floor(Math.random()*d.items.length)].id}`;
+        document.getElementById('newSection').innerHTML = data.items.map(mapItem).join('');
+        checkUser();
     }
     load();
 </script>
