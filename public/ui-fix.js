@@ -1,16 +1,16 @@
-function toggleMenu(){
-  const drawer=document.getElementById("drawer")
-  const overlay=document.getElementById("overlay")
+document.addEventListener("DOMContentLoaded",()=>{
 
-  const open=drawer.classList.contains("open")
+ const btn=document.querySelector(".menu") || document.querySelector("#menu")
+ const drawer=document.querySelector(".drawer")
 
-  if(open){
-    drawer.classList.remove("open")
-    overlay.classList.remove("show")
-    document.body.style.overflow=""
+ if(!btn || !drawer) return
+
+ btn.onclick=()=>{
+  if(drawer.style.left==="0px"){
+   drawer.style.left="-260px"
   }else{
-    drawer.classList.add("open")
-    overlay.classList.add("show")
-    document.body.style.overflow="hidden"
+   drawer.style.left="0px"
   }
-}
+ }
+
+})
