@@ -2,44 +2,21 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="referrer" content="no-referrer">
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="/auth.js"></script>
     <title>Hentyx</title>
 </head>
 <body>
-<div class="drawer-overlay" onclick="toggleDrawer()"></div>
-<div id="drawer">
-    <div id="authSection" style="padding: 20px; border-bottom: 1px solid #222;">
-        <button onclick="promptAuth()" style="background:#ed2553; color:white; width:100%; border:none; padding:10px; border-radius:4px;">Sign In</button>
-    </div>
-    <nav style="flex-grow:1; padding:10px;">
-        <a href="/" style="display:block; color:#ccc; padding:15px; text-decoration:none; border-bottom:1px solid #222;">Home</a>
-        <a href="/bookmarks.html" style="display:block; color:#ccc; padding:15px; text-decoration:none; border-bottom:1px solid #222;">Bookmarks</a>
-    </nav>
-</div>
-<header>
-    <div onclick="toggleDrawer()" style="color:white; font-size:24px; margin-right:15px; cursor:pointer;">☰</div>
-    <a href="/" class="logo">HENTYX</a>
-</header>
-<div class="container">
-    <div id="newSection" class="gallery-grid"></div>
-</div>
+<header><a href="/" class="logo">HENTYX</a></header>
+<div class="container"><div id="grid" class="gallery-grid"></div></div>
 <script>
-    function toggleDrawer() { document.getElementById('drawer').classList.toggle('open'); document.querySelector('.drawer-overlay').classList.toggle('show'); }
-    async function load() {
-        const r = await fetch('/api/galleries');
-        const data = await r.json();
-        // The Proxy Magic: images.weserv.nl
-        document.getElementById('newSection').innerHTML = data.items.map(g => {
-            const cleanUrl = g.images[0].replace('https://', '');
-            return `<div class="cover" onclick="location.href='reader.html?id=${g.id}'">
-                <img src="https://images.weserv.nl/?url=${cleanUrl}" loading="lazy">
+    fetch('/api/galleries').then(r=>r.json()).then(d=>{
+        document.getElementById('grid').innerHTML = d.items.map(g=>`
+            <div class="cover" onclick="location.href='reader.html?id=${g.id}'">
+                <img src="${g.images[0]}" crossorigin="anonymous">
                 <div class="caption">${g.title}</div>
-            </div>`;
-        }).join('');
-    }
-    load();
+            </div>`).join('');
+    });
 </script>
 </body>
 </html>

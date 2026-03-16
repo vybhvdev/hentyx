@@ -2,9 +2,10 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="referrer" content="no-referrer">
     <link rel="stylesheet" href="style.css">
     <title>Reader</title>
-    <style>body{background:#000;margin:0;} img{width:100%;display:block;min-height:300px;}</style>
+    <style>body{background:#000;margin:0;} img{width:100%;display:block;}</style>
 </head>
 <body>
 <div id="reader"></div>
@@ -13,10 +14,9 @@
     fetch("/api/gallery/"+id).then(r=>r.json()).then(g=>{
         const r = document.getElementById("reader");
         g.images.forEach(src => {
-            let cleanUrl = src.replace('https://', '');
             let img = document.createElement("img");
-            img.src = "https://images.weserv.nl/?url=" + cleanUrl;
-            img.loading = "lazy";
+            img.src = src;
+            img.setAttribute("crossorigin", "anonymous");
             r.appendChild(img);
         });
     });
