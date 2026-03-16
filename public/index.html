@@ -3,40 +3,28 @@
 <head>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <link rel="stylesheet" href="style.css">
-    <title>Hentyx | Home</title>
+    <title>Hentyx</title>
 </head>
 <body style="background:#1a1a1a; color:white; font-family:sans-serif;">
-<header style="background:#222; padding:15px; border-bottom:2px solid #ed2553;"><a href="/" style="color:#ed2553; text-decoration:none; font-weight:bold; font-size:20px;">HENTYX</a></header>
-<div class="container"><div id="grid" class="gallery-grid" style="display:grid; grid-template-columns:repeat(2,1fr); gap:10px; padding:10px;"></div></div>
+<header style="background:#222; padding:15px; border-bottom:2px solid #ed2553;"><a href="/" style="color:#ed2553; text-decoration:none; font-weight:bold;">HENTYX</a></header>
+<div class="container"><div id="grid" class="gallery-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:10px;"></div></div>
 <script>
+    // Updated Proxy call to avoid triple-encoding
     const PROXY = "https://hentyx-proxy.vaibhavyadav8900.workers.dev/?url=";
     
-    async function load() {
-        try {
-            const r = await fetch('/api/galleries?v=' + Date.now());
-            const d = await r.json();
-            const grid = document.getElementById('grid');
-            
-            grid.innerHTML = d.items.map(g => {
-                // Ensure the URL is absolute and uses the 't' subdomain for thumbnails
-                let rawUrl = g.images[0];
-                if (!rawUrl.startsWith('http')) rawUrl = 'https://t.nhentai.net' + rawUrl;
-                
-                const proxiedUrl = PROXY + encodeURIComponent(rawUrl);
-                
-                return `
-                <div class="cover" onclick="location.href='reader.html?id=${g.id}'" style="background:#222; border-radius:5px; overflow:hidden; min-height:250px;">
-                    <img src="${proxiedUrl}" 
-                         style="width:100%; aspect-ratio:45/64; object-fit:cover;"
-                         onerror="console.log('Failed:', this.src); this.src='https://placehold.co/200x300?text=Check_Console'">
-                    <div class="caption" style="padding:8px; font-size:11px; height:34px; line-height:1.2; overflow:hidden;">${g.title}</div>
-                </div>`;
-            }).join('');
-        } catch (err) {
-            console.error("Load failed:", err);
-        }
-    }
-    load();
+    fetch('/api/galleries?v=' + Date.now()).then(r => r.json()).then(d => {
+        document.getElementById('grid').innerHTML = d.items.map(g => {
+            // Force the thumb URL to be standard
+            let thumb = g.images[0].replace('i3.', 't.').replace('i5.', 'i.');
+            return `
+            <div class="cover" onclick="location.href='reader.html?id=${g.id}'" style="background:#222; border-radius:5px; overflow:hidden;">
+                <img src="${PROXY}${thumb}" 
+                     style="width:100%; aspect-ratio:45/64; object-fit:cover;"
+                     onerror="this.src='https://placehold.co/200x300?text=Reload_Page'">
+                <div class="caption" style="padding:5px; font-size:11px; height:30px; overflow:hidden;">${g.title}</div>
+            </div>`;
+        }).join('');
+    });
 </script>
 </body>
 </html>
