@@ -6,36 +6,79 @@
     <title>Hentyx</title>
 </head>
 <body>
+<div class="drawer-overlay" onclick="toggleDrawer()"></div>
+<div id="drawer">
+    <div style="padding: 20px; border-bottom: 1px solid #222;">
+        <a href="#" style="background:var(--brand); color:white; display:block; text-align:center; padding:10px; border-radius:4px; text-decoration:none;">Sign In / Register</a>
+    </div>
+    <nav style="flex-grow:1; padding:10px;">
+        <a href="/" style="display:block; color:#ccc; padding:15px; text-decoration:none; border-bottom:1px solid #222;">Home</a>
+        <a href="#" onclick="openRandom()" style="display:block; color:#ccc; padding:15px; text-decoration:none; border-bottom:1px solid #222;">Random</a>
+        <a href="/tags.html" style="display:block; color:#ccc; padding:15px; text-decoration:none; border-bottom:1px solid #222;">Tags</a>
+    </nav>
+    <div style="padding:15px; border-top:1px solid #222; text-align:center;">
+        <a href="/info" style="color:#666; text-decoration:none; font-size:13px;">Info & Support</a>
+    </div>
+</div>
+
 <header>
-    <div class="menu-toggle" onclick="toggleDrawer()">☰</div>
+    <div onclick="toggleDrawer()" style="color:white; font-size:24px; margin-right:10px; cursor:pointer;">☰</div>
     <a href="/" class="logo">HENTYX</a>
     <div class="search-bar">
         <input type="text" id="searchInput" placeholder="Search...">
-        <button onclick="search()">🔍</button>
+        <button onclick="search()" style="background:transparent; border:none; color:#aaa; padding:8px;">🔍</button>
     </div>
 </header>
+
 <div class="container">
-    <h2 style="color:#ed2553; padding-left:10px;">Popular Now</h2>
-    <div id="popularSection" class="gallery-grid" style="margin-bottom:40px;"></div>
-    <h2 style="color:#ed2553; padding-left:10px;">New Uploads</h2>
+    <h3 style="color:var(--brand); padding:10px 10px 0;">Popular Now</h3>
+    <div id="popularSection" class="gallery-grid"></div>
+    
+    <h3 style="color:var(--brand); padding:10px 10px 0;">New Uploads</h3>
     <div id="newSection" class="gallery-grid"></div>
+    
+    <div class="pagination" id="pagination"></div>
 </div>
+
 <script>
+    function toggleDrawer() {
+        document.getElementById('drawer').classList.toggle('open');
+        document.querySelector('.drawer-overlay').classList.toggle('show');
+    }
+
     async function load() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const q = urlParams.get('q') || '';
-        const r = await fetch('/api/galleries?q=' + q);
+        const params = new URLSearchParams(location.search);
+        const q = params.get('q') || '';
+        const page = parseInt(params.get('page') || '1');
+        
+        const r = await fetch(`/api/galleries?q=${q}&page=${page}`);
         const data = await r.json();
         
-        const popularItems = data.items.slice(0, 5);
-        const newItems = data.items.slice(5);
-
         const mapItem = g => `<div class="cover" onclick="location.href='reader.html?id=${g.id}'"><img src="${g.images[0]}"><div class="caption">${g.title}</div></div>`;
 
-        document.getElementById('popularSection').innerHTML = popularItems.map(mapItem).join('');
-        document.getElementById('newSection').innerHTML = newItems.map(mapItem).join('');
+        // Logic for splitting Popular/New only on Page 1
+        if(page === 1 && !q) {
+            document.getElementById('popularSection').innerHTML = data.items.slice(0, 5).map(mapItem).join('');
+            document.getElementById('newSection').innerHTML = data.items.slice(5).map(mapItem).join('');
+        } else {
+            document.querySelector('h3').style.display = 'none'; // Hide "Popular" title
+            document.getElementById('newSection').innerHTML = data.items.map(mapItem).join('');
+        }
+
+        // Simple Pagination UI
+        let pgHtml = '';
+        if(page > 1) pgHtml += `<a href="?page=${page-1}&q=${q}">Prev</a>`;
+        pgHtml += `<a class="active">${page}</a>`;
+        if(page < data.totalPages) pgHtml += `<a href="?page=${page+1}&q=${q}">Next</a>`;
+        document.getElementById('pagination').innerHTML = pgHtml;
     }
+
     function search() { location.href = '/index.html?q=' + document.getElementById('searchInput').value; }
+    async function openRandom() {
+        const r = await fetch('/api/galleries');
+        const d = await r.json();
+        location.href = `/reader.html?id=${d.items[Math.floor(Math.random()*d.items.length)].id}`;
+    }
     load();
 </script>
 </body>
