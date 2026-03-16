@@ -1,5 +1,5 @@
-const supabaseUrl = 'YOUR_SUPABASE_URL';
-const supabaseKey = 'YOUR_SUPABASE_KEY';
+const supabaseUrl = 'https://xsfyktusduhpyksucwqr.supabase.co';
+const supabaseKey = 'sb_publishable_w-pXx13cGW0BixJ6WAeCAQ_pKZm9yfM';
 const supabase = supabasejs.createClient(supabaseUrl, supabaseKey);
 
 async function toggleBookmark(manga) {
