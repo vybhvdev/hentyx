@@ -2,6 +2,7 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="referrer" content="no-referrer">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/auth.js"></script>
@@ -11,63 +12,38 @@
 <div class="drawer-overlay" onclick="toggleDrawer()"></div>
 <div id="drawer">
     <div id="authSection" style="padding: 20px; border-bottom: 1px solid #222;">
-        <button onclick="promptAuth()" style="background:var(--brand); color:white; width:100%; border:none; padding:10px; border-radius:4px;">Sign In / Register</button>
+        <button onclick="promptAuth()" style="background:#ed2553; color:white; width:100%; border:none; padding:10px; border-radius:4px;">Sign In / Register</button>
     </div>
     <nav style="flex-grow:1; padding:10px;">
         <a href="/" style="display:block; color:#ccc; padding:15px; text-decoration:none; border-bottom:1px solid #222;">Home</a>
         <a href="/bookmarks.html" style="display:block; color:#ccc; padding:15px; text-decoration:none; border-bottom:1px solid #222;">My Bookmarks</a>
-        <a href="#" onclick="openRandom()" style="display:block; color:#ccc; padding:15px; text-decoration:none; border-bottom:1px solid #222;">Random</a>
-        <a href="/tags.html" style="display:block; color:#ccc; padding:15px; text-decoration:none; border-bottom:1px solid #222;">Tags</a>
     </nav>
     <div style="padding:15px; border-top:1px solid #222; text-align:center;">
         <a href="/info.html" style="color:#666; text-decoration:none; font-size:13px;">Info & Support</a>
     </div>
 </div>
-
 <header>
-    <div onclick="toggleDrawer()" style="color:white; font-size:24px; margin-right:10px; cursor:pointer;">☰</div>
+    <div onclick="toggleDrawer()" style="color:white; font-size:24px; margin-right:15px; cursor:pointer;">☰</div>
     <a href="/" class="logo">HENTYX</a>
-    <div class="search-bar">
-        <input type="text" id="searchInput" placeholder="Search...">
-        <button onclick="search()">🔍</button>
-    </div>
+    <div class="search-bar"><input type="text" id="searchInput" placeholder="Search..."><button onclick="search()">🔍</button></div>
 </header>
-
 <div class="container">
-    <div id="popularSection" class="gallery-grid"></div>
     <div id="newSection" class="gallery-grid"></div>
     <div class="pagination" id="pagination"></div>
 </div>
-
 <script>
-    function toggleDrawer() {
-        document.getElementById('drawer').classList.toggle('open');
-        document.querySelector('.drawer-overlay').classList.toggle('show');
-    }
-
-    async function checkUser() {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-            document.getElementById('authSection').innerHTML = `<p style="font-size:12px; color:#888; margin-bottom:5px;">Logged in as:</p><p style="font-size:14px; margin-bottom:10px;">${user.email}</p><button onclick="supabase.auth.signOut().then(()=>location.reload())" style="background:#333; color:white; border:none; width:100%; padding:5px; border-radius:4px;">Logout</button>`;
-        }
-    }
-
-    function promptAuth() {
-        const email = prompt("Enter Email:");
-        const pass = prompt("Enter Password:");
-        const type = confirm("OK for Login, Cancel for Sign Up") ? 'login' : 'signup';
-        if(email && pass) handleAuth(email, pass, type);
-    }
-
+    function toggleDrawer() { document.getElementById('drawer').classList.toggle('open'); document.querySelector('.drawer-overlay').classList.toggle('show'); }
     async function load() {
         const params = new URLSearchParams(location.search);
         const q = params.get('q') || '';
-        const page = parseInt(params.get('page') || '1');
+        const page = params.get('page') || '1';
         const r = await fetch(`/api/galleries?q=${q}&page=${page}`);
         const data = await r.json();
-        const mapItem = g => `<div class="cover" onclick="location.href='reader.html?id=${g.id}'"><img src="${g.images[0]}"><div class="caption">${g.title}</div></div>`;
-        document.getElementById('newSection').innerHTML = data.items.map(mapItem).join('');
-        checkUser();
+        document.getElementById('newSection').innerHTML = data.items.map(g => `
+            <div class="cover" onclick="location.href='reader.html?id=${g.id}'">
+                <img src="${g.images[0]}" loading="lazy">
+                <div class="caption">${g.title}</div>
+            </div>`).join('');
     }
     load();
 </script>
