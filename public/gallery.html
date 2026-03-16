@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gallery</title>
+
+<style>
+
+body{
+background:#0f0f0f;
+color:#eee;
+font-family:Arial;
+margin:0;
+}
+
+/* TOP BAR */
+
+.topbar{
+position:fixed;
+top:0;
+left:0;
+right:0;
+height:50px;
+background:#1b1b1b;
+display:flex;
+align-items:center;
+justify-content:center;
+z-index:1000;
+}
+
+.logo{
+font-size:20px;
+font-weight:bold;
+}
+
+.menu{
+position:absolute;
+left:15px;
+font-size:22px;
+cursor:pointer;
+}
+
+/* CONTENT */
+
+.container{
+margin-top:60px;
+padding:15px;
+max-width:1000px;
+margin-left:auto;
+margin-right:auto;
+}
+
+.top{
+display:flex;
+gap:20px;
+flex-wrap:wrap;
+}
+
+.cover{
+width:250px;
+border-radius:6px;
+}
+
+.info{
+flex:1;
+min-width:200px;
+}
+
+.title{
+font-size:22px;
+margin-bottom:10px;
+}
+
+.tag{
+display:inline-block;
+background:#333;
+padding:6px 10px;
+margin:4px;
+border-radius:6px;
+font-size:12px;
+}
+
+.readbtn{
+display:inline-block;
+background:#e63946;
+padding:10px 16px;
+border-radius:6px;
+color:white;
+text-decoration:none;
+margin-top:10px;
+}
+
+/* MOBILE FIX */
+
+@media(max-width:700px){
+
+.top{
+flex-direction:column;
+align-items:center;
+text-align:center;
+}
+
+.cover{
+width:80%;
+max-width:300px;
+}
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="topbar">
+<div class="menu" onclick="history.back()">←</div>
+<div class="logo">Hentyx</div>
+</div>
+
+<div class="container">
+
+<div class="top">
+
+<img class="cover" id="cover">
+
+<div class="info">
+
+<div class="title" id="title"></div>
+
+<div id="pages"></div>
+
+<div id="tags"></div>
+
+<a class="readbtn" id="read">Read</a>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+const id=new URLSearchParams(location.search).get("id")
+
+fetch("/api/gallery/"+id)
+.then(r=>r.json())
+.then(g=>{
+
+document.getElementById("title").innerText=g.title
+document.getElementById("cover").src=g.images[0]
+document.getElementById("pages").innerText="Pages: "+g.pages
+
+document.getElementById("read").href="reader.html?id="+g.id
+
+let tagbox=document.getElementById("tags")
+
+g.tags.forEach(t=>{
+let span=document.createElement("span")
+span.className="tag"
+span.innerText=t
+tagbox.appendChild(span)
+})
+
+})
+
+</script>
+
+</body>
+</html>

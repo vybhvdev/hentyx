@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hentyx</title>
+
+<style>
+body{
+background:#0f0f0f;
+color:#eee;
+font-family:Arial;
+margin:0;
+}
+
+/* TOP BAR */
+.topbar{
+position:fixed;
+top:0;
+left:0;
+right:0;
+height:50px;
+background:#1b1b1b;
+display:flex;
+align-items:center;
+justify-content:center;
+z-index:1000;
+}
+
+.logo{
+font-size:20px;
+font-weight:bold;
+}
+
+.menu{
+position:absolute;
+left:15px;
+font-size:22px;
+cursor:pointer;
+}
+
+/* DRAWER */
+.drawer{
+position:fixed;
+top:0;
+left:0;
+width:260px;
+height:100%;
+background:#181818;
+transform:translateX(-100%);
+transition:0.3s;
+padding:20px;
+z-index:2000;
+}
+
+.drawer.open{
+transform:translateX(0);
+}
+
+.drawer a{
+display:block;
+color:white;
+text-decoration:none;
+padding:10px 0;
+border-bottom:1px solid #333;
+}
+
+/* OVERLAY */
+.overlay{
+position:fixed;
+top:0;
+left:0;
+right:0;
+bottom:0;
+background:rgba(0,0,0,0.6);
+display:none;
+z-index:1500;
+}
+
+.overlay.show{
+display:block;
+}
+
+/* GRID */
+.grid{
+margin-top:60px;
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+gap:12px;
+padding:12px;
+}
+
+.card{
+background:#181818;
+border-radius:6px;
+overflow:hidden;
+}
+
+.card img{
+width:100%;
+aspect-ratio:3/4;
+object-fit:cover;
+}
+
+.card p{
+font-size:12px;
+padding:6px;
+margin:0;
+}
+
+a{
+color:white;
+text-decoration:none;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="drawer" id="drawer">
+<a href="/">Home</a>
+<a href="/">Browse</a>
+<a href="/">Random</a>
+</div>
+
+<div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+
+<div class="topbar">
+<div class="menu" onclick="toggleMenu()">☰</div>
+<div class="logo">Hentyx</div>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<script>
+
+function toggleMenu(){
+document.getElementById("drawer").classList.toggle("open")
+document.getElementById("overlay").classList.toggle("show")
+}
+
+let shown=0
+let per=40
+let all=[]
+
+fetch("/api/galleries")
+.then(r=>r.json())
+.then(data=>{
+all=data
+//render()
+})
+
+function //render(){
+
+let grid=document.getElementById("grid")
+
+let slice=all.slice(shown,shown+per)
+
+slice.forEach(g=>{
+
+let el=document.createElement("div")
+el.className="card"
+
+el.innerHTML=
+"<a href='gallery.html?id="+g.id+"'>"+
+"<img loading='lazy' src='"+g.images[0]+"'>"+
+"<p>"+g.title+"</p>"+
+"</a>"
+
+grid.appendChild(el)
+
+})
+
+shown+=per
+
+}
+
+
+if(window.innerHeight+window.scrollY>=document.body.offsetHeight-200){
+//render()
+}
+})
+
+</script><script src="pagination.js"></script>
+
+</body>
+</html>
