@@ -4,40 +4,32 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="referrer" content="no-referrer">
     <link rel="stylesheet" href="style.css">
-    <title>Reader</title>
-    <style>
-        body { background: #000; margin: 0; display: flex; flex-direction: column; align-items: center; }
-        img { width: 100%; max-width: 800px; display: block; min-height: 300px; background: #111; }
-        .controls { position: fixed; bottom: 20px; display: flex; gap: 10px; z-index: 10; }
-        .btn { background: rgba(237, 37, 83, 0.8); color: white; border: none; padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: bold; }
-    </style>
+    <title>EH Reader</title>
 </head>
-<body>
-    <div id="pages"></div>
-    <div class="controls">
-        <a href="/" class="btn">Home</a>
-        <button class="btn" onclick="window.scrollTo(0,0)">Top</button>
-    </div>
+<body style="background:#000; margin:0;">
+    <div id="pages" style="display:flex; flex-direction:column; align-items:center;"></div>
     <script>
-        const PROXY = "https://images.weserv.nl/?url=";
-        const id = new URLSearchParams(location.search).get("id");
+        const params = new URLSearchParams(location.search);
+        const gid = params.get("gid");
+        const token = params.get("token");
 
         async function load() {
-            const r = await fetch(`/api/gallery/${id}`);
-            const g = await r.json();
+            const r = await fetch(`/api/gallery/${gid}/${token}`);
+            const data = await r.json();
             const container = document.getElementById("pages");
-            
-            // Logic: Load all pages using the mirror proxy
-            g.images.forEach(src => {
+
+            // EH images are tricky. If you don't have page tokens, 
+            // we use the 's' link bypass or a proxy.
+            for(let i=1; i<=data.filecount; i++) {
                 const img = document.createElement("img");
-                // Convert to high-res 'i' mirror for reading
-                const clean = src.replace('t.nhentai.net', 'i3.nhentai.net').replace('https://', '');
-                img.src = PROXY + clean;
-                img.loading = "lazy";
+                // NOTE: This is a placeholder logic. EH requires page tokens
+                // for full direct image access.
+                img.src = `https://ehgt.org/m/${data.gid}/${i}.jpg`; 
+                img.style.width = "100%";
                 container.appendChild(img);
-            });
+            }
         }
-        if(id) load();
+        load();
     </script>
 </body>
 </html>
