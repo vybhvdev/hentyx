@@ -9,31 +9,35 @@
 <body style="background:#1a1a1a; color:white; font-family:sans-serif; margin:0;">
 
 <header style="background:#111; padding:15px; border-bottom:2px solid #ed2553; text-align:center;">
-    <span style="color:#ed2553; font-weight:bold; font-size:22px; letter-spacing:2px;">HENTYX</span>
+    <span style="color:#ed2553; font-weight:bold; font-size:22px;">HENTYX</span>
 </header>
 
 <div id="grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:10px;"></div>
 
 <script>
     async function loadGrid() {
+        console.log("Attempting to load grid...");
         try {
             const r = await fetch('/api/galleries?v=' + Date.now());
-            const data = await r.json();
-            const grid = document.getElementById('grid');
+            if (!r.ok) throw new Error("Server Error: " + r.status);
             
-            // Map E-Hentai specific properties: gid, token, and thumb
+            const data = await r.json();
+            console.log("Data received:", data);
+
+            const grid = document.getElementById('grid');
+            if (data.length === 0) {
+                grid.innerHTML = "<p style='text-align:center;width:100%;'>No galleries found in JSON.</p>";
+                return;
+            }
+
             grid.innerHTML = data.map(g => `
                 <div onclick="location.href='reader.html?gid=${g.gid}&token=${g.token}'" 
-                     style="background:#222; border-radius:10px; overflow:hidden; border:1px solid #333; position:relative;">
-                    <img src="${g.thumb}" 
-                         style="width:100%; aspect-ratio:45/64; object-fit:cover; display:block;"
-                         onerror="this.src='https://placehold.co/200x300?text=No_Thumb'">
-                    <div style="padding:8px; font-size:11px; height:36px; overflow:hidden; background:rgba(0,0,0,0.7); position:absolute; bottom:0; width:100%; box-sizing:border-box;">
-                        ${g.title}
-                    </div>
+                     style="background:#222; border-radius:10px; overflow:hidden; border:1px solid #333;">
+                    <img src="${g.thumb}" style="width:100%; aspect-ratio:45/64; object-fit:cover; display:block;">
+                    <div style="padding:8px; font-size:11px; height:36px; overflow:hidden; background:rgba(0,0,0,0.7);">${g.title}</div>
                 </div>`).join('');
         } catch (e) {
-            console.error("Grid Load Error:", e);
+            document.body.innerHTML += "<div style='color:red;padding:20px;'>Error: " + e.message + "</div>";
         }
     }
     loadGrid();
