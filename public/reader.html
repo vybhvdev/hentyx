@@ -4,32 +4,53 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="referrer" content="no-referrer">
     <link rel="stylesheet" href="style.css">
-    <title>EH Reader</title>
+    <title>Hentyx Reader</title>
+    <style>
+        body { background:#000; margin:0; display:flex; flex-direction:column; align-items:center; }
+        .page-wrap { width:100%; max-width:900px; margin-bottom:10px; }
+        img { width:100%; display:block; min-height:400px; background:#111; }
+        .nav { position:fixed; bottom:20px; right:20px; z-index:100; }
+        .btn { background:#ed2553; color:white; padding:12px; border-radius:50%; border:none; font-size:20px; box-shadow:0 4px 10px rgba(0,0,0,0.5); }
+    </style>
 </head>
-<body style="background:#000; margin:0;">
-    <div id="pages" style="display:flex; flex-direction:column; align-items:center;"></div>
+<body>
+    <div id="pages"></div>
+    <div class="nav"><button class="btn" onclick="window.scrollTo({top:0, behavior:'smooth'})">▲</button></div>
+
     <script>
         const params = new URLSearchParams(location.search);
         const gid = params.get("gid");
         const token = params.get("token");
 
         async function load() {
-            const r = await fetch(`/api/gallery/${gid}/${token}`);
-            const data = await r.json();
-            const container = document.getElementById("pages");
+            try {
+                const r = await fetch(`/api/gallery/${gid}/${token}`);
+                const g = await r.json();
+                const container = document.getElementById("pages");
 
-            // EH images are tricky. If you don't have page tokens, 
-            // we use the 's' link bypass or a proxy.
-            for(let i=1; i<=data.filecount; i++) {
-                const img = document.createElement("img");
-                // NOTE: This is a placeholder logic. EH requires page tokens
-                // for full direct image access.
-                img.src = `https://ehgt.org/m/${data.gid}/${i}.jpg`; 
-                img.style.width = "100%";
-                container.appendChild(img);
+                // EH standard: Use a loop to generate page requests
+                // Note: Direct hotlinking pages usually requires a specific EH cookie or proxy
+                for(let i=1; i<=g.filecount; i++) {
+                    const div = document.createElement("div");
+                    div.className = "page-wrap";
+                    
+                    const img = document.createElement("img");
+                    // Using a public EH image proxy or the 's' link bypass
+                    // For now, we use the most common high-res pattern
+                    img.src = `https://images.weserv.nl/?url=https://ehgt.org/m/${gid}/${i}.jpg`;
+                    img.loading = "lazy";
+                    img.onerror = function() {
+                        this.src = `https://placehold.co/600x800?text=Page+${i}+Loading+Error`;
+                    };
+
+                    div.appendChild(img);
+                    container.appendChild(div);
+                }
+            } catch (e) {
+                console.error("Reader Error:", e);
             }
         }
-        load();
+        if(gid && token) load();
     </script>
 </body>
 </html>
