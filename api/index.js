@@ -7,27 +7,30 @@ app.use(cors());
 
 app.get("/api/galleries", async (req, res) => {
   try {
-    // We added &json=1 to force JSON format
-    const url = "https://gelbooru.com/index.php?page=dapi&s=post&q=index&tags=rating:explicit+blonde&limit=50&json=1";
+    // 1. Force JSON with json=1
+    // 2. Added pid=0 and limit=50
+    const url = "https://gelbooru.com/index.php?page=dapi&s=post&q=index&tags=rating:explicit&limit=50&json=1";
     
     const response = await axios.get(url, {
-      headers: { 'User-Agent': 'Mozilla/5.0' }
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
+      timeout: 10000
     });
 
-    // Gelbooru returns an object with a "post" array
-    const posts = response.data.post || [];
+    // Gelbooru returns an object. We need to check if 'post' exists.
+    const posts = response.data && response.data.post ? response.data.post : [];
     
-    // Map Gelbooru data to our Grid format
-    const formatted = posts.map(p => ({
+    // Map data to our frontend format
+    const results = posts.map(p => ({
       id: p.id,
-      title: p.tags.split(' ').slice(0, 3).join(' '), // Create a short title from tags
+      title: p.tags ? p.tags.split(' ').slice(0, 3).join(' ') : "Untitled",
       cover: p.file_url,
       thumbnail: p.preview_url
     }));
 
-    res.json(formatted);
+    res.status(200).json(results);
   } catch (err) {
-    res.status(500).json({ error: "Gelbooru Error", details: err.message });
+    console.error("Internal Crash:", err.message);
+    res.status(500).json({ error: "Backend Crash", message: err.message });
   }
 });
 
