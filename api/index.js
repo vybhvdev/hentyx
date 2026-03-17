@@ -7,30 +7,26 @@ app.use(cors());
 
 app.get("/api/galleries", async (req, res) => {
   try {
-    // 1. Force JSON with json=1
-    // 2. Added pid=0 and limit=50
-    const url = "https://gelbooru.com/index.php?page=dapi&s=post&q=index&tags=rating:explicit&limit=50&json=1";
+    // Search for the 'blonde' tag on Pawoo (mastodon-style API)
+    const url = "https://pawoo.net/api/v1/timelines/tag/blonde?limit=40";
     
     const response = await axios.get(url, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
-      timeout: 10000
+      timeout: 8000
     });
 
-    // Gelbooru returns an object. We need to check if 'post' exists.
-    const posts = response.data && response.data.post ? response.data.post : [];
-    
-    // Map data to our frontend format
-    const results = posts.map(p => ({
-      id: p.id,
-      title: p.tags ? p.tags.split(' ').slice(0, 3).join(' ') : "Untitled",
-      cover: p.file_url,
-      thumbnail: p.preview_url
-    }));
+    // Pawoo returns a list of 'statuses'. We filter for ones with media.
+    const results = response.data
+      .filter(post => post.media_attachments.length > 0)
+      .map(post => ({
+        id: post.id,
+        title: post.account.display_name || post.account.username,
+        cover: post.media_attachments[0].url,
+        thumbnail: post.media_attachments[0].preview_url
+      }));
 
     res.status(200).json(results);
   } catch (err) {
-    console.error("Internal Crash:", err.message);
-    res.status(500).json({ error: "Backend Crash", message: err.message });
+    res.status(500).json({ error: "Pawoo API Error", message: err.message });
   }
 });
 
