@@ -12,22 +12,23 @@
 </header>
 <div id="grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:10px;"></div>
 <script>
+    const PROXY = "https://images.weserv.nl/?url=";
     async function loadGrid() {
         const r = await fetch('/api/galleries?v=' + Date.now());
         const data = await r.json();
-        const grid = document.getElementById('grid');
-
-        grid.innerHTML = data.map(g => `
+        document.getElementById('grid').innerHTML = data.map(g => {
+            // Clean URL for Weserv proxy
+            const cleanThumb = g.thumb.replace('https://', '');
+            return `
             <div onclick="location.href='reader.html?gid=${g.gid}&token=${g.token}'" 
-                 style="background:#222; border-radius:10px; overflow:hidden; border:1px solid #333; min-height:200px;">
-                <img src="${g.thumb}" 
-                     referrerpolicy="no-referrer"
-                     style="width:100%; aspect-ratio:45/64; object-fit:cover; display:block;"
-                     onerror="this.src='https://placehold.co/200x300?text=Reload_Page'">
+                 style="background:#222; border-radius:10px; overflow:hidden; border:1px solid #333;">
+                <img src="${PROXY}${cleanThumb}&default=https://placehold.co/200x300?text=Reload" 
+                     style="width:100%; aspect-ratio:45/64; object-fit:cover; display:block;">
                 <div style="padding:10px; font-size:11px; height:35px; overflow:hidden; background:rgba(0,0,0,0.5);">
                     ${g.title}
                 </div>
-            </div>`).join('');
+            </div>`;
+        }).join('');
     }
     loadGrid();
 </script>
