@@ -4,15 +4,19 @@ const path = require("path");
 const axios = require("axios");
 const app = express();
 
-const dataPath = path.join(process.cwd(), "data", "galleries.json");
-const localData = JSON.parse(fs.readFileSync(dataPath, "utf8"));
+// Use path.join with __dirname for better Vercel compatibility
+const dataPath = path.join(__dirname, "..", "data", "galleries.json");
 
-// Home API: Returns the EH list
-app.get("/api/galleries", (res) => {
-  res.json(localData);
+app.get("/api/galleries", (req, res) => {
+  try {
+    if (!fs.existsSync(dataPath)) return res.json([]);
+    const localData = JSON.parse(fs.readFileSync(dataPath, "utf8"));
+    res.json(localData);
+  } catch (e) {
+    res.status(500).json({ error: "Database Read Error" });
+  }
 });
 
-// Single Gallery API: Fetches fresh data from EH if needed
 app.get("/api/gallery/:gid/:token", async (req, res) => {
   const { gid, token } = req.params;
   try {
@@ -20,10 +24,10 @@ app.get("/api/gallery/:gid/:token", async (req, res) => {
       method: "gdata",
       gidlist: [[parseInt(gid), token]],
       namespace: 1
-    });
+    }, { timeout: 5000 });
     res.json(response.data.gmetadata[0]);
   } catch (err) {
-    res.status(500).json({ error: "EH API Blocked or Down" });
+    res.status(500).json({ error: "EH API Connection Failed" });
   }
 });
 
