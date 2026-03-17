@@ -2,43 +2,22 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="referrer" content="no-referrer">
     <link rel="stylesheet" href="style.css">
-    <title>Hentyx</title>
+    <title>Hentyx | EH</title>
 </head>
-<body style="background:#111; color:white; font-family:sans-serif; margin:0;">
-
-<header style="background:#1a1a1a; padding:15px; border-bottom:2px solid #ed2553; text-align:center;">
-    <span style="color:#ed2553; font-weight:bold; font-size:22px; letter-spacing:3px;">HENTYX</span>
+<body style="background:#1a1a1a; color:white; font-family:sans-serif;">
+<header style="background:#222; padding:15px; border-bottom:2px solid #ed2553; text-align:center;">
+    <span style="color:#ed2553; font-weight:bold; font-size:22px; letter-spacing:2px;">HENTYX</span>
 </header>
-
 <div id="grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:10px;"></div>
-
 <script>
-    // Using a high-performance image mirror
-    const PROXY = "https://images.weserv.nl/?url=";
-
-    async function fetchGals() {
-        const r = await fetch('/api/galleries?v=' + Date.now());
-        const data = await r.json();
-        
-        // Since jq showed it's an object, we access .items
-        const galleries = data;
-
-        document.getElementById('grid').innerHTML = galleries.map(g => {
-            // Logic: Remove protocol and swap to i3 mirror via proxy
-            const rawUrl = g.images[0].replace('https://', '').replace('t.nhentai.net', 'i3.nhentai.net');
-            
-            return `
-            <div onclick="location.href='reader.html?id=${g.id}'" style="background:#222; border-radius:8px; overflow:hidden; position:relative;">
-                <img src="${PROXY}${rawUrl}&default=https://placehold.co/200x300?text=Reload" 
-                     loading="lazy"
-                     style="width:100%; aspect-ratio:45/64; object-fit:cover; display:block;">
-                <div style="padding:8px; font-size:11px; height:35px; overflow:hidden; background:rgba(0,0,0,0.6); position:absolute; bottom:0; width:100%;">${g.title}</div>
-            </div>`;
-        }).join('');
-    }
-    fetchGals();
+    fetch('/api/galleries?v=' + Date.now()).then(r => r.json()).then(data => {
+        document.getElementById('grid').innerHTML = data.map(g => `
+            <div onclick="location.href='reader.html?gid=${g.gid}&token=${g.token}'" style="background:#222; border-radius:8px; overflow:hidden;">
+                <img src="${g.thumb}" style="width:100%; aspect-ratio:45/64; object-fit:cover;">
+                <div style="padding:8px; font-size:11px; height:35px; overflow:hidden;">${g.title}</div>
+            </div>`).join('');
+    });
 </script>
 </body>
 </html>
