@@ -1,33 +1,24 @@
 const express = require("express");
-const fs = require("fs");
-const path = require("path");
 const axios = require("axios");
 const app = express();
 
-// Use path.join with __dirname for better Vercel compatibility
-const dataPath = path.join(__dirname, "..", "data", "galleries.json");
-
-app.get("/api/galleries", (req, res) => {
+// Fetch list from HentaiOS
+app.get("/api/galleries", async (req, res) => {
   try {
-    if (!fs.existsSync(dataPath)) return res.json([]);
-    const localData = JSON.parse(fs.readFileSync(dataPath, "utf8"));
-    res.json(localData);
-  } catch (e) {
-    res.status(500).json({ error: "Database Read Error" });
+    const { data } = await axios.get("https://api.hentaios.com/v1/search?query=all&page=1&limit=24");
+    res.json(data.results);
+  } catch (err) {
+    res.status(500).json({ error: "HentaiOS API Unreachable" });
   }
 });
 
-app.get("/api/gallery/:gid/:token", async (req, res) => {
-  const { gid, token } = req.params;
+// Fetch specific gallery details
+app.get("/api/gallery/:id", async (req, res) => {
   try {
-    const response = await axios.post("https://api.e-hentai.org/api.php", {
-      method: "gdata",
-      gidlist: [[parseInt(gid), token]],
-      namespace: 1
-    }, { timeout: 5000 });
-    res.json(response.data.gmetadata[0]);
+    const { data } = await axios.get(`https://api.hentaios.com/v1/gallery/${req.params.id}`);
+    res.json(data);
   } catch (err) {
-    res.status(500).json({ error: "EH API Connection Failed" });
+    res.status(500).json({ error: "Gallery fetch failed" });
   }
 });
 

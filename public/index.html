@@ -2,24 +2,27 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="referrer" content="no-referrer">
     <link rel="stylesheet" href="style.css">
-    <title>Hentyx Reset</title>
+    <title>Hentyx OS</title>
 </head>
 <body style="background:#111; color:white; font-family:sans-serif; margin:0;">
 <header style="background:#1a1a1a; padding:15px; border-bottom:2px solid #ed2553; text-align:center;">
-    <span style="color:#ed2553; font-weight:bold; font-size:20px;">HENTYX STABLE</span>
+    <span style="color:#ed2553; font-weight:bold; font-size:20px; letter-spacing:2px;">HENTYX OS</span>
 </header>
 <div id="grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:10px;"></div>
 <script>
-    const PROXY = "https://images.weserv.nl/?url=";
     fetch('/api/galleries?v=' + Date.now())
         .then(r => r.json())
         .then(data => {
             document.getElementById('grid').innerHTML = data.map(g => `
-                <div onclick="location.href='reader.html?gid=${g.gid}&token=${g.token}'" style="background:#222; border-radius:10px; overflow:hidden; border:1px solid #333;">
-                    <img src="${PROXY}${g.thumb.replace('https://', '')}" style="width:100%; aspect-ratio:45/64; object-fit:cover; display:block;">
-                    <div style="padding:10px; font-size:12px; text-align:center;">${g.title}</div>
+                <div onclick="location.href='reader.html?id=${g.id}'" 
+                     style="background:#222; border-radius:10px; overflow:hidden; border:1px solid #333; position:relative;">
+                    <img src="${g.cover || g.thumbnail}" 
+                         style="width:100%; aspect-ratio:45/64; object-fit:cover; display:block;"
+                         onerror="this.src='https://placehold.co/200x300?text=Error_Load'">
+                    <div style="padding:10px; font-size:11px; height:35px; overflow:hidden; background:rgba(0,0,0,0.7); position:absolute; bottom:0; width:100%; box-sizing:border-box;">
+                        ${g.title}
+                    </div>
                 </div>`).join('');
         });
 </script>
