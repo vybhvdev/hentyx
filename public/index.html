@@ -16,23 +16,18 @@
         const r = await fetch('/api/galleries?v=' + Date.now());
         const data = await r.json();
         const grid = document.getElementById('grid');
-        
-        // Use Weserv proxy to bypass EH hotlink protection
-        const PROXY = "https://images.weserv.nl/?url=";
 
-        grid.innerHTML = data.map(g => {
-            const cleanThumb = g.thumb.replace('https://', '');
-            return `
+        grid.innerHTML = data.map(g => `
             <div onclick="location.href='reader.html?gid=${g.gid}&token=${g.token}'" 
-                 style="background:#222; border-radius:10px; overflow:hidden; border:1px solid #333;">
-                <img src="${PROXY}${cleanThumb}" 
+                 style="background:#222; border-radius:10px; overflow:hidden; border:1px solid #333; min-height:200px;">
+                <img src="${g.thumb}" 
+                     referrerpolicy="no-referrer"
                      style="width:100%; aspect-ratio:45/64; object-fit:cover; display:block;"
-                     onerror="this.src='https://placehold.co/200x300?text=Retry'">
+                     onerror="this.src='https://placehold.co/200x300?text=Reload_Page'">
                 <div style="padding:10px; font-size:11px; height:35px; overflow:hidden; background:rgba(0,0,0,0.5);">
                     ${g.title}
                 </div>
-            </div>`;
-        }).join('');
+            </div>`).join('');
     }
     loadGrid();
 </script>
