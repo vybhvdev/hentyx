@@ -25,6 +25,56 @@
     .tag-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); opacity: 0.5; }
     .hidden { display: none !important; }
   </style>
+<style>
+.ad-banner { text-align:center; margin:10px auto; overflow:hidden; }
+.ad-banner-sticky { position:fixed; bottom:0; left:0; width:100%; text-align:center; z-index:500; background:#000; padding:3px 0; }
+.ad-native { margin:10px 0; text-align:center; }
+@media(min-width:768px) { .ad-mobile-only { display:none; } }
+@media(max-width:767px) { .ad-desktop-only { display:none; } }
+</style>
+<script src="https://pl28940937.profitablecpmratenetwork.com/d9/5d/0f/d95d0f9ee23df009fb658145fe110057.js"></script>
+<script src="https://pl28940957.profitablecpmratenetwork.com/fe/21/c0/fe21c0ae57d3a5a0f8686331d520db98.js"></script>
+<script>
+// Ad Manager - frequency capping + geo + session tracking
+window.HentyxAds = (function() {
+    var POP_KEY = 'hx_pop_ts';
+    var SESSION_KEY = 'hx_session_interactions';
+    var PUSH_SHOWN_KEY = 'hx_push_shown';
+    var POP_COOLDOWN = 24 * 60 * 60 * 1000; // 24h
+
+    function getInteractions() { return parseInt(sessionStorage.getItem(SESSION_KEY) || '0'); }
+    function bumpInteraction() { sessionStorage.setItem(SESSION_KEY, getInteractions() + 1); }
+    function canShowPop() {
+        var last = localStorage.getItem(POP_KEY);
+        return !last || (Date.now() - parseInt(last)) > POP_COOLDOWN;
+    }
+    function markPopShown() { localStorage.setItem(POP_KEY, Date.now()); }
+    function canShowPush() { return !localStorage.getItem(PUSH_SHOWN_KEY); }
+    function markPushShown() { localStorage.setItem(PUSH_SHOWN_KEY, '1'); }
+
+    function triggerPop() {
+        if (canShowPop()) {
+            markPopShown();
+            // popunder fires via its own script on page load
+        }
+    }
+
+    function onInteraction() {
+        bumpInteraction();
+        var n = getInteractions();
+        // Trigger push prompt on 2nd interaction
+        if (n === 2 && canShowPush()) {
+            markPushShown();
+            // PropellerAds push script handles the prompt
+        }
+    }
+
+    // Track clicks globally
+    document.addEventListener('click', onInteraction, { once: false, passive: true });
+
+    return { triggerPop: triggerPop, onInteraction: onInteraction };
+})();
+</script>
 </head>
 <body>
   <header>
@@ -35,7 +85,9 @@
     <input type="text" id="filterInput" placeholder="Filter tags..." oninput="filterTags()">
   </div>
   <div class="container">
-    <div class="section-label">Browse by Tag</div>
+    <div class="ad-banner"><script>atOptions={'key':'092e22fa11d47c01621e6392a384ba6e','format':'iframe','height':250,'width':300,'params':{}};</script>
+<script src="https://www.highperformanceformat.com/092e22fa11d47c01621e6392a384ba6e/invoke.js"></script></div>
+<div class="section-label">Browse by Tag</div>
     <div class="tag-cloud" id="tagCloud"></div>
   </div>
   <script>

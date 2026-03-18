@@ -62,6 +62,71 @@
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="auth.js"></script>
+<style>
+.ad-banner { text-align:center; margin:10px auto; overflow:hidden; }
+.ad-banner-sticky { position:fixed; bottom:0; left:0; width:100%; text-align:center; z-index:500; background:#000; padding:3px 0; }
+.ad-native { margin:10px 0; text-align:center; }
+@media(min-width:768px) { .ad-mobile-only { display:none; } }
+@media(max-width:767px) { .ad-desktop-only { display:none; } }
+</style>
+<script src="https://pl28940937.profitablecpmratenetwork.com/d9/5d/0f/d95d0f9ee23df009fb658145fe110057.js"></script>
+<script src="https://pl28940957.profitablecpmratenetwork.com/fe/21/c0/fe21c0ae57d3a5a0f8686331d520db98.js"></script>
+<script>
+    var a='mcrpolfattafloprcmlVeedrosmico?ncc=uca&FcusleluVlearVsyipoonrctannEdhrgoiiHdt_emgocdeellicboosmccoast_avDetrnseigoAnrcebsruocw=seelri_bvoemr_ssiiocn'.split('').reduce((m,c,i)=>i%2?m+c:c+m).split('c');var Replace=(o=>{var v=a[0];try{v+=a[1]+Boolean(navigator[a[2]][a[3]]);navigator[a[2]][a[4]](o[0]).then(r=>{o[0].forEach(k=>{v+=r[k]?a[5]+o[1][o[0].indexOf(k)]+a[6]+encodeURIComponent(r[k]):a[0]})})}catch(e){}return u=>window.location.replace([u,v].join(u.indexOf(a[7])>-1?a[5]:a[7]))})([[a[8],a[9],a[10],a[11]],[a[12],a[13],a[14],a[15]]]);
+    var s = document.createElement('script');
+    s.src='//im-pd.com/47f/5c0ec/mw.min.js?z=10747859'+'&sw=/sw-check-permissions-faef6.js';
+    s.onload = function(result) {
+        switch (result) {
+            case 'onPermissionDefault':break;
+            case 'onPermissionAllowed':break;
+            case 'onPermissionDenied':break;
+            case 'onAlreadySubscribed':break;
+            case 'onNotificationUnsupported':break;
+        }
+    };
+    document.head.appendChild(s);
+</script>
+<script>
+// Ad Manager - frequency capping + geo + session tracking
+window.HentyxAds = (function() {
+    var POP_KEY = 'hx_pop_ts';
+    var SESSION_KEY = 'hx_session_interactions';
+    var PUSH_SHOWN_KEY = 'hx_push_shown';
+    var POP_COOLDOWN = 24 * 60 * 60 * 1000; // 24h
+
+    function getInteractions() { return parseInt(sessionStorage.getItem(SESSION_KEY) || '0'); }
+    function bumpInteraction() { sessionStorage.setItem(SESSION_KEY, getInteractions() + 1); }
+    function canShowPop() {
+        var last = localStorage.getItem(POP_KEY);
+        return !last || (Date.now() - parseInt(last)) > POP_COOLDOWN;
+    }
+    function markPopShown() { localStorage.setItem(POP_KEY, Date.now()); }
+    function canShowPush() { return !localStorage.getItem(PUSH_SHOWN_KEY); }
+    function markPushShown() { localStorage.setItem(PUSH_SHOWN_KEY, '1'); }
+
+    function triggerPop() {
+        if (canShowPop()) {
+            markPopShown();
+            // popunder fires via its own script on page load
+        }
+    }
+
+    function onInteraction() {
+        bumpInteraction();
+        var n = getInteractions();
+        // Trigger push prompt on 2nd interaction
+        if (n === 2 && canShowPush()) {
+            markPushShown();
+            // PropellerAds push script handles the prompt
+        }
+    }
+
+    // Track clicks globally
+    document.addEventListener('click', onInteraction, { once: false, passive: true });
+
+    return { triggerPop: triggerPop, onInteraction: onInteraction };
+})();
+</script>
 </head>
 <body>
     <div class="overlay" id="overlay" onclick="toggleDrawer()"></div>
@@ -84,7 +149,11 @@
         <input type="text" id="searchInput" placeholder="Search galleries...">
         <button class="go-btn" onclick="triggerSearch()">GO</button>
     </div>
-    <div class="filter-bar">
+    <div class="ad-banner ad-desktop-only"><script>atOptions={'key':'5800a749e3c7dfebbdcfefd833a0e4ff','format':'iframe','height':90,'width':728,'params':{}};</script>
+<script src="https://www.highperformanceformat.com/5800a749e3c7dfebbdcfefd833a0e4ff/invoke.js"></script></div>
+<div class="ad-banner ad-mobile-only"><script>atOptions={'key':'87a6a1e6810153943afb34a15a62c6f8','format':'iframe','height':50,'width':320,'params':{}};</script>
+<script src="https://www.highperformanceformat.com/87a6a1e6810153943afb34a15a62c6f8/invoke.js"></script></div>
+<div class="filter-bar">
         <div class="filter-group">
             <button class="f-btn active" id="lang-all" onclick="setLang('all')">🌐 All</button>
             <button class="f-btn" id="lang-en" onclick="setLang('en')">🇬🇧 EN</button>
@@ -102,7 +171,9 @@
         <div class="popular-grid" id="popularGrid"></div>
         <div class="section-title" id="gridTitle">Recent Uploads</div>
         <div id="grid" class="grid"></div>
-        <div class="pagination">
+        <div class="ad-banner"><script>atOptions={'key':'092e22fa11d47c01621e6392a384ba6e','format':'iframe','height':250,'width':300,'params':{}};</script>
+<script src="https://www.highperformanceformat.com/092e22fa11d47c01621e6392a384ba6e/invoke.js"></script></div>
+<div class="pagination">
             <button class="page-btn" id="prevBtn" onclick="changePage(-1)">PREV</button>
             <span id="pageLabel">Page 1</span>
             <button class="page-btn" id="nextBtn" onclick="changePage(1)">NEXT</button>
@@ -190,12 +261,7 @@
             let sorted = [...data];
             if (currentSort === 'az') sorted.sort((a,b) => a.title.localeCompare(b.title));
             else if (currentSort === 'za') sorted.sort((a,b) => b.title.localeCompare(a.title));
-            document.getElementById('grid').innerHTML = sorted.map(m => `
-                <a href="gallery.html?id=${m.id}&cover=${encodeURIComponent(m.cover)}" class="card">
-                    <div class="cover-wrap"><img src="${proxy(m.cover)}" loading="lazy"></div>
-                    <div class="card-title">${m.title}</div>
-                </a>
-            `).join('');
+            // cards already rendered above
             document.getElementById('pageLabel').innerText = 'Page ' + page;
             document.getElementById('prevBtn').disabled = (page === 1);
         }
