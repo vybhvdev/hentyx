@@ -8,8 +8,6 @@ app.use(cors());
 
 const JANDA_BASE = "https://jandapress.onrender.com";
 const PROVIDER = "pururin";
-
-// Standard headers to mimic a browser and avoid 403s
 const headers = { "Referer": "https://pururin.to/", "User-Agent": "Mozilla/5.0" };
 
 app.get("/api/galleries", async (req, res) => {
@@ -21,54 +19,48 @@ app.get("/api/galleries", async (req, res) => {
       id: m.id || m.code,
       title: m.title,
       lang: (m.title || "").toLowerCase().includes("english") ? "EN" : "JP",
-      cover: m.image || m.cover
+      cover: m.image || m.cover // RAW URL
     })));
-  } catch (err) { res.json([]); }
+  } catch (err) { res.status(500).json([]); }
+});
+
+app.get("/api/popular", async (req, res) => {
+  try {
+    const res2 = await axios.get(`${JANDA_BASE}/${PROVIDER}/search?key=popular`);
+    const results = (res2.data.data || []).slice(0, 8); // Top 8 for homepage
+    res.json(results.map(m => ({
+      id: m.id || m.code,
+      title: m.title,
+      cover: m.image || m.cover // RAW URL
+    })));
+  } catch (err) { res.status(500).json([]); }
+});
+
+app.get("/api/random", async (req, res) => {
+  try {
+    const response = await axios.get(`${JANDA_BASE}/${PROVIDER}/random`);
+    res.json({ id: response.data.data.id || response.data.data.code });
+  } catch (err) { res.status(500).json({ error: "Random Failed" }); }
 });
 
 app.get("/api/info", async (req, res) => {
   try {
     const res2 = await axios.get(`${JANDA_BASE}/${PROVIDER}/get?book=${req.query.id}`);
     const d = res2.data.data;
-    // Map pages correctly - Pururin usually uses .cover for the array
     let p = Array.isArray(d.cover) ? d.cover : (d.reader || d.images || []);
-    res.json({ 
-        id: d.id, 
-        title: d.title, 
-        cover: Array.isArray(d.cover) ? d.cover[0] : (d.image || d.cover), 
-        pages: p, 
-        tags: d.tags || [] 
-    });
+    let c = Array.isArray(d.cover) ? d.cover[0] : (d.image || d.cover);
+    res.json({ id: d.id, title: d.title, cover: c, pages: p, tags: d.tags || [] });
   } catch (err) { res.status(500).json({ error: "Failed" }); }
-});
-
-app.get("/api/proxy", async (req, res) => {
-  try {
-    const targetUrl = req.query.url;
-    const response = await axios.get(targetUrl, { 
-        responseType: "arraybuffer", 
-        headers: headers,
-        timeout: 15000 
-    });
-    res.setHeader("Content-Type", response.headers["content-type"]);
-    res.send(response.data);
-  } catch (err) { 
-    console.error("Proxy Error:", err.message);
-    res.status(500).send("Proxy Error"); 
-  }
 });
 
 app.get("/api/download", async (req, res) => {
   const { id, title } = req.query;
   try {
     const info = await axios.get(`${JANDA_BASE}/${PROVIDER}/get?book=${id}`);
-    const d = info.data.data;
-    const pages = Array.isArray(d.cover) ? d.cover : (d.reader || []);
-    
+    const pages = Array.isArray(info.data.data.cover) ? info.data.data.cover : (info.data.data.reader || []);
     res.setHeader('Content-Disposition', `attachment; filename="${title || id}.zip"`);
     const archive = archiver('zip');
     archive.pipe(res);
-    
     for (let i = 0; i < pages.length; i++) {
       try {
         const img = await axios.get(pages[i], { responseType: 'arraybuffer', headers: headers });
@@ -77,6 +69,16 @@ app.get("/api/download", async (req, res) => {
     }
     archive.finalize();
   } catch (e) { res.status(500).send("Download Error"); }
+});
+
+app.get("/api/proxy", async (req, res) => {
+  try {
+    const targetUrl = req.query.url; // Express decodes this automatically
+    if (!targetUrl || !targetUrl.startsWith('http')) return res.status(400).send("Invalid URL");
+    const response = await axios.get(targetUrl, { responseType: "arraybuffer", headers: headers, timeout: 15000 });
+    res.setHeader("Content-Type", response.headers["content-type"]);
+    res.send(response.data);
+  } catch (err) { res.status(500).send("Proxy failed"); }
 });
 
 module.exports = app;
