@@ -30,26 +30,31 @@ app.get("/api/info", async (req, res) => {
     const id = req.query.id;
     const url = `${JANDA_BASE}/${PROVIDER}/get?book=${encodeURIComponent(id)}`;
     const response = await axios.get(url, { timeout: 15000 });
-    const d = response.data.data || response.data;
-
-    let pages = [];
     
-    // THE EASY FIX: If cover is an array (per your curl), it's actually the pages.
-    if (Array.isArray(d.cover)) {
-        pages = d.cover;
-    } else if (Array.isArray(d.reader)) {
-        pages = d.reader;
-    } else if (Array.isArray(d.images)) {
-        pages = d.images;
+    // Grab the raw data from Janda
+    const raw = response.data.data || response.data;
+
+    let finalPages = [];
+    let singleCover = "";
+
+    // THE WORKAROUND: Re-mapping the fields
+    if (Array.isArray(raw.cover)) {
+        // If cover is the list of images (per your curl), move them to pages
+        finalPages = raw.cover;
+        singleCover = raw.cover[0]; // Set the first image as the cover
+    } else {
+        // Standard fallback for other providers
+        finalPages = raw.reader || raw.images || [];
+        singleCover = raw.image || raw.cover || "";
     }
 
+    // Send the "Fixed" JSON back to the frontend
     res.json({
-      id: d.id || id,
-      title: d.title || "Untitled",
-      // Set cover to the first page URL since 'cover' is being used for the array
-      cover: pages.length > 0 ? pages[0] : (d.image || ""),
-      pages: pages,
-      tags: d.tags || []
+      id: raw.id || id,
+      title: raw.title || "Untitled",
+      cover: singleCover,
+      pages: finalPages,
+      tags: raw.tags || []
     });
   } catch (err) { res.status(500).json({ error: "Info Failed" }); }
 });
