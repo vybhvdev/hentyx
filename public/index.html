@@ -5,151 +5,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hentyx</title>
     <style>
-        :root { --bg: #0a0a0a; --surface: #161616; --accent: #ff00ff; --text: #e5e5e5; }
-        body { margin: 0; background: var(--bg); color: var(--text); font-family: sans-serif; overflow-x: hidden; }
-        
-        /* HEADER */
-        header { background: #000; padding: 10px 15px; border-bottom: 1px solid var(--accent); position: sticky; top: 0; z-index: 1000; display: flex; align-items: center; gap: 10px; }
-        .menu-btn { background: none; border: none; color: var(--accent); font-size: 24px; cursor: pointer; padding: 5px; }
-        .brand { font-size: 22px; font-weight: 900; color: var(--accent); text-decoration: none; flex: 1; text-align: center; margin-right: 40px; }
-        
-        .search-row { padding: 10px 15px; background: #000; display: flex; gap: 5px; border-bottom: 1px solid #222; }
-        input { flex: 1; padding: 10px; background: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 4px; outline: none; }
-        .go-btn { background: var(--accent); color: #000; border: none; padding: 0 15px; font-weight: bold; border-radius: 4px; cursor: pointer; }
-
-        /* DRAWER (SIDEBAR) */
-        .drawer { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: #000; z-index: 2000; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-right: 1px solid var(--accent); box-shadow: 10px 0 20px rgba(0,0,0,0.5); }
-        .drawer.open { left: 0; }
-        .drawer-header { padding: 30px 20px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; }
-        .drawer-brand { font-size: 24px; font-weight: 900; color: var(--accent); }
-        .drawer-links { padding: 10px 0; }
-        .drawer-item { display: block; padding: 15px 25px; color: #fff; text-decoration: none; font-weight: bold; font-size: 16px; border-left: 4px solid transparent; transition: 0.2s; cursor: pointer; }
-        .drawer-item:hover { background: #111; border-left-color: var(--accent); color: var(--accent); }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1500; display: none; }
-        .overlay.active { display: block; }
-
-        /* GRID & CONTENT */
+        :root { --bg: #0a0a0a; --surface: #161616; --accent: #ed2553; --text: #e5e5e5; }
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: sans-serif; }
+        header { background: #000; padding: 12px; border-bottom: 1px solid var(--accent); position: sticky; top: 0; z-index: 1000; text-align: center; }
+        .brand { font-size: 24px; font-weight: 900; color: var(--accent); text-decoration: none; }
         .container { max-width: 1200px; margin: 0 auto; padding: 10px; }
-        .section-title { font-size: 11px; text-transform: uppercase; color: var(--accent); letter-spacing: 2px; margin: 20px 0 10px 5px; font-weight: bold; }
-        .popular-grid { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
-        .popular-grid::-webkit-scrollbar { display: none; }
-        .pop-card { flex: 0 0 120px; border-radius: 4px; border: 1px solid #333; overflow: hidden; height: 170px; }
-        .pop-cover { width: 100%; height: 100%; object-fit: cover; }
+        .section-title { font-size: 11px; text-transform: uppercase; color: #666; letter-spacing: 2px; margin: 25px 0 10px 5px; font-weight: bold; border-left: 3px solid var(--accent); padding-left: 10px; }
         
         .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
         @media (min-width: 600px) { .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); } }
-        .card { background: var(--surface); border-radius: 4px; overflow: hidden; text-decoration: none; color: inherit; border: 1px solid #1a1a1a; }
-        .cover-wrap { position: relative; padding-top: 140%; }
+        
+        .card { background: var(--surface); border-radius: 4px; overflow: hidden; text-decoration: none; color: inherit; border: 1px solid #1a1a1a; transition: 0.2s; }
+        .cover-wrap { position: relative; padding-top: 140%; background: #000; }
         .card img { position: absolute; top:0; left:0; width:100%; height:100%; object-fit: cover; }
-        .lang-badge { position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.8); color: var(--accent); padding: 2px 4px; border-radius: 2px; font-size: 8px; font-weight: bold; border: 1px solid var(--accent); }
-        .card-title { padding: 6px; font-size: 10px; line-height: 1.2; height: 24px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-align: center; }
-
-        .pagination { display: flex; justify-content: center; align-items: center; gap: 15px; margin: 40px 0; }
-        .page-btn { background: #111; color: var(--accent); border: 1px solid var(--accent); padding: 10px 18px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 12px; }
-        .page-btn:disabled { opacity: 0.2; }
+        .card-title { padding: 8px; font-size: 10px; height: 24px; overflow: hidden; text-align: center; color: #bbb; }
     </style>
 </head>
 <body>
-
-    <div class="overlay" id="overlay" onclick="toggleDrawer()"></div>
-    <div class="drawer" id="drawer">
-        <div class="drawer-header">
-            <div class="drawer-brand">HENTY<span style="color:#fff">X</span></div>
-        </div>
-        <div class="drawer-links">
-            <a href="index.html" class="drawer-item">🏠 Home</a>
-            <div class="drawer-item" onclick="goTrueRandom()">🎲 Random Gallery</div>
-            <div class="drawer-item" onclick="toggleTheme()">✨ Switch Theme</div>
-            <a href="https://github.com/vybhvdev/hentyx" class="drawer-item">💻 GitHub Repo</a>
-        </div>
-    </div>
-
-    <header>
-        <button class="menu-btn" onclick="toggleDrawer()">☰</button>
-        <a href="index.html" class="brand">HENTY<span style="color:#fff">X</span></a>
-    </header>
-
-    <div class="search-row">
-        <input type="text" id="searchInput" placeholder="Search thousands of galleries...">
-        <button class="go-btn" onclick="triggerSearch()">GO</button>
-    </div>
-
+    <header><a href="index.html" class="brand">HENTY<span style="color:#fff">X</span></a></header>
     <div class="container">
         <div class="section-title">🔥 Popular</div>
-        <div class="popular-grid" id="popularGrid"></div>
-
-        <div class="section-title" id="gridTitle">Recent Uploads</div>
-        <div id="grid" class="grid"></div>
-
-        <div class="pagination">
-            <button class="page-btn" id="prevBtn" onclick="changePage(-1)">PREV</button>
-            <span id="pageLabel">Page 1</span>
-            <button class="page-btn" id="nextBtn" onclick="changePage(1)">NEXT</button>
-        </div>
+        <div id="popular" class="grid" style="grid-template-columns: repeat(2, 1fr); margin-bottom: 30px;"></div>
+        
+        <div class="section-title">Recent Uploads</div>
+        <div id="recent" class="grid"></div>
     </div>
-
     <script>
-        let currentPage = 1;
-        let currentQuery = "";
+        const proxy = (url) => `/api/proxy?url=${encodeURIComponent(url)}`;
 
-        function toggleDrawer() {
-            document.getElementById('drawer').classList.toggle('open');
-            document.getElementById('overlay').classList.toggle('active');
-        }
-
-        async function loadPopular() {
-            const res = await fetch('/api/popular');
+        async function load() {
+            // Load Recent
+            const res = await fetch('/api/galleries?q=new');
             const data = await res.json();
-            document.getElementById('popularGrid').innerHTML = data.map(item => `
-                <a href="gallery.html?id=${item.id}" class="pop-card">
-                    <img src="${item.cover}" class="pop-cover">
+            const recent = document.getElementById('recent');
+            const popular = document.getElementById('popular');
+            
+            recent.innerHTML = data.map(m => `
+                <a href="gallery.html?id=${m.id}" class="card">
+                    <div class="cover-wrap"><img src="${proxy(m.cover)}"></div>
+                    <div class="card-title">${m.title}</div>
+                </a>
+            `).join('');
+
+            // Fill Popular with the first 4 results
+            popular.innerHTML = data.slice(0, 4).map(m => `
+                <a href="gallery.html?id=${m.id}" class="card">
+                    <div class="cover-wrap"><img src="${proxy(m.cover)}"></div>
+                    <div class="card-title">${m.title}</div>
                 </a>
             `).join('');
         }
-
-        async function loadGalleries(query = "", page = 1) {
-            const grid = document.getElementById('grid');
-            grid.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 50px; color:#666;">LOADING...</div>';
-            try {
-                const res = await fetch(`/api/galleries?q=${encodeURIComponent(query || "new")}&p=${page}`);
-                const data = await res.json();
-                grid.innerHTML = '';
-                data.forEach(item => {
-                    const card = document.createElement('a');
-                    card.href = `gallery.html?id=${item.id}&cover=${encodeURIComponent(item.cover)}`;
-                    card.className = 'card';
-                    card.innerHTML = `<div class="cover-wrap"><img src="${item.cover}" loading="lazy"><div class="lang-badge">${item.lang}</div></div><div class="card-title">${item.title}</div>`;
-                    grid.appendChild(card);
-                });
-                document.getElementById('pageLabel').innerText = `Page ${page}`;
-                document.getElementById('prevBtn').disabled = (page === 1);
-                window.scrollTo(0,0);
-            } catch (err) { grid.innerHTML = "OFFLINE."; }
-        }
-
-        function changePage(delta) { currentPage += delta; loadGalleries(currentQuery, currentPage); }
-        function triggerSearch() { currentQuery = document.getElementById('searchInput').value.trim(); currentPage = 1; loadGalleries(currentQuery, 1); }
-        
-        async function goTrueRandom() {
-            toggleDrawer(); // Close drawer first
-            const res = await fetch('/api/random');
-            const data = await res.json();
-            window.location.href = `gallery.html?id=${data.id}`;
-        }
-
-        function toggleTheme() {
-            const colors = ['#ff00ff', '#bc13fe', '#00ffff', '#39ff14'];
-            const current = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
-            const next = colors[(colors.indexOf(current) + 1) % colors.length];
-            document.documentElement.style.setProperty('--accent', next);
-        }
-
-        window.onload = () => {
-            loadPopular();
-            const tag = new URLSearchParams(window.location.search).get('q');
-            if(tag) { currentQuery = tag; document.getElementById('searchInput').value = tag; }
-            loadGalleries(currentQuery, 1);
-        };
+        load();
     </script>
 </body>
 </html>
