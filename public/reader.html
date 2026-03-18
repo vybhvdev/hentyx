@@ -34,16 +34,9 @@
     <div id="loading-overlay">PREPARING GALLERY...</div>
 
     <div class="nav-bar">
-        <div class="nav-left">
-            <a href="index.html" class="nav-btn home">← BACK</a>
-            <button class="mode-btn active" id="pageBtn" onclick="setMode('page')">Page</button>
-            <button class="mode-btn" id="stripBtn" onclick="setMode('strip')">Strip</button>
-        </div>
-        <div class="nav-center">
-            <button class="nav-btn" onclick="changePage(-1)">‹</button>
-            <span id="pageLabelTop">1 / 0</span>
-            <button class="nav-btn" onclick="changePage(1)">›</button>
-        </div>
+        <a href="index.html" class="nav-btn home">← BACK</a>
+        <button class="mode-btn active" id="pageBtn" onclick="setMode('page')">Page</button>
+        <button class="mode-btn" id="stripBtn" onclick="setMode('strip')">Strip</button>
     </div>
 
     <div id="viewer" onclick="handleTap(event)">
@@ -113,7 +106,7 @@
                 pages = ['/api/proxy?url=' + passedCover];
                 if (overlay) overlay.remove();
                 updateDisplay();
-                document.getElementById("pageLabelTop").innerText = "Loading...";
+    
                 document.getElementById("pageLabelBottom").innerText = "Loading...";
             } else if (overlay) {
                 overlay.innerText = attempt === 1 ? "PREPARING GALLERY..." : "CONNECTING... " + attempt + "/5";
@@ -154,9 +147,7 @@
             const url = pages[currentIndex];
             img.src = url.startsWith('/api/proxy') ? url : `/api/proxy?url=${encodeURIComponent(url)}`;
             
-            const label = `${currentIndex + 1} of ${pages.length}`;
-            document.getElementById('pageLabelTop').innerText = label;
-            document.getElementById('pageLabelBottom').innerText = label;
+            document.getElementById('pageLabelBottom').innerText = `${currentIndex + 1} / ${pages.length}`;
 
             window.scrollTo(0, 0);
             preloadNext();
