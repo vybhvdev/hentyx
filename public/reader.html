@@ -101,10 +101,7 @@
                 }
             }
         }
-            } catch (e) { document.getElementById("loading-overlay").innerText = "CONNECTION ERROR."; }
-        }
-
-        function updateDisplay() {
+            function updateDisplay() {
             const img = document.getElementById('page-img');
             const url = pages[currentIndex];
             img.src = url.startsWith('/api/proxy') ? url : `/api/proxy?url=${encodeURIComponent(url)}`;
