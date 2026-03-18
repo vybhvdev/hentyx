@@ -113,6 +113,10 @@
         }
 
         async function load() {
+            // Set read link immediately with passed cover so reader works even before Render responds
+            if (passedCover) {
+                document.getElementById('readLink').href = `reader.html?id=${id}&cover=${encodeURIComponent(passedCover)}`;
+            }
             try {
                 const res = await fetch(`https://jandapress.onrender.com/pururin/get?book=${id}`);
                 const data = await res.json();
@@ -148,7 +152,7 @@
             const batch = allPages.slice(loadedCount, loadedCount + 10);
             batch.forEach((url, i) => {
                 const card = document.createElement('a');
-                card.href = `reader.html?id=${id}&p=${loadedCount + i}`;
+                card.href = `reader.html?id=${id}&p=${loadedCount + i}&cover=${encodeURIComponent(url)}`;
                 card.className = 'thumb';
                 card.innerHTML = `<img src="${proxy(url)}" loading="lazy">`;
                 grid.appendChild(card);
