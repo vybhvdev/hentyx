@@ -261,7 +261,17 @@ window.HentyxAds = (function() {
             let sorted = [...data];
             if (currentSort === 'az') sorted.sort((a,b) => a.title.localeCompare(b.title));
             else if (currentSort === 'za') sorted.sort((a,b) => b.title.localeCompare(a.title));
-            // cards already rendered above
+            let html = '';
+            sorted.forEach((m, i) => {
+                if (i > 0 && i % 8 === 0) {
+                    html += '<div style="grid-column:1/-1;text-align:center;padding:5px 0;"><ins id="1113410" data-width="300" data-height="250"></ins></div>';
+                }
+                html += '<a href="gallery.html?id=' + m.id + '&cover=' + encodeURIComponent(m.cover) + '" class="card">' +
+                    '<div class="cover-wrap"><img src="' + proxy(m.cover) + '" loading="lazy"></div>' +
+                    '<div class="card-title">' + m.title + '</div>' +
+                    '</a>';
+            });
+            document.getElementById('grid').innerHTML = html;
             document.getElementById('pageLabel').innerText = 'Page ' + page;
             document.getElementById('prevBtn').disabled = (page === 1);
         }
