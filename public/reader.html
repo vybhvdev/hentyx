@@ -34,12 +34,16 @@
     <div id="loading-overlay">PREPARING GALLERY...</div>
 
     <div class="nav-bar">
-        <a href="index.html" class="nav-btn home">BACK</a>
-        <button class="mode-btn active" id="pageBtn" onclick="setMode('page')">Page</button>
-        <button class="mode-btn" id="stripBtn" onclick="setMode('strip')">Strip</button>
-        <button class="nav-btn" onclick="changePage(-1)">‹</button>
-        <span id="pageLabelTop">1 of 0</span>
-        <button class="nav-btn" onclick="changePage(1)">›</button>
+        <div class="nav-left">
+            <a href="index.html" class="nav-btn home">← BACK</a>
+            <button class="mode-btn active" id="pageBtn" onclick="setMode('page')">Page</button>
+            <button class="mode-btn" id="stripBtn" onclick="setMode('strip')">Strip</button>
+        </div>
+        <div class="nav-center">
+            <button class="nav-btn" onclick="changePage(-1)">‹</button>
+            <span id="pageLabelTop">1 / 0</span>
+            <button class="nav-btn" onclick="changePage(1)">›</button>
+        </div>
     </div>
 
     <div id="viewer" onclick="handleTap(event)">
@@ -48,7 +52,7 @@
 
     <div class="nav-bar bottom">
         <button class="nav-btn" onclick="changePage(-1)">‹</button>
-        <span id="pageLabelBottom">1 of 0</span>
+        <span id="pageLabelBottom">1 / 0</span>
         <button class="nav-btn" onclick="changePage(1)">›</button>
     </div>
 
@@ -83,6 +87,19 @@
             } else {
                 strip.style.display = 'none';
             }
+        }
+
+        // Use preloaded pages from gallery page if available
+        function loadFromCache() {
+            const cached = sessionStorage.getItem('pages_' + id);
+            if (cached) {
+                pages = JSON.parse(cached);
+                const overlay = document.getElementById('loading-overlay');
+                if (overlay) overlay.remove();
+                updateDisplay();
+                return true;
+            }
+            return false;
         }
 
         async function load(attempt) {

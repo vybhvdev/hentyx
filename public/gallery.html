@@ -138,6 +138,17 @@
                     `<a href="index.html?q=${encodeURIComponent(t.name || t)}" class="tag">${t.name || t}</a>`
                 ).join('');
 
+                // Preload pages into sessionStorage so reader opens instantly
+                if (allPages.length > 0) {
+                    sessionStorage.setItem('pages_' + id, JSON.stringify(allPages));
+                    sessionStorage.setItem('title_' + id, d.title);
+                    sessionStorage.setItem('cover_' + id, galleryData.cover);
+                    // Prefetch first 3 images via proxy
+                    allPages.slice(0, 3).forEach(url => {
+                        const img = new Image();
+                        img.src = '/api/proxy?url=' + encodeURIComponent(url);
+                    });
+                }
                 renderNextBatch();
                 loadRelated(d.tags && d.tags[0] ? (d.tags[0].name || d.tags[0]) : "doujinshi");
                 syncBookmarkBtn();
