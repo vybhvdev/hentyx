@@ -307,7 +307,11 @@ window.HentyxAds = (function() {
             }
         })();
 
-        if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js");
+        // Unregister old SW caches
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
+    setTimeout(() => navigator.serviceWorker.register("/sw.js"), 1000);
+}
         window.onload = async () => {
             const user = await getUser();
             const drawerAuthLink = document.getElementById('drawerAuthLink');

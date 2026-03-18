@@ -1,4 +1,4 @@
-const CACHE = 'hentyx-v1';
+const CACHE = 'hentyx-v3';
 const STATIC = [
   '/',
   '/index.html',
