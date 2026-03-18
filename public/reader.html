@@ -1,21 +1,22 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="referrer" content="no-referrer">
-    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hentyx Reader</title>
     <style>
-        body { background:#000; margin:0; display:flex; flex-direction:column; align-items:center; }
+        body { background:#000; margin:0; display:flex; flex-direction:column; align-items:center; font-family: sans-serif; }
         .page-wrap { width:100%; max-width:800px; margin-bottom:5px; }
         img { width:100%; display:block; min-height:300px; background:#111; }
-        .nav-bar { position:fixed; top:0; width:100%; background:rgba(0,0,0,0.8); padding:10px; text-align:left; z-index:10; }
-        .btn { color:white; text-decoration:none; font-weight:bold; padding:5px 15px; background:#ed2553; border-radius:4px; }
+        .nav-bar { position:fixed; top:0; width:100%; background:rgba(0,0,0,0.8); padding:10px; text-align:left; z-index:10; border-bottom: 2px solid #ed2553; }
+        .btn { color:white; text-decoration:none; font-weight:bold; padding:5px 15px; background:#ed2553; border-radius:4px; text-transform: uppercase; }
+        #loading { color: white; margin-top: 100px; font-size: 18px; }
     </style>
 </head>
 <body>
     <div class="nav-bar"><a href="index.html" class="btn">← Back</a></div>
-    <div id="pages" style="margin-top:50px;"></div>
+    <div id="loading">Loading Chapter...</div>
+    <div id="pages" style="margin-top:50px; width: 100%; display: flex; flex-direction: column; align-items: center;"></div>
 
     <script>
         const params = new URLSearchParams(location.search);
@@ -24,26 +25,46 @@
 
         async function loadManga() {
             try {
-                // 1. Get Info to find the first chapter ID
+                // 1. Get info to find the first chapter ID
                 const infoRes = await fetch(`${CONSUMET_BASE}/info?id=${mangaId}`);
                 const info = await infoRes.json();
+                
+                if (!info.chapters || info.chapters.length === 0) {
+                    document.getElementById("loading").innerText = "No chapters found.";
+                    return;
+                }
+                
+                // Grabbing the first chapter in the list
                 const firstChapterId = info.chapters[0].id;
 
-                // 2. Get Chapter Pages
+                // 2. Get the pages for that chapter
                 const pagesRes = await fetch(`${CONSUMET_BASE}/read?chapterId=${firstChapterId}`);
-                const pages = await pagesRes.json();
+                const pagesData = await pagesRes.json();
+                
+                // Handle different array structures
+                const pages = Array.isArray(pagesData) ? pagesData : pagesData.pages || [];
 
+                document.getElementById("loading").style.display = "none";
                 const container = document.getElementById("pages");
-                container.innerHTML = pages.map(p => `
+                
+                // 3. Map the pages and wrap the image URLs in our proxy!
+                container.innerHTML = pages.map(p => {
+                    const imgUrl = p.img || p.url;
+                    const proxyUrl = `/api/proxy?url=${encodeURIComponent(imgUrl)}`;
+                    return `
                     <div class="page-wrap">
-                        <img src="${p.img}" loading="lazy">
+                        <img src="${proxyUrl}" loading="lazy" alt="manga page">
                     </div>
-                `).join('');
+                    `;
+                }).join('');
             } catch (e) {
                 console.error("Reader failed:", e);
+                document.getElementById("loading").innerText = "Failed to load chapter.";
             }
         }
+        
         if(mangaId) loadManga();
+        else document.getElementById("loading").innerText = "No Manga ID provided.";
     </script>
 </body>
 </html>
