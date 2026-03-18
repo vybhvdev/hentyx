@@ -35,6 +35,8 @@
         .pagination { display: flex; justify-content: center; align-items: center; gap: 15px; margin: 30px 0; }
         .page-btn { background: #111; color: var(--accent); border: 1px solid var(--accent); padding: 10px 18px; border-radius: 4px; font-weight: bold; cursor: pointer; }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="auth.js"></script>
 </head>
 <body>
     <div class="overlay" id="overlay" onclick="toggleDrawer()"></div>
@@ -42,6 +44,8 @@
         <div class="drawer-header">HENTY<span style="color:#fff">X</span></div>
         <a href="index.html" class="drawer-item">🏠 Home</a>
         <div class="drawer-item" onclick="goTrueRandom()">🎲 Random Gallery</div>
+        <a href="bookmarks.html" class="drawer-item">🔖 Bookmarks</a>
+        <a href="auth.html" class="drawer-item" id="drawerAuthLink">👤 Sign In</a>
     </div>
     <header>
         <button class="menu-btn" onclick="toggleDrawer()">☰</button>
@@ -102,7 +106,18 @@
         function triggerSearch() { currentQuery = document.getElementById('searchInput').value.trim(); currentPage = 1; loadGalleries(currentQuery, 1); }
         async function goTrueRandom() { const res = await fetch('/api/random'); const data = await res.json(); window.location.href = `gallery.html?id=${data.id}`; }
 
-        window.onload = () => {
+        window.onload = async () => {
+            // Auth state in drawer
+            const user = await getUser();
+            const drawerAuthLink = document.getElementById("drawerAuthLink");
+            if (user) {
+                drawerAuthLink.textContent = "👤 Sign Out";
+                drawerAuthLink.href = "#";
+                drawerAuthLink.onclick = () => signOut();
+            }
+            // Handle ?q= param from tag links
+            const qParam = new URLSearchParams(location.search).get("q");
+            if (qParam) { document.getElementById("searchInput").value = qParam; currentQuery = qParam; }
             loadPopular();
             loadGalleries();
         };

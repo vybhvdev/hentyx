@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In - Hentyx</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js"></script>
+  <style>
+    :root { --bg: #0a0a0a; --surface: #161616; --accent: #ed2553; --text: #e5e5e5; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
+    header { background: #000; padding: 14px 15px; border-bottom: 1px solid var(--accent); text-align: center; }
+    .brand { font-size: 22px; font-weight: 900; color: var(--accent); text-decoration: none; }
+    .brand span { color: #fff; }
+    .wrap { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .card { background: var(--surface); border: 1px solid #2a2a2a; border-radius: 8px; padding: 30px 25px; width: 100%; max-width: 380px; }
+    .tabs { display: flex; margin-bottom: 25px; border-bottom: 1px solid #2a2a2a; }
+    .tab { flex: 1; text-align: center; padding: 10px; font-weight: bold; font-size: 13px; cursor: pointer; color: #555; border-bottom: 2px solid transparent; transition: 0.2s; }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    label { display: block; font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+    input { width: 100%; padding: 12px; background: #1a1a1a; border: 1px solid #2a2a2a; color: #fff; border-radius: 4px; font-size: 14px; outline: none; margin-bottom: 15px; }
+    input:focus { border-color: var(--accent); }
+    .btn { width: 100%; padding: 13px; background: var(--accent); color: #fff; border: none; border-radius: 4px; font-weight: 900; font-size: 15px; cursor: pointer; letter-spacing: 1px; }
+    .btn:hover { background: #c91f45; }
+    #auth-error { margin-top: 12px; font-size: 12px; color: #ed2553; min-height: 16px; text-align: center; }
+    .back { display: block; text-align: center; margin-top: 20px; color: #555; font-size: 12px; text-decoration: none; }
+    .back:hover { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="index.html" class="brand">HENTY<span>X</span></a>
+  </header>
+  <div class="wrap">
+    <div class="card">
+      <div class="tabs">
+        <div class="tab active" id="tab-login" onclick="switchTab('login')">SIGN IN</div>
+        <div class="tab" id="tab-signup" onclick="switchTab('signup')">SIGN UP</div>
+      </div>
+      <label>Email</label>
+      <input type="email" id="email" placeholder="you@example.com">
+      <label>Password</label>
+      <input type="password" id="password" placeholder="••••••••">
+      <button class="btn" id="authBtn" onclick="submitAuth()">SIGN IN</button>
+      <div id="auth-error"></div>
+      <a href="index.html" class="back">← Back to home</a>
+    </div>
+  </div>
+  <script>
+    let currentTab = 'login';
+    function switchTab(tab) {
+      currentTab = tab;
+      document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+      document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
+      document.getElementById('authBtn').innerText = tab === 'login' ? 'SIGN IN' : 'CREATE ACCOUNT';
+      document.getElementById('auth-error').innerText = '';
+    }
+    function submitAuth() {
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      if (!email || !password) { document.getElementById('auth-error').innerText = 'Fill in all fields.'; return; }
+      handleAuth(email, password, currentTab === 'login' ? 'login' : 'signup');
+    }
+  </script>
+</body>
+</html>

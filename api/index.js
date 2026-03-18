@@ -46,6 +46,19 @@ app.get("/api/info", async (req, res) => {
   } catch (err) { res.status(500).json({ error: "Failed" }); }
 });
 
+app.get("/api/random", async (req, res) => {
+  try {
+    const keywords = ["english", "uncensored", "schoolgirl", "milf", "fantasy"];
+    const randKey = keywords[Math.floor(Math.random() * keywords.length)];
+    const randPage = Math.floor(Math.random() * 5) + 1;
+    const res2 = await axios.get(`${JANDA_BASE}/${PROVIDER}/search?key=${randKey}&page=${randPage}`);
+    const results = res2.data.data || [];
+    if (results.length === 0) return res.status(404).json({ error: "No results" });
+    const pick = results[Math.floor(Math.random() * results.length)];
+    res.json({ id: pick.id || pick.code, cover: pick.image || pick.cover });
+  } catch (err) { res.status(500).json({ error: "Failed" }); }
+});
+
 app.get("/api/proxy", async (req, res) => {
   try {
     const targetUrl = req.query.url;
