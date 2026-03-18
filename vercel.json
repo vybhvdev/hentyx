@@ -3,8 +3,5 @@
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index.js" }
   ],
-  "routes": [
-    { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/404.html", "status": 404 }
-  ]
+  "cleanUrls": true
 }
