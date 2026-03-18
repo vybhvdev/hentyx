@@ -88,7 +88,7 @@
             const res = await fetch('/api/popular');
             const data = await res.json();
             document.getElementById('popularGrid').innerHTML = data.map(m => `
-                <a href="gallery.html?id=${m.id}" class="pop-card"><img src="${proxy(m.cover)}"></a>
+                <a href="gallery.html?id=${m.id}&cover=${encodeURIComponent(m.cover)}" class="pop-card"><img src="${proxy(m.cover)}"></a>
             `).join('');
         }
 
@@ -99,7 +99,7 @@
                 const res = await fetch(`/api/galleries?q=${encodeURIComponent(query || "new")}&p=${page}`);
                 const data = await res.json();
                 grid.innerHTML = data.map(item => `
-                    <a href="gallery.html?id=${item.id}" class="card">
+                    <a href="gallery.html?id=${item.id}&cover=${encodeURIComponent(item.cover)}" class="card">
                         <div class="cover-wrap">
                             <img src="${proxy(item.cover)}" loading="lazy">
                             <div class="lang-badge">${item.lang}</div>

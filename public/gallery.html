@@ -94,7 +94,7 @@
                 document.getElementById('pageCountLabel').innerText = allPages.length;
                 
                 // Use the working cover passed from homepage, with a proxy fallback just in case
-                document.getElementById('coverImg').src = passedCover || proxy(data.cover);
+                document.getElementById('coverImg').src = passedCover ? proxy(passedCover) : proxy(data.cover);
                 
                 document.getElementById('readLink').href = `reader.html?id=${id}`;
                 document.getElementById('dlBtn').onclick = () => window.location.href = `/api/download?id=${id}&title=${encodeURIComponent(data.title)}`;
