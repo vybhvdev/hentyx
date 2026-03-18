@@ -3,145 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hentyx - Gallery</title>
+    <title>Hentyx Gallery</title>
     <style>
-        :root { --bg: #121212; --surface: #1e1e1e; --accent: #ed2553; --text: #e5e5e5; }
-        body { margin: 0; background: var(--bg); color: var(--text); font-family: sans-serif; }
-        header { background: #000; padding: 12px; border-bottom: 1px solid var(--accent); position: sticky; top: 0; z-index: 100; display: flex; justify-content: center; }
-        .brand { font-size: 22px; font-weight: 900; color: var(--accent); text-decoration: none; }
+        :root { --bg: #121212; --accent: #ed2553; }
+        body { background: var(--bg); color: #e5e5e5; margin: 0; font-family: sans-serif; }
+        header { background: #000; padding: 15px; border-bottom: 1px solid var(--accent); text-align: center; }
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
         
-        .container { max-width: 900px; margin: 0 auto; padding: 15px; }
-        
-        /* 2-COLUMN INFO GRID */
-        .info-grid { display: grid; grid-template-columns: 140px 1fr; gap: 15px; margin-bottom: 20px; }
-        .cover-box img { width: 100%; border-radius: 3px; border: 1px solid #333; }
-        .details { display: flex; flex-direction: column; justify-content: flex-start; text-align: left; }
-        .title { font-size: 1.1rem; margin: 0 0 10px 0; line-height: 1.2; color: #fff; font-weight: bold; }
-        .meta { font-size: 12px; color: #888; margin-bottom: 8px; }
+        .cover-main { width: 100%; max-width: 350px; margin: 0 auto 20px; display: block; border-radius: 4px; border: 1px solid #333; }
+        .title { font-size: 1.3rem; text-align: center; margin-bottom: 10px; color: #fff; }
+        .meta { text-align: center; font-size: 13px; color: #888; margin-bottom: 20px; }
         .accent { color: var(--accent); font-weight: bold; }
-
-        .tag-group { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
-        .tag { background: #222; color: #ccc; padding: 4px 8px; border-radius: 3px; font-size: 11px; text-decoration: none; border: 1px solid #333; }
         
-        .btn-row { margin-top: 20px; width: 100%; }
-        .read-btn { display: block; background: var(--accent); color: #fff; padding: 12px; border-radius: 4px; text-decoration: none; font-weight: bold; text-align: center; text-transform: uppercase; font-size: 14px; }
-
-        /* PREVIEW SECTION */
-        .section-box { width: 100%; margin-top: 30px; border-top: 1px solid #222; padding-top: 15px; }
-        .section-title { font-size: 13px; font-weight: bold; margin-bottom: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+        .tag-group { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 30px; }
+        .tag { background: #1e1e1e; padding: 6px 12px; border-radius: 4px; font-size: 12px; border: 1px solid #333; color: #ccc; text-decoration: none; }
         
-        /* 2-COLUMN HORIZONTAL PREVIEW GRID */
+        .action-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 40px; }
+        .btn { padding: 15px; border-radius: 4px; text-decoration: none; font-weight: bold; text-align: center; text-transform: uppercase; font-size: 14px; border: none; cursor: pointer; }
+        .read-btn { background: var(--accent); color: #fff; }
+        .dl-btn { background: #333; color: #fff; border: 1px solid #444; }
+
         .preview-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-        .thumb-card { background: #000; border: 1px solid #222; position: relative; padding-top: 140%; overflow: hidden; border-radius: 2px; }
-        .thumb-card img { position: absolute; top:0; left:0; width:100%; height:100%; object-fit: cover; }
+        .thumb { background: #000; position: relative; padding-top: 140%; border: 1px solid #222; overflow: hidden; }
+        .thumb img { position: absolute; top:0; left:0; width:100%; height:100%; object-fit: cover; }
         
-        .load-more { width: 100%; padding: 12px; background: #222; border: 1px solid #333; color: var(--accent); font-weight: bold; margin-top: 15px; cursor: pointer; border-radius: 4px; }
-
-        /* RELATED SECTION (nhentai look) */
-        .related-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-        .rel-card { background: #000; border: 1px solid #222; position: relative; padding-top: 140%; text-decoration: none; }
-        .rel-card img { position: absolute; top:0; left:0; width:100%; height:100%; object-fit: cover; }
-
-        #loading { text-align: center; padding: 50px; color: var(--accent); font-family: monospace; font-size: 12px; }
+        .load-more { width: 100%; padding: 15px; background: #222; color: var(--accent); border: 1px solid #333; margin-top: 20px; font-weight: bold; cursor: pointer; border-radius: 4px; }
     </style>
 </head>
 <body>
-    <header><a href="index.html" class="brand">HENTY<span style="color:#fff">X</span></a></header>
-    
-    <div id="loading">LOADING CONTENT...</div>
-
-    <div class="container" id="content" style="display: none;">
-        <div class="info-grid">
-            <div class="cover-box"><img id="coverImg" src=""></div>
-            <div class="details">
-                <h1 class="title" id="mangaTitle"></h1>
-                <div class="meta">ID: <span class="accent" id="mangaIdLabel"></span></div>
-                <div class="meta">Pages: <span class="accent" id="pageCountLabel"></span></div>
-                <div class="tag-group" id="genresList"></div>
-            </div>
-        </div>
+    <header><a href="index.html" style="color:var(--accent); text-decoration:none; font-weight:900; font-size:24px;">HENTY<span style="color:#fff">X</span></a></header>
+    <div class="container" id="main" style="display:none;">
+        <img id="cover" class="cover-main">
+        <h1 id="title" class="title"></h1>
+        <div class="meta">ID: <span class="accent" id="mid"></span> | <span class="accent" id="pcnt"></span> Pages</div>
+        <div id="tags" class="tag-group"></div>
         
-        <div class="btn-row">
-            <a href="#" id="readLink" class="read-btn">Read Now</a>
+        <div class="action-btns">
+            <a id="read" class="btn read-btn">Read Now</a>
+            <button id="dl" class="btn dl-btn">Download ZIP</button>
         </div>
 
-        <div class="section-box">
-            <div class="section-title">Previews</div>
-            <div class="preview-grid" id="previewGrid"></div>
-            <button id="loadMoreBtn" class="load-more" onclick="renderNextBatch()">Load More Pages</button>
-        </div>
-
-        <div class="section-box" style="margin-bottom: 50px;">
-            <div class="section-title">Related Galleries</div>
-            <div class="related-grid" id="relatedGrid"></div>
-        </div>
+        <div style="font-size:12px; color:#888; text-transform:uppercase; margin-bottom:15px;">Previews</div>
+        <div id="previews" class="preview-grid"></div>
+        <button id="more" class="load-more" onclick="render()">Load More</button>
     </div>
 
     <script>
-        const params = new URLSearchParams(location.search);
-        const mangaId = params.get("id");
-        let allPages = [];
-        let loadedCount = 0;
+        const id = new URLSearchParams(location.search).get("id");
+        let allPages = [], loaded = 0;
 
-        async function load() {
-            try {
-                const res = await fetch(`/api/info?id=${mangaId}`);
-                const data = await res.json();
-                
-                // NO-REPEAT FIX
-                allPages = (data.pages && data.pages.length > 0) ? data.pages : (Array.isArray(data.cover) ? data.cover : []);
-                
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('content').style.display = 'block';
-                
-                document.getElementById('mangaTitle').innerText = data.title;
-                document.getElementById('mangaIdLabel').innerText = data.id;
-                document.getElementById('pageCountLabel').innerText = allPages.length;
-                document.getElementById('coverImg').src = `/api/proxy?url=${encodeURIComponent(data.cover)}`;
-                document.getElementById('readLink').href = `reader.html?id=${mangaId}`;
-
-                // Tags
-                document.getElementById('genresList').innerHTML = (data.tags || []).map(t => 
-                    `<a href="index.html?q=${encodeURIComponent(t.name || t)}" class="tag">${t.name || t}</a>`
-                ).join('');
-
-                renderNextBatch();
-                loadRelated(data.tags && data.tags[0] ? (data.tags[0].name || data.tags[0]) : "milf");
-
-            } catch (e) { document.getElementById('loading').innerText = "LINK FAILED."; }
-        }
-
-        function renderNextBatch() {
-            const grid = document.getElementById('previewGrid');
-            const batchSize = 10;
-            const nextBatch = allPages.slice(loadedCount, loadedCount + batchSize);
+        async function init() {
+            const res = await fetch(`/api/info?id=${id}`);
+            const data = await res.json();
+            allPages = data.pages;
             
-            nextBatch.forEach((url, i) => {
-                const card = document.createElement('div');
-                card.className = 'thumb-card';
-                card.innerHTML = `<img src="/api/proxy?url=${encodeURIComponent(url)}" loading="lazy">`;
-                grid.appendChild(card);
+            document.getElementById('main').style.display = 'block';
+            document.getElementById('cover').src = `/api/proxy?url=${encodeURIComponent(data.cover)}`;
+            document.getElementById('title').innerText = data.title;
+            document.getElementById('mid').innerText = data.id;
+            document.getElementById('pcnt').innerText = allPages.length;
+            document.getElementById('read').href = `reader.html?id=${id}`;
+            document.getElementById('dl').onclick = () => window.location.href = `/api/download?id=${id}&title=${encodeURIComponent(data.title)}`;
+            
+            document.getElementById('tags').innerHTML = data.tags.map(t => `<a href="index.html?q=${encodeURIComponent(t.name||t)}" class="tag">${t.name||t}</a>`).join('');
+            render();
+        }
+
+        function render() {
+            const grid = document.getElementById('previews');
+            const batch = allPages.slice(loaded, loaded + 10);
+            batch.forEach((url, i) => {
+                const idx = loaded + i;
+                const div = document.createElement('a');
+                div.href = `reader.html?id=${id}&p=${idx}`;
+                div.className = 'thumb';
+                div.innerHTML = `<img src="/api/proxy?url=${encodeURIComponent(url)}" loading="lazy">`;
+                grid.appendChild(div);
             });
-
-            loadedCount += batchSize;
-            if (loadedCount >= allPages.length) document.getElementById('loadMoreBtn').style.display = 'none';
+            loaded += 10;
+            if (loaded >= allPages.length) document.getElementById('more').style.display = 'none';
         }
-
-        async function loadRelated(tag) {
-            try {
-                const res = await fetch(`/api/galleries?q=${encodeURIComponent(tag)}`);
-                const data = await res.json();
-                const relatedGrid = document.getElementById('relatedGrid');
-                // Show 6 related items
-                relatedGrid.innerHTML = data.slice(0, 6).map(item => `
-                    <a href="gallery.html?id=${item.id}" class="rel-card">
-                        <img src="${item.cover}" loading="lazy">
-                    </a>
-                `).join('');
-            } catch(e) {}
-        }
-
-        load();
+        init();
     </script>
 </body>
 </html>
