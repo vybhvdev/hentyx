@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hentyx</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --bg: #0a0a0a; --surface: #161616; --accent: #ed2553; --text: #e5e5e5; }
         body { margin: 0; background: var(--bg); color: var(--text); font-family: sans-serif; overflow-x: hidden; }
@@ -43,7 +42,6 @@
         <div class="drawer-header">HENTY<span style="color:#fff">X</span></div>
         <a href="index.html" class="drawer-item">🏠 Home</a>
         <div class="drawer-item" onclick="goTrueRandom()">🎲 Random Gallery</div>
-        <div class="drawer-item" id="authBtn" onclick="handleAuth()">🔑 Login / Sign Up</div>
     </div>
     <header>
         <button class="menu-btn" onclick="toggleDrawer()">☰</button>
@@ -57,7 +55,7 @@
         <div class="section-title">🔥 Popular</div>
         <div class="popular-grid" id="popularGrid"></div>
         <div class="section-title" id="gridTitle">Recent Uploads</div>
-        <div id="recent" class="grid"></div>
+        <div id="grid" class="grid"></div>
         <div class="pagination">
             <button class="page-btn" id="prevBtn" onclick="changePage(-1)">PREV</button>
             <span id="pageLabel">Page 1</span>
@@ -65,33 +63,12 @@
         </div>
     </div>
     <script>
-        let currentPage = 1, currentQuery = "", supabase = null;
+        let currentPage = 1, currentQuery = "";
         const proxy = (url) => `/api/proxy?url=${encodeURIComponent(url)}`;
 
         function toggleDrawer() {
             document.getElementById('drawer').classList.toggle('open');
             document.getElementById('overlay').classList.toggle('active');
-        }
-
-        async function initAuth() {
-            try {
-                const res = await fetch("/api/config");
-                const config = await res.json();
-                if (config.supabaseUrl && config.supabaseKey) {
-                    supabase = window.supabase.createClient(config.supabaseUrl, config.supabaseKey);
-                    const { data: { session } } = await supabase.auth.getSession();
-                    if (session) {
-                        document.getElementById("authBtn").innerText = "🚪 Logout (" + session.user.email.split("@")[0] + ")";
-                    }
-                }
-            } catch(e) { console.error("Auth Error"); }
-        }
-
-        async function handleAuth() {
-            if (!supabase) return window.location.href = "login.html";
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) { await supabase.auth.signOut(); location.reload(); }
-            else { window.location.href = "login.html"; }
         }
 
         async function loadPopular() {
@@ -105,7 +82,7 @@
         }
 
         async function loadGalleries(query = "", page = 1) {
-            const grid = document.getElementById('recent');
+            const grid = document.getElementById('grid');
             grid.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 50px;">LOADING...</div>';
             try {
                 const res = await fetch(`/api/galleries?q=${encodeURIComponent(query || "new")}&p=${page}`);
@@ -126,7 +103,6 @@
         async function goTrueRandom() { const res = await fetch('/api/random'); const data = await res.json(); window.location.href = `gallery.html?id=${data.id}`; }
 
         window.onload = () => {
-            initAuth();
             loadPopular();
             loadGalleries();
         };

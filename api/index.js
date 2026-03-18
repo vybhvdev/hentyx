@@ -1,4 +1,3 @@
-require("dotenv").config();
 const express = require("express");
 const axios = require("axios");
 const cors = require("cors");
@@ -10,13 +9,6 @@ app.use(cors());
 const JANDA_BASE = "https://jandapress.onrender.com";
 const PROVIDER = "pururin";
 const headers = { "Referer": "https://pururin.to/", "User-Agent": "Mozilla/5.0" };
-
-app.get("/api/config", (req, res) => {
-  res.json({
-    supabaseUrl: process.env.SUPABASE_URL || "",
-    supabaseKey: process.env.SUPABASE_KEY || ""
-  });
-});
 
 app.get("/api/galleries", async (req, res) => {
   try {
