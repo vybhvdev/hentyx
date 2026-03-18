@@ -63,6 +63,10 @@
                 pages = (data.pages && data.pages.length > 0) ? data.pages : (Array.isArray(data.cover) ? data.cover : []);
                 
                 if (pages.length > 0) {
+                    trackHistory({ id, title: data.title, cover: data.cover });
+                    // Store cover for history page fallback
+                    const pc = new URLSearchParams(location.search).get("cover");
+                    if (pc) localStorage.setItem("cover_" + id, pc);
                     document.getElementById("loading-overlay").remove();
                     updateDisplay();
                 } else {

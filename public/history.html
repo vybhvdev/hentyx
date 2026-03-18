@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>History - Hentyx</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js"></script>
+  <style>
+    :root { --bg: #0a0a0a; --surface: #161616; --accent: #ed2553; --text: #e5e5e5; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: sans-serif; }
+    header { background: #000; padding: 12px 15px; border-bottom: 1px solid var(--accent); display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; }
+    .back { color: var(--accent); text-decoration: none; font-size: 20px; }
+    .brand { font-size: 20px; font-weight: 900; color: var(--accent); flex: 1; text-align: center; }
+    .clear-btn { background: none; border: 1px solid #333; color: #666; padding: 6px 12px; border-radius: 4px; font-size: 11px; cursor: pointer; }
+    .clear-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .container { max-width: 1200px; margin: 0 auto; padding: 15px; }
+    .section-label { font-size: 11px; text-transform: uppercase; color: #555; letter-spacing: 2px; margin: 10px 0 15px; border-left: 3px solid var(--accent); padding-left: 10px; }
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    @media (min-width: 600px) { .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); } }
+    .card { background: var(--surface); border-radius: 4px; overflow: hidden; text-decoration: none; color: inherit; border: 1px solid #1a1a1a; position: relative; }
+    .cover-wrap { position: relative; padding-top: 140%; background: #000; cursor: pointer; }
+    .card img { position: absolute; top:0; left:0; width:100%; height:100%; object-fit: cover; }
+    .card-title { padding: 8px; font-size: 10px; line-height: 1.2; height: 28px; overflow: hidden; text-align: center; color: #bbb; }
+    .time-badge { position: absolute; bottom: 5px; left: 5px; background: rgba(0,0,0,0.85); color: #888; font-size: 9px; padding: 3px 6px; border-radius: 3px; }
+    .remove-btn { position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.8); border: none; color: #ed2553; border-radius: 50%; width: 26px; height: 26px; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; }
+    .status { text-align: center; padding: 60px 20px; color: #444; font-size: 14px; }
+    .login-prompt { text-align: center; padding: 60px 20px; }
+    .login-prompt a { color: var(--accent); font-weight: bold; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="index.html" class="back">←</a>
+    <span class="brand">HENTY<span style="color:#fff">X</span></span>
+    <button class="clear-btn" onclick="clearAll()">Clear All</button>
+  </header>
+  <div class="container">
+    <div class="section-label">📖 Recently Read</div>
+    <div id="content"></div>
+  </div>
+  <script>
+    const proxy = url => `/api/proxy?url=${encodeURIComponent(url)}`;
+
+    function timeAgo(iso) {
+      const diff = Date.now() - new Date(iso).getTime();
+      const m = Math.floor(diff / 60000);
+      if (m < 1) return 'just now';
+      if (m < 60) return `${m}m ago`;
+      const h = Math.floor(m / 60);
+      if (h < 24) return `${h}h ago`;
+      return `${Math.floor(h / 24)}d ago`;
+    }
+
+    async function removeEntry(mangaId, el) {
+      const sb = getSupabase();
+      const { data: { user } } = await sb.auth.getUser();
+      await sb.from('history').delete().eq('user_id', user.id).eq('manga_id', String(mangaId));
+      el.closest('.card').remove();
+      if (!document.querySelector('.card')) {
+        document.getElementById('content').innerHTML = '<div class="status">No history yet.</div>';
+      }
+    }
+
+    async function clearAll() {
+      if (!confirm('Clear all reading history?')) return;
+      const sb = getSupabase();
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) return;
+      await sb.from('history').delete().eq('user_id', user.id);
+      document.getElementById('content').innerHTML = '<div class="status">History cleared.</div>';
+    }
+
+    async function loadHistory() {
+      const user = await getUser();
+      if (!user) {
+        document.getElementById('content').innerHTML = `
+          <div class="login-prompt">
+            <p style="color:#666; margin-bottom:15px;">Sign in to see your reading history</p>
+            <a href="auth.html">SIGN IN →</a>
+          </div>`;
+        return;
+      }
+      const sb = getSupabase();
+      const { data } = await sb.from('history').select('*').eq('user_id', user.id).order('viewed_at', { ascending: false }).limit(100);
+      if (!data || data.length === 0) {
+        document.getElementById('content').innerHTML = '<div class="status">No history yet. Start reading!</div>';
+        return;
+      }
+      document.getElementById('content').innerHTML = `<div class="grid">${data.map(b => `
+        <div class="card">
+          <div class="cover-wrap" onclick="location.href='gallery.html?id=${b.manga_id}&cover=${encodeURIComponent(b.cover)}'">
+            <img src="${proxy(b.cover)}" loading="lazy">
+            <button class="remove-btn" onclick="event.stopPropagation(); removeEntry('${b.manga_id}', this)">✕</button>
+            <span class="time-badge">${timeAgo(b.viewed_at)}</span>
+          </div>
+          <div class="card-title">${b.title}</div>
+        </div>`).join('')}</div>`;
+    }
+
+    loadHistory();
+  </script>
+</body>
+</html>

@@ -1,22 +1,66 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <link rel="stylesheet" href="style.css">
-    <title>Tags - Hentyx</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="/auth.js"></script></head>
-<body style="background:#1a1a1a; color:white; font-family:sans-serif;">
-    <header style="background:#222; padding:15px; border-bottom:2px solid #ed2553;">
-        <a href="/" style="color:#ed2553; text-decoration:none; font-weight:bold; font-size:20px;">HENTYX TAGS</a>
-    </header>
-    <div class="container" id="tagCloud" style="display:flex; flex-wrap:wrap; gap:10px; padding:20px;"></div>
-    <script>
-        fetch('/api/galleries').then(r=>r.json()).then(data=>{
-            const tags = [...new Set(data.items.flatMap(g => g.tags))].sort();
-            document.getElementById('tagCloud').innerHTML = tags.map(t => 
-                `<a href="/index.html?q=${t}" style="background:#333; color:#ccc; padding:8px 15px; border-radius:3px; text-decoration:none; font-size:14px;">${t}</a>`
-            ).join('');
-        });
-    </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tags - Hentyx</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js"></script>
+  <style>
+    :root { --bg: #0a0a0a; --surface: #161616; --accent: #ed2553; --text: #e5e5e5; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: sans-serif; }
+    header { background: #000; padding: 12px 15px; border-bottom: 1px solid var(--accent); display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; }
+    .back { color: var(--accent); text-decoration: none; font-size: 20px; }
+    .brand { font-size: 20px; font-weight: 900; color: var(--accent); flex: 1; text-align: center; margin-right: 32px; }
+    .search-row { padding: 10px 15px; background: #000; display: flex; gap: 8px; border-bottom: 1px solid #1a1a1a; }
+    input { flex: 1; padding: 10px; background: #1a1a1a; border: 1px solid #2a2a2a; color: #fff; border-radius: 4px; outline: none; font-size: 14px; }
+    input:focus { border-color: var(--accent); }
+    .container { max-width: 900px; margin: 0 auto; padding: 20px 15px; }
+    .section-label { font-size: 11px; text-transform: uppercase; color: #555; letter-spacing: 2px; margin-bottom: 15px; border-left: 3px solid var(--accent); padding-left: 10px; }
+    .tag-cloud { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tag { background: var(--surface); color: #ccc; padding: 8px 14px; border-radius: 4px; font-size: 12px; text-decoration: none; border: 1px solid #222; transition: 0.15s; display: flex; align-items: center; gap: 6px; }
+    .tag:hover { background: #1f0a10; border-color: var(--accent); color: var(--accent); }
+    .tag-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); opacity: 0.5; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="index.html" class="back">←</a>
+    <span class="brand">HENTY<span style="color:#fff">X</span></span>
+  </header>
+  <div class="search-row">
+    <input type="text" id="filterInput" placeholder="Filter tags..." oninput="filterTags()">
+  </div>
+  <div class="container">
+    <div class="section-label">Browse by Tag</div>
+    <div class="tag-cloud" id="tagCloud"></div>
+  </div>
+  <script>
+    let allTags = [];
+
+    async function loadTags() {
+      const res = await fetch('/api/tags');
+      allTags = await res.json();
+      renderTags(allTags);
+    }
+
+    function renderTags(tags) {
+      document.getElementById('tagCloud').innerHTML = tags.map(t => `
+        <a href="index.html?q=${encodeURIComponent(t.name)}" class="tag">
+          <span class="tag-dot"></span>${t.name}
+        </a>
+      `).join('');
+    }
+
+    function filterTags() {
+      const q = document.getElementById('filterInput').value.toLowerCase();
+      const filtered = allTags.filter(t => t.name.includes(q));
+      renderTags(filtered);
+    }
+
+    loadTags();
+  </script>
 </body>
 </html>

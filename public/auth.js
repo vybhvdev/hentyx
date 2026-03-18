@@ -67,3 +67,16 @@ async function isBookmarked(mangaId) {
     .select('id').eq('user_id', user.id).eq('manga_id', String(mangaId));
   return data && data.length > 0;
 }
+
+async function trackHistory(manga) {
+  const sb = getSupabase();
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return;
+  await sb.from('history').upsert({
+    user_id: user.id,
+    manga_id: String(manga.id),
+    title: manga.title,
+    cover: manga.cover,
+    viewed_at: new Date().toISOString()
+  }, { onConflict: 'user_id,manga_id' });
+}
