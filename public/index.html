@@ -7,109 +7,86 @@
     <style>
         :root { --bg: #1f1f1f; --surface: #2f2f2f; --primary: #ed2553; --text: #f3f3f3; --text-muted: #9e9e9e; }
         body { margin: 0; padding: 0; background-color: var(--bg); color: var(--text); font-family: sans-serif; }
-        
         header { background-color: #111; padding: 15px 20px; border-bottom: 2px solid var(--primary); display: flex; flex-wrap: wrap; gap: 15px; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
         .brand { font-size: 24px; font-weight: bold; color: var(--primary); text-transform: uppercase; text-decoration: none; letter-spacing: 1px; }
-        
         .search-bar { display: flex; flex: 1; max-width: 600px; min-width: 250px; }
         input { flex: 1; padding: 10px 15px; background: #222; border: 1px solid #333; color: white; border-radius: 4px 0 0 4px; outline: none; font-size: 1rem; }
-        input:focus { border-color: var(--primary); }
-        button { padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 0 4px 4px 0; cursor: pointer; font-weight: bold; font-size: 1rem; }
-        button:hover { background: #d11f46; }
-
+        button { padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 0 4px 4px 0; cursor: pointer; font-weight: bold; }
         .container { max-width: 1200px; margin: 0 auto; padding: 15px; }
-        .section-title { font-size: 1.5rem; margin-bottom: 20px; font-weight: normal; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        
-        /* Desktop/Tablet Grid */
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
-        
-        /* THE MOBILE GRID FIX: Force 2 columns on small screens */
-        @media (max-width: 480px) {
-            .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-            .container { padding: 10px; }
-            .card-title { font-size: 0.75rem; padding: 6px; }
-        }
-
-        .card { background: var(--surface); border-radius: 4px; overflow: hidden; text-decoration: none; color: white; transition: transform 0.2s; display: flex; flex-direction: column; position: relative; }
-        .card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.5); border: 1px solid var(--primary); }
-        
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .card { background: var(--surface); border-radius: 4px; overflow: hidden; text-decoration: none; color: white; display: flex; flex-direction: column; }
         .cover-wrapper { position: relative; padding-top: 140%; background: #222; }
         .card img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
-        
-        .card-title { padding: 8px; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: var(--surface); text-align: center; }
-        
-        #loading { text-align: center; padding: 50px; color: var(--text-muted); font-size: 1.2rem; }
+        .card-title { padding: 8px; font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
+        #loading { text-align: center; padding: 50px; color: var(--text-muted); }
     </style>
 </head>
 <body>
     <header>
         <a href="index.html" class="brand">Hentyx</a>
         <div class="search-bar">
-            <input type="text" id="searchInput" placeholder="Search galleries...">
+            <input type="text" id="searchInput" placeholder="Search...">
             <button onclick="triggerSearch()">SEARCH</button>
         </div>
     </header>
 
     <div class="container">
-        <h2 class="section-title" id="pageTitle">Recent Uploads</h2>
+        <h2 id="pageTitle">Recent Uploads</h2>
         <div id="loading">Loading...</div>
-        <div class="grid" id="grid"></div>
+        <div id="grid" class="grid"></div>
+        <div id="debug" style="font-family: monospace; font-size: 10px; color: #555; margin-top: 20px; word-break: break-all;"></div>
     </div>
 
     <script>
-        document.getElementById("searchInput").addEventListener("keypress", function(event) {
-            if (event.key === "Enter") {
-                event.preventDefault();
-                triggerSearch();
-            }
-        });
-
         function triggerSearch() {
-            const query = document.getElementById('searchInput').value.trim();
-            if(query) {
-                document.getElementById('pageTitle').innerText = `Search Results for "${query}"`;
-            } else {
-                document.getElementById('pageTitle').innerText = "Recent Uploads";
-            }
-            loadGalleries(query);
+            loadGalleries(document.getElementById('searchInput').value.trim());
         }
 
         async function loadGalleries(query = "") {
             const grid = document.getElementById('grid');
+            const debug = document.getElementById('debug');
             const loading = document.getElementById('loading');
             
             grid.innerHTML = '';
             loading.style.display = 'block';
+            debug.innerText = "Initiating fetch...";
 
             try {
                 const apiQuery = query || "english";
                 const response = await fetch(`/api/galleries?q=${encodeURIComponent(apiQuery)}`);
-                const data = await response.json();
                 
+                if (!response.ok) {
+                    throw new Error(`HTTP Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                debug.innerText = "Data received: " + JSON.stringify(data).substring(0, 200) + "...";
+
                 loading.style.display = 'none';
 
                 if (!data || data.length === 0 || data.error) {
-                    grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 50px;">No results found.</div>`;
+                    grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center;">No results found. Check Debug below.</div>`;
                     return;
                 }
 
                 data.forEach(item => {
                     const card = document.createElement('a');
-                    // Passing the cover perfectly
-                    card.href = `gallery.html?id=${item.id}&cover=${encodeURIComponent(item.cover)}`; 
+                    // We check if it's 'id' or 'code' based on Jandapress docs
+                    const id = item.id || item.code; 
+                    card.href = `gallery.html?id=${id}&cover=${encodeURIComponent(item.cover)}`;
                     card.className = 'card';
                     card.innerHTML = `
-                        <div class="cover-wrapper"><img src="${item.cover}" loading="lazy" alt="cover"></div>
+                        <div class="cover-wrapper"><img src="${item.cover}" loading="lazy"></div>
                         <div class="card-title">${item.title}</div>
                     `;
                     grid.appendChild(card);
                 });
             } catch (err) {
                 loading.style.display = 'none';
-                grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: #ed2553; padding: 50px;">API Error.</div>`;
+                debug.innerText = "FETCH FAILED: " + err.message;
+                grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: #ed2553;">Connection Error.</div>`;
             }
         }
-        
         loadGalleries();
     </script>
 </body>
