@@ -9,16 +9,13 @@
         .page-wrap { width:100%; max-width:800px; margin-bottom:5px; }
         img { width:100%; display:block; min-height:300px; background:#111; }
         .nav-bar { position:fixed; top:0; width:100%; background:rgba(0,0,0,0.8); padding:15px; display: flex; justify-content: space-between; z-index:10; border-bottom: 2px solid #ed2553; box-sizing: border-box; }
-        .btn { color:white; text-decoration:none; font-weight:bold; padding:10px 15px; background:#333; border-radius:4px; text-transform: uppercase; font-size: 0.9rem; border: 1px solid #444; cursor: pointer; text-align: center; }
-        .btn:hover { background: #ed2553; border-color: #ed2553; }
-        .btn-primary { background: var(--primary); color: white; border-color: var(--primary); }
-        .nav-bottom { margin: 30px 0 50px 0; display: flex; gap: 15px; width: 100%; max-width: 800px; justify-content: space-between; padding: 0 10px; box-sizing: border-box; }
+        .btn { color:white; text-decoration:none; font-weight:bold; padding:8px 15px; background:#333; border-radius:4px; text-transform: uppercase; font-size: 0.9rem; border: 1px solid #444; }
         #loading { color: white; margin-top: 100px; font-size: 18px; }
     </style>
 </head>
 <body>
     <div class="nav-bar">
-        <a id="backBtn" href="javascript:history.back()" class="btn">← Back</a>
+        <a href="javascript:history.back()" class="btn">← Back</a>
         <a href="index.html" class="btn">Home</a>
     </div>
     
@@ -27,72 +24,33 @@
 
     <script>
         const params = new URLSearchParams(location.search);
-        const chapterId = params.get("chapterId");
-        const mangaId = params.get("mangaId");
-        const CONSUMET_BASE = "https://private-consumet-api.vercel.app/manga/mangapill";
-
-        // Fix the back button if they load the page directly
-        if(mangaId) {
-            document.getElementById("backBtn").href = `gallery.html?id=${encodeURIComponent(mangaId)}`;
-        }
+        const mangaId = params.get("id");
 
         async function loadManga() {
-            if (!chapterId) {
-                document.getElementById("loading").innerText = "No Chapter ID provided.";
-                return;
-            }
+            if (!mangaId) return;
 
             try {
-                const pagesRes = await fetch(`${CONSUMET_BASE}/read?chapterId=${encodeURIComponent(chapterId)}`);
-                const pagesData = await pagesRes.json();
-                const pages = Array.isArray(pagesData) ? pagesData : pagesData.pages || [];
-
+                // Fetch info from our backend which extracts all pages cleanly
+                const infoRes = await fetch(`/api/info?id=${encodeURIComponent(mangaId)}`);
+                const data = await infoRes.json();
+                
                 document.getElementById("loading").style.display = "none";
                 const container = document.getElementById("pages");
                 
-                container.innerHTML = pages.map(p => {
-                    const imgUrl = p.img || p.url;
-                    const proxyUrl = `/api/proxy?url=${encodeURIComponent(imgUrl)}`;
-                    return `
-                    <div class="page-wrap">
-                        <img src="${proxyUrl}" loading="lazy" alt="manga page" onerror="this.src='${imgUrl}'">
-                    </div>`;
-                }).join('');
-
-                // LOAD NAVIGATION BUTTONS
-                if (mangaId) {
-                    const infoRes = await fetch(`${CONSUMET_BASE}/info?id=${encodeURIComponent(mangaId)}`);
-                    const infoData = await infoRes.json();
-                    const chapters = infoData.chapters || [];
-                    
-                    const currentIndex = chapters.findIndex(c => c.id === chapterId);
-                    if (currentIndex !== -1) {
-                        // Consumet sorts newest to oldest. 
-                        // So Previous Chapter (older story-wise) is +1 in the array.
-                        // Next Chapter (newer story-wise) is -1 in the array.
-                        const nextCh = chapters[currentIndex - 1]; 
-                        const prevCh = chapters[currentIndex + 1]; 
-                        
-                        let navHtml = '<div class="nav-bottom">';
-                        
-                        if (prevCh) {
-                            navHtml += `<a href="reader.html?mangaId=${encodeURIComponent(mangaId)}&chapterId=${encodeURIComponent(prevCh.id)}" class="btn" style="flex:1;">← Prev Chapter</a>`;
-                        } else {
-                            navHtml += `<div style="flex:1;"></div>`;
-                        }
-                        
-                        if (nextCh) {
-                            navHtml += `<a href="reader.html?mangaId=${encodeURIComponent(mangaId)}&chapterId=${encodeURIComponent(nextCh.id)}" class="btn" style="flex:1; background:#ed2553; margin-left:10px;">Next Chapter →</a>`;
-                        } else {
-                            navHtml += `<div style="flex:1;"></div>`;
-                        }
-                        
-                        navHtml += '</div>';
-                        container.innerHTML += navHtml;
-                    }
+                // Map the pages using the proxy
+                if(data.pages && data.pages.length > 0) {
+                    container.innerHTML = data.pages.map(p => {
+                        const imgUrl = p.img || p.url || p;
+                        const proxyUrl = `/api/proxy?url=${encodeURIComponent(imgUrl)}`;
+                        return `
+                        <div class="page-wrap">
+                            <img src="${proxyUrl}" loading="lazy" alt="doujinshi page">
+                        </div>`;
+                    }).join('');
+                } else {
+                    container.innerHTML = '<div style="color:white; margin-top:20px;">No pages found for this gallery.</div>';
                 }
             } catch (e) {
-                console.error("Reader failed:", e);
                 document.getElementById("loading").innerText = "Failed to load pages.";
             }
         }

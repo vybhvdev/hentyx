@@ -82,7 +82,7 @@
             loading.style.display = 'block';
 
             try {
-                const apiQuery = query || "manga";
+                const apiQuery = query || "english";
                 const response = await fetch(`/api/galleries?q=${encodeURIComponent(apiQuery)}`);
                 const data = await response.json();
                 

@@ -5,53 +5,80 @@ const app = express();
 
 app.use(cors());
 
-// 1. The Image Proxy (The "Mangyx" Secret)
+const CONSUMET_URL = "https://private-consumet-api.vercel.app/meta/nhentai";
+
+// 1. Image Proxy (Now bypassing nhentai.net)
 app.get("/api/proxy", async (req, res) => {
   try {
     const imageUrl = req.query.url;
-    if (!imageUrl) return res.status(400).send("No URL provided");
+    if (!imageUrl) return res.status(400).send("No URL");
 
-    // Fetch the image from Mangapill, pretending to BE Mangapill
     const response = await axios.get(imageUrl, {
-      responseType: "arraybuffer", // Tell axios we want raw image data
+      responseType: "arraybuffer",
       headers: {
-        "Referer": "https://mangapill.com/",
+        "Referer": "https://nhentai.net/",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
       },
       timeout: 10000
     });
 
-    // Send the raw image back to our grid
     res.setHeader("Content-Type", response.headers["content-type"]);
     res.send(response.data);
   } catch (err) {
-    console.error("Proxy Error:", err.message);
-    res.status(500).send("Failed to load image");
+    res.status(500).send("Proxy failed");
   }
 });
 
-// 2. The Mangapill Search API
+// 2. Search / Homepage Feed
 app.get("/api/galleries", async (req, res) => {
   try {
-    const query = req.query.q || "doujinshi"; 
-    
-    // The exact route your Mangyx site uses
-    const url = `https://private-consumet-api.vercel.app/manga/mangapill/${encodeURIComponent(query)}`;
+    const query = req.query.q || "english"; // Default to English doujins
+    const url = `${CONSUMET_URL}/${encodeURIComponent(query)}`;
     
     const response = await axios.get(url, { timeout: 10000 });
     const results = response.data.results || response.data || [];
     
-    const formatted = results.map(m => ({
-      id: m.id,
-      title: m.title,
-      // Pass the image URL through our new proxy!
-      cover: `/api/proxy?url=${encodeURIComponent(m.image)}`
-    }));
+    const formatted = results.map(m => {
+      // nhentai titles are often objects { english, native, romaji }
+      const titleStr = m.title.english || m.title.romaji || m.title || "Untitled";
+      return {
+        id: m.id,
+        title: titleStr,
+        cover: `/api/proxy?url=${encodeURIComponent(m.image || m.cover)}`
+      };
+    });
 
     res.json(formatted);
   } catch (err) {
-    console.error("Mangapill Error:", err.message);
-    res.status(500).json({ error: "Mangapill Error", message: err.message });
+    console.error("nhentai Search Error:", err.message);
+    res.status(500).json({ error: "API Error" });
+  }
+});
+
+// 3. Gallery Info & Pages
+app.get("/api/info", async (req, res) => {
+  try {
+    const id = req.query.id;
+    const url = `${CONSUMET_URL}/info/${id}`;
+    
+    const response = await axios.get(url, { timeout: 10000 });
+    const data = response.data;
+
+    // Consumet returns pages in different spots depending on the provider
+    let pages = [];
+    if (data.pages) pages = data.pages;
+    else if (data.chapters && data.chapters.length > 0 && data.chapters[0].pages) pages = data.chapters[0].pages;
+
+    res.json({
+      id: data.id,
+      title: data.title.english || data.title.romaji || data.title || "Untitled",
+      cover: data.image || data.cover,
+      tags: data.tags || data.genres || [],
+      pages: pages
+    });
+  } catch (err) {
+    console.error("nhentai Info Error:", err.message);
+    res.status(500).json({ error: "Info Error" });
   }
 });
 
