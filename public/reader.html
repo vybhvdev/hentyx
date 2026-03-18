@@ -2,41 +2,109 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Hentyx Reader</title>
     <style>
-        body { background:#000; margin:0; display:flex; flex-direction:column; align-items:center; font-family: sans-serif; }
-        .page-wrap { width:100%; max-width:900px; }
-        img { width:100%; display:block; min-height:400px; background:#0a0a0a; }
-        .nav-bar { position:fixed; top:0; width:100%; background:rgba(0,0,0,0.9); padding:12px; display: flex; justify-content: space-between; z-index:100; border-bottom: 1px solid #ff00ff; box-sizing: border-box; }
-        .btn { color:#ff00ff; text-decoration:none; font-weight:bold; padding:8px 12px; background:#111; border-radius:4px; font-size: 0.8rem; border: 1px solid #333; }
-        #loading { color: #ff00ff; margin-top: 100px; font-family: monospace; font-weight: bold; }
+        :root { --bg: #000; --accent: #ff00ff; }
+        body { background: var(--bg); margin: 0; padding: 0; font-family: sans-serif; overflow: hidden; height: 100vh; }
+        
+        /* NAV BAR */
+        .nav-bar { position: fixed; top: 0; width: 100%; background: rgba(0,0,0,0.8); padding: 10px; display: flex; justify-content: space-between; z-index: 100; border-bottom: 1px solid var(--accent); box-sizing: border-box; transition: 0.3s; }
+        .nav-bar.hidden { transform: translateY(-100%); }
+        .btn { color: var(--accent); text-decoration: none; font-weight: bold; padding: 8px 12px; background: #111; border-radius: 4px; font-size: 0.8rem; border: 1px solid #333; }
+
+        /* PAGINATED CONTAINER */
+        #viewer { width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; position: relative; }
+        .page-img { max-width: 100%; max-height: 100%; object-fit: contain; display: none; }
+        .page-img.active { display: block; }
+
+        /* TAP ZONES */
+        .tap-zone { position: absolute; top: 0; height: 100%; z-index: 50; }
+        #prev-zone { left: 0; width: 30%; }
+        #next-zone { right: 0; width: 70%; } /* Larger zone for easier "Next" */
+
+        /* FOOTER COUNTER */
+        .footer { position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.6); color: #fff; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; border: 1px solid var(--accent); z-index: 100; pointer-events: none; }
+        
+        #loading { color: var(--accent); font-family: monospace; font-weight: bold; text-align: center; margin-top: 45vh; }
     </style>
 </head>
 <body>
-    <div class="nav-bar"><a href="javascript:history.back()" class="btn">← BACK</a><a href="index.html" class="btn">HOME</a></div>
-    <div id="loading">LOADING...</div>
-    <div id="pages" style="margin-top:55px; width:100%; display:flex; flex-direction:column; align-items:center;"></div>
+    <div class="nav-bar" id="topNav">
+        <a href="javascript:history.back()" class="btn">← BACK</a>
+        <div id="title" style="font-size: 10px; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">Loading...</div>
+        <a href="index.html" class="btn">HOME</a>
+    </div>
+
+    <div id="loading">LOADING PAGES...</div>
+
+    <div id="viewer">
+        <div id="prev-zone" class="tap-zone" onclick="changePage(-1)"></div>
+        <div id="next-zone" class="tap-zone" onclick="changePage(1)"></div>
+        <div id="page-container"></div>
+    </div>
+
+    <div class="footer" id="pageCounter">0 / 0</div>
+
     <script>
+        let pages = [];
+        let currentIndex = 0;
+        const params = new URLSearchParams(location.search);
+        const mangaId = params.get("id");
+
         async function load() {
-            const id = new URLSearchParams(location.search).get("id");
             try {
-                const res = await fetch(`/api/info?id=${id}`);
+                const res = await fetch(`/api/info?id=${mangaId}`);
                 const data = await res.json();
-                
-                // WORKAROUND: If pages is empty, check if cover is the array instead
-                const finalPages = (data.pages && data.pages.length > 0) ? data.pages : (Array.isArray(data.cover) ? data.cover : []);
-                
-                if (finalPages.length > 0) {
+                pages = data.pages || (Array.isArray(data.cover) ? data.cover : []);
+                document.getElementById('title').innerText = data.title;
+
+                if (pages.length > 0) {
                     document.getElementById("loading").style.display = "none";
-                    document.getElementById("pages").innerHTML = finalPages.map(url => 
-                        `<div class="page-wrap"><img src="/api/proxy?url=${encodeURIComponent(url)}" loading="lazy"></div>`
+                    const container = document.getElementById("page-container");
+                    
+                    // Pre-render all images but hide them (Standard paginated logic)
+                    container.innerHTML = pages.map((url, i) => 
+                        `<img src="/api/proxy?url=${encodeURIComponent(url)}" class="page-img" id="p-${i}" loading="${i < 3 ? 'eager' : 'lazy'}">`
                     ).join('');
+                    
+                    updateDisplay();
                 } else {
                     document.getElementById("loading").innerText = "NO PAGES FOUND.";
                 }
             } catch (e) { document.getElementById("loading").innerText = "FETCH ERROR."; }
         }
+
+        function updateDisplay() {
+            // Hide all, show active
+            document.querySelectorAll('.page-img').forEach(img => img.classList.remove('active'));
+            document.getElementById(`p-${currentIndex}`).classList.add('active');
+            
+            // Update counter
+            document.getElementById('pageCounter').innerText = `${currentIndex + 1} / ${pages.length}`;
+            
+            // Hide UI after a delay for immersive reading
+            setTimeout(() => { document.getElementById('topNav').classList.add('hidden'); }, 3000);
+        }
+
+        function changePage(step) {
+            // Toggle UI visibility on tap
+            document.getElementById('topNav').classList.remove('hidden');
+
+            const next = currentIndex + step;
+            if (next >= 0 && next < pages.length) {
+                currentIndex = next;
+                updateDisplay();
+                window.scrollTo(0, 0);
+            }
+        }
+
+        // Keyboard support for desktop testing
+        document.addEventListener('keydown', (e) => {
+            if (e.key === "ArrowRight") changePage(1);
+            if (e.key === "ArrowLeft") changePage(-1);
+        });
+
         load();
     </script>
 </body>
