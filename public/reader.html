@@ -50,7 +50,7 @@
 
     <script>
         let pages = [];
-        let currentIndex = 0;
+        let currentIndex = parseInt(new URLSearchParams(location.search).get("p")) || 0;
         const params = new URLSearchParams(location.search);
         const id = params.get("id");
 
