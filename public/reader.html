@@ -6,47 +6,46 @@
     <title>Hentyx Reader</title>
     <style>
         body { background:#000; margin:0; display:flex; flex-direction:column; align-items:center; font-family: sans-serif; }
-        .page-wrap { width:100%; max-width:800px; margin-bottom:5px; }
-        img { width:100%; display:block; min-height:300px; background:#111; }
-        .nav-bar { position:fixed; top:0; width:100%; background:rgba(0,0,0,0.8); padding:15px; display: flex; justify-content: space-between; z-index:10; border-bottom: 2px solid #ed2553; box-sizing: border-box; }
-        .btn { color:white; text-decoration:none; font-weight:bold; padding:8px 15px; background:#333; border-radius:4px; text-transform: uppercase; font-size: 0.8rem; border: 1px solid #444; }
-        #loading { color: white; margin-top: 100px; font-size: 18px; }
+        .page-wrap { width:100%; max-width:900px; }
+        img { width:100%; display:block; min-height:400px; background:#0a0a0a; }
+        .nav-bar { position:fixed; top:0; width:100%; background:rgba(0,0,0,0.9); padding:12px; display: flex; justify-content: space-between; z-index:100; border-bottom: 1px solid #ff00ff; box-sizing: border-box; }
+        .btn { color:#ff00ff; text-decoration:none; font-weight:bold; padding:8px 12px; background:#111; border-radius:4px; font-size: 0.8rem; border: 1px solid #333; }
+        #loading { color: #ff00ff; margin-top: 100px; font-family: monospace; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="nav-bar">
-        <a href="javascript:history.back()" class="btn">← Back</a>
-        <a href="index.html" class="btn">Home</a>
+        <a href="javascript:history.back()" class="btn">← BACK</a>
+        <a href="index.html" class="btn">HOME</a>
     </div>
-    <div id="loading">Loading Gallery...</div>
-    <div id="pages" style="margin-top:70px; width: 100%; display: flex; flex-direction: column; align-items: center;"></div>
+    <div id="loading">LOADING PAGES...</div>
+    <div id="pages" style="margin-top:55px; width: 100%; display: flex; flex-direction: column; align-items: center;"></div>
 
     <script>
         const params = new URLSearchParams(location.search);
         const mangaId = params.get("id");
-
         async function loadManga() {
             if (!mangaId) return;
             try {
                 const res = await fetch(`/api/info?id=${encodeURIComponent(mangaId)}`);
                 const data = await res.json();
-                
                 document.getElementById("loading").style.display = "none";
                 const container = document.getElementById("pages");
                 
-                // Jandapress Pururin returns images in the 'pages' or 'reader' array
+                // Jandapress mapping fix
                 const pages = data.pages || [];
-                
                 if(pages.length > 0) {
                     container.innerHTML = pages.map(imgUrl => {
+                        // Ensure we use the proxy for every page to avoid 403 Forbidden
                         const proxyUrl = `/api/proxy?url=${encodeURIComponent(imgUrl)}`;
                         return `<div class="page-wrap"><img src="${proxyUrl}" loading="lazy" onerror="this.src='${imgUrl}'"></div>`;
                     }).join('');
                 } else {
-                    container.innerHTML = '<div style="color:white; margin-top:20px;">No pages found.</div>';
+                    document.getElementById("loading").innerText = "NO PAGES FOUND IN API.";
+                    document.getElementById("loading").style.display = "block";
                 }
             } catch (e) {
-                document.getElementById("loading").innerText = "Error loading pages.";
+                document.getElementById("loading").innerText = "CONNECTION FAILED.";
             }
         }
         loadManga();
