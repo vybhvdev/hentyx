@@ -26,12 +26,12 @@
     <header>
         <div class="brand">Hentyx OS</div>
         <div class="search-bar">
-            <input type="text" id="searchInput" placeholder="Search manga or doujinshi..." value="doujinshi">
+            <input type="text" id="searchInput" placeholder="Search Mangapill..." value="doujinshi">
             <button onclick="loadGalleries()">SEARCH</button>
         </div>
     </header>
 
-    <div id="loading">Fetching Data...</div>
+    <div id="loading">Fetching from Mangapill...</div>
     <div class="grid" id="grid"></div>
 
     <script>
@@ -65,12 +65,8 @@
                     const card = document.createElement('a');
                     card.href = `reader.html?id=${item.id}`;
                     card.className = 'card';
-                    
-                    // The Magic Fix: Wrap the image URL in a proxy
-                    const proxyUrl = `https://wsrv.nl/?url=${encodeURIComponent(item.cover)}`;
-
                     card.innerHTML = `
-                        <div class="cover-wrapper"><img src="${proxyUrl}" loading="lazy" alt="cover"></div>
+                        <div class="cover-wrapper"><img src="${item.cover}" loading="lazy" alt="cover"></div>
                         <div class="card-title">${item.title}</div>
                     `;
                     grid.appendChild(card);
