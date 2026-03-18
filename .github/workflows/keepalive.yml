@@ -1,0 +1,11 @@
+name: Keep Render Warm
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping jandapress
+        run: curl -s "https://jandapress.onrender.com/pururin/search?key=new&page=1" --max-time 30 || true
