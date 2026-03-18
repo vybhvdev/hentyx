@@ -8,7 +8,6 @@
         :root { --bg: #1f1f1f; --surface: #2f2f2f; --primary: #ed2553; --text: #f3f3f3; --text-muted: #9e9e9e; }
         body { margin: 0; padding: 0; background-color: var(--bg); color: var(--text); font-family: sans-serif; }
         
-        /* nhentai style Header */
         header { background-color: #111; padding: 15px 20px; border-bottom: 2px solid var(--primary); display: flex; flex-wrap: wrap; gap: 15px; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
         .brand { font-size: 24px; font-weight: bold; color: var(--primary); text-transform: uppercase; text-decoration: none; letter-spacing: 1px; }
         
@@ -18,11 +17,19 @@
         button { padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 0 4px 4px 0; cursor: pointer; font-weight: bold; font-size: 1rem; }
         button:hover { background: #d11f46; }
 
-        /* Grid Layout */
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 15px; }
         .section-title { font-size: 1.5rem; margin-bottom: 20px; font-weight: normal; border-bottom: 1px solid #333; padding-bottom: 10px; }
         
+        /* Desktop/Tablet Grid */
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
+        
+        /* THE MOBILE GRID FIX: Force 2 columns on small screens */
+        @media (max-width: 480px) {
+            .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .container { padding: 10px; }
+            .card-title { font-size: 0.75rem; padding: 6px; }
+        }
+
         .card { background: var(--surface); border-radius: 4px; overflow: hidden; text-decoration: none; color: white; transition: transform 0.2s; display: flex; flex-direction: column; position: relative; }
         .card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.5); border: 1px solid var(--primary); }
         
@@ -75,7 +82,6 @@
             loading.style.display = 'block';
 
             try {
-                // Default to a broad search if empty so the homepage isn't blank
                 const apiQuery = query || "manga";
                 const response = await fetch(`/api/galleries?q=${encodeURIComponent(apiQuery)}`);
                 const data = await response.json();
@@ -89,7 +95,7 @@
 
                 data.forEach(item => {
                     const card = document.createElement('a');
-                    // Point to our new Gallery page!
+                    // Passing the cover perfectly
                     card.href = `gallery.html?id=${item.id}&cover=${encodeURIComponent(item.cover)}`; 
                     card.className = 'card';
                     card.innerHTML = `
@@ -104,7 +110,6 @@
             }
         }
         
-        // Auto-load on visit to act like a real homepage
         loadGalleries();
     </script>
 </body>
