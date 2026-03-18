@@ -19,7 +19,6 @@ app.get("/api/galleries", async (req, res) => {
       let lang = "JP"; 
       const title = (m.title || "").toLowerCase();
       if (title.includes("english")) lang = "EN";
-      if (title.includes("chinese")) lang = "CN";
       return {
         id: m.id || m.code,
         title: m.title,
@@ -38,14 +37,22 @@ app.get("/api/info", async (req, res) => {
     const response = await axios.get(url, { timeout: 15000 });
     const d = response.data.data || response.data;
 
-    // UNIVERSAL PAGE FINDER
-    // Searches all common Jandapress fields for the image array
-    const pages = d.reader || d.images || d.data?.images || d.data?.reader || [];
+    let pages = [];
+    let finalCover = "";
+
+    // If 'cover' is an array (like in your curl), those are the pages!
+    if (Array.isArray(d.cover)) {
+        pages = d.cover;
+        finalCover = d.image || d.cover[0];
+    } else {
+        pages = d.reader || d.images || d.data?.images || [];
+        finalCover = d.image || d.cover;
+    }
 
     res.json({
-      id: d.id || d.code,
-      title: d.title,
-      cover: d.image || d.cover,
+      id: d.id || d.code || id,
+      title: d.title || "Untitled",
+      cover: finalCover,
       tags: d.tags || d.genres || [],
       pages: pages
     });
