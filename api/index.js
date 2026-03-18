@@ -5,9 +5,61 @@ const app = express();
 
 app.use(cors());
 
-const CONSUMET_URL = "https://private-consumet-api.vercel.app/meta/nhentai";
+// YOUR LIVE JANDAPRESS URL
+const JANDA_BASE = "https://jandapress.onrender.com";
+// PRIMARY PROVIDER
+const PROVIDER = "pururin";
 
-// 1. Image Proxy (Now bypassing nhentai.net)
+// 1. Search / Homepage Feed
+app.get("/api/galleries", async (req, res) => {
+  try {
+    const query = req.query.q || "english";
+    const url = `${JANDA_BASE}/${PROVIDER}/search?key=${encodeURIComponent(query)}`;
+    
+    const response = await axios.get(url, { timeout: 15000 });
+    // Jandapress results are usually in response.data.data
+    const results = response.data.data || [];
+    
+    const formatted = results.map(m => ({
+      id: m.id,
+      title: m.title,
+      // Pass the cover through our proxy to bypass Hotlink protection
+      cover: `/api/proxy?url=${encodeURIComponent(m.image || m.cover)}`
+    }));
+
+    res.json(formatted);
+  } catch (err) {
+    console.error("Janda Search Error:", err.message);
+    res.status(500).json({ error: "Search Failed" });
+  }
+});
+
+// 2. Gallery Info & Reader Pages
+app.get("/api/info", async (req, res) => {
+  try {
+    const id = req.query.id;
+    const url = `${JANDA_BASE}/${PROVIDER}/get?book=${encodeURIComponent(id)}`;
+    
+    const response = await axios.get(url, { timeout: 15000 });
+    const d = response.data.data;
+
+    // Pururin usually puts pages in 'reader', other providers might use 'images'
+    const pages = d.reader || d.images || [];
+
+    res.json({
+      id: d.id,
+      title: d.title,
+      cover: d.image || d.cover,
+      tags: d.tags || d.genres || [],
+      pages: pages
+    });
+  } catch (err) {
+    console.error("Janda Info Error:", err.message);
+    res.status(500).json({ error: "Info Failed" });
+  }
+});
+
+// 3. Image Proxy (Bypassing Pururin/Hentaifox security)
 app.get("/api/proxy", async (req, res) => {
   try {
     const imageUrl = req.query.url;
@@ -16,7 +68,7 @@ app.get("/api/proxy", async (req, res) => {
     const response = await axios.get(imageUrl, {
       responseType: "arraybuffer",
       headers: {
-        "Referer": "https://nhentai.net/",
+        "Referer": "https://pururin.to/",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
       },
       timeout: 10000
@@ -26,59 +78,6 @@ app.get("/api/proxy", async (req, res) => {
     res.send(response.data);
   } catch (err) {
     res.status(500).send("Proxy failed");
-  }
-});
-
-// 2. Search / Homepage Feed
-app.get("/api/galleries", async (req, res) => {
-  try {
-    const query = req.query.q || "english"; // Default to English doujins
-    const url = `${CONSUMET_URL}/${encodeURIComponent(query)}`;
-    
-    const response = await axios.get(url, { timeout: 10000 });
-    const results = response.data.results || response.data || [];
-    
-    const formatted = results.map(m => {
-      // nhentai titles are often objects { english, native, romaji }
-      const titleStr = m.title.english || m.title.romaji || m.title || "Untitled";
-      return {
-        id: m.id,
-        title: titleStr,
-        cover: `/api/proxy?url=${encodeURIComponent(m.image || m.cover)}`
-      };
-    });
-
-    res.json(formatted);
-  } catch (err) {
-    console.error("nhentai Search Error:", err.message);
-    res.status(500).json({ error: "API Error" });
-  }
-});
-
-// 3. Gallery Info & Pages
-app.get("/api/info", async (req, res) => {
-  try {
-    const id = req.query.id;
-    const url = `${CONSUMET_URL}/info/${id}`;
-    
-    const response = await axios.get(url, { timeout: 10000 });
-    const data = response.data;
-
-    // Consumet returns pages in different spots depending on the provider
-    let pages = [];
-    if (data.pages) pages = data.pages;
-    else if (data.chapters && data.chapters.length > 0 && data.chapters[0].pages) pages = data.chapters[0].pages;
-
-    res.json({
-      id: data.id,
-      title: data.title.english || data.title.romaji || data.title || "Untitled",
-      cover: data.image || data.cover,
-      tags: data.tags || data.genres || [],
-      pages: pages
-    });
-  } catch (err) {
-    console.error("nhentai Info Error:", err.message);
-    res.status(500).json({ error: "Info Error" });
   }
 });
 
