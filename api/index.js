@@ -99,4 +99,15 @@ app.get("/api/tags", async (req, res) => {
   } catch(err) { res.json([]); }
 });
 
+// Keep jandapress.onrender.com warm - ping every 13 minutes
+const PING_INTERVAL = 13 * 60 * 1000;
+function keepWarm() {
+  const axios2 = require("axios");
+  axios2.get("https://jandapress.onrender.com/pururin/search?key=new&page=1", { timeout: 10000 })
+    .then(() => console.log("keep-warm ping ok"))
+    .catch(() => console.log("keep-warm ping failed"));
+}
+setInterval(keepWarm, PING_INTERVAL);
+keepWarm(); // ping on startup too
+
 module.exports = app;
