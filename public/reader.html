@@ -62,7 +62,7 @@
 
             // Show cover immediately as page 1 while we wait for full list
             if (attempt === 1 && passedCover) {
-                pages = [decodeURIComponent(passedCover)];
+                pages = ['/api/proxy?url=' + passedCover];
                 if (overlay) overlay.remove();
                 updateDisplay();
                 document.getElementById("pageLabelTop").innerText = "Loading...";
@@ -107,7 +107,7 @@
         function updateDisplay() {
             const img = document.getElementById('page-img');
             const url = pages[currentIndex];
-            img.src = `/api/proxy?url=${encodeURIComponent(url)}`;
+            img.src = url.startsWith('/api/proxy') ? url : `/api/proxy?url=${encodeURIComponent(url)}`;
             
             const label = `${currentIndex + 1} of ${pages.length}`;
             document.getElementById('pageLabelTop').innerText = label;
