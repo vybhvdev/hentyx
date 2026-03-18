@@ -57,34 +57,47 @@
         async function load(attempt) {
             attempt = attempt || 1;
             const overlay = document.getElementById("loading-overlay");
-            if (!overlay) return;
-            overlay.innerText = attempt === 1 ? "PREPARING GALLERY..." : "CONNECTING... attempt " + attempt + "/4";
+            const params2 = new URLSearchParams(location.search);
+            const passedCover = params2.get("cover");
+
+            // Show cover immediately as page 1 while we wait for full list
+            if (attempt === 1 && passedCover) {
+                pages = [decodeURIComponent(passedCover)];
+                if (overlay) overlay.remove();
+                updateDisplay();
+                document.getElementById("pageLabelTop").innerText = "Loading...";
+                document.getElementById("pageLabelBottom").innerText = "Loading...";
+            } else if (overlay) {
+                overlay.innerText = attempt === 1 ? "PREPARING GALLERY..." : "CONNECTING... " + attempt + "/5";
+            }
+
             try {
                 const controller = new AbortController();
-                const tid = setTimeout(() => controller.abort(), 25000);
+                const tid = setTimeout(() => controller.abort(), 40000);
                 const res = await fetch("https://jandapress.onrender.com/pururin/get?book=" + id, { signal: controller.signal });
                 clearTimeout(tid);
                 const data = await res.json();
                 const d = data.data || data;
-                pages = Array.isArray(d.image) ? d.image : (Array.isArray(d.cover) ? d.cover : (d.reader || d.images || []));
-                const thumb = typeof d.cover === "string" ? d.cover : (Array.isArray(d.cover) ? d.cover[0] : (pages[0] || ""));
-                data.title = d.title; data.cover = thumb; data.id = d.id;
-                if (pages.length > 0) {
-                    trackHistory({ id: id, title: data.title, cover: data.cover });
-                    const pc = new URLSearchParams(location.search).get("cover");
-                    if (pc) localStorage.setItem("cover_" + id, pc);
-                    overlay.remove();
+                const loaded = Array.isArray(d.image) ? d.image : (Array.isArray(d.cover) ? d.cover : (d.reader || d.images || []));
+                if (loaded.length > 0) {
+                    pages = loaded;
+                    const thumb = typeof d.cover === "string" ? d.cover : (passedCover || pages[0] || "");
+                    trackHistory({ id: id, title: d.title || "", cover: thumb });
+                    if (overlay) overlay.remove();
                     updateDisplay();
                 } else {
-                    if (attempt < 4) { setTimeout(function(){ load(attempt + 1); }, 2000); }
-                    else { overlay.innerText = "NO PAGES FOUND."; }
+                    if (attempt < 5) setTimeout(function(){ load(attempt + 1); }, 3000);
+                    else if (!passedCover) {
+                        const o = document.getElementById("loading-overlay");
+                        if (o) o.innerText = "NO PAGES FOUND.";
+                    }
                 }
             } catch(e) {
-                if (attempt < 4) {
-                    overlay.innerText = "RETRYING " + attempt + "/4...";
-                    setTimeout(function(){ load(attempt + 1); }, 3000);
-                } else {
-                    overlay.innerHTML = 'CONNECTION ERROR.<br><br><span onclick="load(1)" style="color:#ed2553;font-size:13px;cursor:pointer;">TAP TO RETRY</span>';
+                if (attempt < 5) {
+                    setTimeout(function(){ load(attempt + 1); }, 4000);
+                } else if (!passedCover) {
+                    const o = document.getElementById("loading-overlay");
+                    if (o) o.innerHTML = 'CONNECTION ERROR.<br><br><span onclick="load(1)" style="color:#ed2553;font-size:13px;cursor:pointer;">TAP TO RETRY</span>';
                 }
             }
         }

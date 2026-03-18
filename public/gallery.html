@@ -127,7 +127,7 @@
                 document.getElementById('mangaIdLabel').innerText = d.id;
                 document.getElementById('pageCountLabel').innerText = allPages.length;
                 document.getElementById('coverImg').src = proxy(thumb);
-                document.getElementById('readLink').href = `reader.html?id=${id}`;
+                document.getElementById("readLink").href = `reader.html?id=${id}&cover=${encodeURIComponent(galleryData.cover)}`;
                 document.getElementById('dlBtn').onclick = () => window.location.href = `/api/download?id=${id}&title=${encodeURIComponent(data.title)}`;
 
                 document.getElementById('genresList').innerHTML = (d.tags || []).map(t =>
