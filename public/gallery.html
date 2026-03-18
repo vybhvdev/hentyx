@@ -41,6 +41,8 @@
         .rel-cover img { position: absolute; top:0; left:0; width:100%; height:100%; object-fit: cover; }
         .rel-title { padding: 6px; font-size: 10px; height: 24px; overflow: hidden; text-align: center; color: #bbb; }
         #loading { text-align: center; padding: 50px; color: var(--accent); font-family: monospace; font-size: 12px; }
+        .share-toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #222; color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 13px; z-index: 9999; opacity: 0; transition: opacity 0.3s; pointer-events: none; border: 1px solid #333; }
+        .share-toast.show { opacity: 1; }
     </style>
 </head>
 <body>
@@ -65,6 +67,7 @@
             <a href="#" id="readLink" class="btn read-btn">Read Now</a>
             <button id="bmBtn" class="btn bm-btn" onclick="handleBookmark()">🔖 Save</button>
             <button id="dlBtn" class="btn dl-btn">⬇ ZIP</button>
+            <button class="btn dl-btn" onclick="shareGallery()" style="grid-column:1/-1;">🔗 Share</button>
         </div>
 
         <div class="section-title">Previews</div>
@@ -185,6 +188,23 @@
 
         initAuthHeader();
         load();
+
+        function shareGallery() {
+            const url = window.location.href;
+            if (navigator.share) {
+                navigator.share({
+                    title: document.getElementById('mangaTitle').innerText || 'Hentyx Gallery',
+                    url: url
+                }).catch(() => {});
+            } else {
+                navigator.clipboard.writeText(url).then(() => {
+                    const t = document.getElementById('shareToast');
+                    t.classList.add('show');
+                    setTimeout(() => t.classList.remove('show'), 2000);
+                }).catch(() => {});
+            }
+        }
     </script>
+    <div class="share-toast" id="shareToast">🔗 Link copied!</div>
 </body>
 </html>
