@@ -37,15 +37,17 @@
 
         .related-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
         @media (min-width: 600px) { .related-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); } }
-        .rel-card { background: var(--surface); border-radius: 4px; overflow: hidden; text-decoration: none; color: inherit; border: 1px solid #1a1a1a; position: relative; }
+        .rel-card { background: #1e1e1e; border-radius: 4px; overflow: hidden; text-decoration: none; color: inherit; border: 1px solid #1a1a1a; position: relative; }
         .rel-cover { position: relative; padding-top: 140%; background: #000; }
         .rel-cover img { position: absolute; top:0; left:0; width:100%; height:100%; object-fit: cover; }
         .rel-title { padding: 6px; font-size: 10px; height: 24px; overflow: hidden; text-align: center; color: #bbb; }
+        #loading { text-align: center; padding: 50px; color: var(--accent); font-family: monospace; font-size: 12px; }
     </style>
 </head>
 <body>
     <header><a href="index.html" class="brand">HENTY<span style="color:#fff">X</span></a></header>
     
+    <div id="loading">LOADING GALLERY...</div>
     <div class="container" id="main" style="display:none;">
         <div class="info-grid">
             <div class="cover-box"><img id="coverImg" src=""></div>
@@ -70,29 +72,42 @@
     </div>
 
     <script>
-        const id = new URLSearchParams(location.search).get("id");
+        const params = new URLSearchParams(location.search);
+        const id = params.get("id");
+        const passedCover = params.get("cover"); // YOUR FIX: Get working cover from Homepage
+        
         let allPages = [], loadedCount = 0;
         const proxy = (url) => `/api/proxy?url=${encodeURIComponent(url)}`;
 
         async function load() {
-            const res = await fetch(`/api/info?id=${id}`);
-            const data = await res.json();
-            allPages = data.pages;
-            
-            document.getElementById('main').style.display = 'block';
-            document.getElementById('mangaTitle').innerText = data.title;
-            document.getElementById('mangaIdLabel').innerText = data.id;
-            document.getElementById('pageCountLabel').innerText = allPages.length;
-            document.getElementById('coverImg').src = proxy(data.cover);
-            document.getElementById('readLink').href = `reader.html?id=${id}`;
-            document.getElementById('dlBtn').onclick = () => window.location.href = `/api/download?id=${id}&title=${encodeURIComponent(data.title)}`;
+            try {
+                const res = await fetch(`/api/info?id=${id}`);
+                const data = await res.json();
+                
+                // YOUR FIX: Apply the exact reader logic to get the pages
+                allPages = (data.pages && data.pages.length > 0) ? data.pages : (Array.isArray(data.cover) ? data.cover : []);
+                
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('main').style.display = 'block';
+                document.getElementById('mangaTitle').innerText = data.title;
+                document.getElementById('mangaIdLabel').innerText = data.id;
+                document.getElementById('pageCountLabel').innerText = allPages.length;
+                
+                // Use the working cover passed from homepage, with a proxy fallback just in case
+                document.getElementById('coverImg').src = passedCover || proxy(data.cover);
+                
+                document.getElementById('readLink').href = `reader.html?id=${id}`;
+                document.getElementById('dlBtn').onclick = () => window.location.href = `/api/download?id=${id}&title=${encodeURIComponent(data.title)}`;
 
-            document.getElementById('genresList').innerHTML = (data.tags || []).map(t => 
-                `<a href="index.html?q=${encodeURIComponent(t.name || t)}" class="tag">${t.name || t}</a>`
-            ).join('');
+                document.getElementById('genresList').innerHTML = (data.tags || []).map(t => 
+                    `<a href="index.html?q=${encodeURIComponent(t.name || t)}" class="tag">${t.name || t}</a>`
+                ).join('');
 
-            renderNextBatch();
-            loadRelated(data.tags[0]?.name || "doujinshi");
+                renderNextBatch();
+                loadRelated(data.tags && data.tags[0] ? (data.tags[0].name || data.tags[0]) : "doujinshi");
+            } catch(e) {
+                document.getElementById('loading').innerText = "FAILED TO LOAD.";
+            }
         }
 
         function renderNextBatch() {
@@ -113,8 +128,8 @@
             const res = await fetch(`/api/galleries?q=${encodeURIComponent(tag)}`);
             const data = await res.json();
             document.getElementById('relatedGrid').innerHTML = data.slice(0, 6).map(item => `
-                <a href="gallery.html?id=${item.id}" class="rel-card">
-                    <div class="rel-cover"><img src="${proxy(item.cover)}" loading="lazy"></div>
+                <a href="gallery.html?id=${item.id}&cover=${encodeURIComponent(item.cover)}" class="rel-card">
+                    <div class="rel-cover"><img src="${item.cover.includes('/api/proxy') ? item.cover : proxy(item.cover)}" loading="lazy"></div>
                     <div class="rel-title">${item.title}</div>
                 </a>
             `).join('');
