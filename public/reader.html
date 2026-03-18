@@ -7,50 +7,43 @@
     <title>Hentyx Reader</title>
     <style>
         body { background:#000; margin:0; display:flex; flex-direction:column; align-items:center; }
-        .page-wrap { width:100%; max-width:900px; margin-bottom:10px; }
-        img { width:100%; display:block; min-height:400px; background:#111; }
-        .nav { position:fixed; bottom:20px; right:20px; z-index:100; }
-        .btn { background:#ed2553; color:white; padding:12px; border-radius:50%; border:none; font-size:20px; box-shadow:0 4px 10px rgba(0,0,0,0.5); }
+        .page-wrap { width:100%; max-width:800px; margin-bottom:5px; }
+        img { width:100%; display:block; min-height:300px; background:#111; }
+        .nav-bar { position:fixed; top:0; width:100%; background:rgba(0,0,0,0.8); padding:10px; text-align:left; z-index:10; }
+        .btn { color:white; text-decoration:none; font-weight:bold; padding:5px 15px; background:#ed2553; border-radius:4px; }
     </style>
 </head>
 <body>
-    <div id="pages"></div>
-    <div class="nav"><button class="btn" onclick="window.scrollTo({top:0, behavior:'smooth'})">▲</button></div>
+    <div class="nav-bar"><a href="index.html" class="btn">← Back</a></div>
+    <div id="pages" style="margin-top:50px;"></div>
 
     <script>
         const params = new URLSearchParams(location.search);
-        const gid = params.get("gid");
-        const token = params.get("token");
+        const mangaId = params.get("id");
+        const CONSUMET_BASE = "https://private-consumet-api.vercel.app/manga/mangapill";
 
-        async function load() {
+        async function loadManga() {
             try {
-                const r = await fetch(`/api/gallery/${gid}/${token}`);
-                const g = await r.json();
+                // 1. Get Info to find the first chapter ID
+                const infoRes = await fetch(`${CONSUMET_BASE}/info?id=${mangaId}`);
+                const info = await infoRes.json();
+                const firstChapterId = info.chapters[0].id;
+
+                // 2. Get Chapter Pages
+                const pagesRes = await fetch(`${CONSUMET_BASE}/read?chapterId=${firstChapterId}`);
+                const pages = await pagesRes.json();
+
                 const container = document.getElementById("pages");
-
-                // EH standard: Use a loop to generate page requests
-                // Note: Direct hotlinking pages usually requires a specific EH cookie or proxy
-                for(let i=1; i<=g.filecount; i++) {
-                    const div = document.createElement("div");
-                    div.className = "page-wrap";
-                    
-                    const img = document.createElement("img");
-                    // Using a public EH image proxy or the 's' link bypass
-                    // For now, we use the most common high-res pattern
-                    img.src = `https://images.weserv.nl/?url=https://ehgt.org/m/${gid}/${i}.jpg`;
-                    img.loading = "lazy";
-                    img.onerror = function() {
-                        this.src = `https://placehold.co/600x800?text=Page+${i}+Loading+Error`;
-                    };
-
-                    div.appendChild(img);
-                    container.appendChild(div);
-                }
+                container.innerHTML = pages.map(p => `
+                    <div class="page-wrap">
+                        <img src="${p.img}" loading="lazy">
+                    </div>
+                `).join('');
             } catch (e) {
-                console.error("Reader Error:", e);
+                console.error("Reader failed:", e);
             }
         }
-        if(gid && token) load();
+        if(mangaId) loadManga();
     </script>
 </body>
 </html>
