@@ -38,12 +38,14 @@
         <div id="grid" class="grid"></div>
     </div>
     <script>
-        async function loadGalleries(query = "new") {
+        async function loadGalleries(query = "") {
             const grid = document.getElementById('grid');
             const loading = document.getElementById('loading');
             grid.innerHTML = ''; loading.style.display = 'block';
             try {
-                const res = await fetch(`/api/galleries?q=${encodeURIComponent(query)}`);
+                // Default to 'new' if no query is provided
+                const finalQuery = query || "new";
+                const res = await fetch(`/api/galleries?q=${encodeURIComponent(finalQuery)}`);
                 const data = await res.json();
                 loading.style.display = 'none';
                 data.forEach(item => {
@@ -55,13 +57,28 @@
                 });
             } catch (err) { loading.innerText = "OFFLINE."; }
         }
-        function triggerSearch() { loadGalleries(document.getElementById('searchInput').value.trim()); }
+        
+        function triggerSearch() {
+            const q = document.getElementById('searchInput').value.trim();
+            loadGalleries(q);
+        }
+
         function goRandom() {
-            // Pick a random ID or hit a random endpoint - for now, let's just search something random
-            const tags = ["milf", "stockings", "glasses", "sole-female"];
+            const tags = ["milf", "stockings", "glasses", "sole-female", "full-color"];
             loadGalleries(tags[Math.floor(Math.random()*tags.length)]);
         }
-        loadGalleries();
+
+        // INITIAL LOAD: Check if there's a tag in the URL
+        window.onload = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tag = urlParams.get('q');
+            if (tag) {
+                document.getElementById('searchInput').value = tag;
+                loadGalleries(tag);
+            } else {
+                loadGalleries();
+            }
+        };
     </script>
 </body>
 </html>

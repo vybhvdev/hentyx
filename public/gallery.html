@@ -15,7 +15,11 @@
         .title { font-size: 1.4rem; margin-bottom: 10px; line-height: 1.3; color: #fff; }
         .id-badge { background: #000; padding: 5px 12px; border-radius: 4px; border: 1px solid #333; color: #888; font-family: monospace; margin-bottom: 20px; display: inline-block; }
         .tag-group { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 25px; }
-        .tag { background: var(--surface); color: var(--text); padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; border: 1px solid #333; }
+        
+        /* CLICKABLE TAGS */
+        .tag { background: var(--surface); color: var(--text); padding: 5px 12px; border-radius: 4px; font-size: 0.8rem; border: 1px solid #333; text-decoration: none; transition: 0.2s; }
+        .tag:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+        
         .read-btn { display: block; background: var(--accent); color: #000; padding: 15px; border-radius: 5px; text-decoration: none; font-weight: bold; font-size: 1.1rem; text-transform: uppercase; width: 100%; box-sizing: border-box; }
         #loading { text-align: center; padding: 100px; color: var(--accent); font-family: monospace; }
     </style>
@@ -46,7 +50,13 @@
                 document.getElementById('coverImg').src = passedCover || `/api/proxy?url=${encodeURIComponent(data.cover)}`;
                 document.getElementById('mangaTitle').innerText = data.title;
                 document.getElementById('mangaIdLabel').innerText = data.id;
-                const tagsHtml = (data.tags || []).map(t => `<span class="tag">${t.name || t}</span>`).join('');
+                
+                // MAKE TAGS CLICKABLE
+                const tagsHtml = (data.tags || []).map(t => {
+                    const tagName = t.name || t;
+                    return `<a href="index.html?q=${encodeURIComponent(tagName)}" class="tag">${tagName}</a>`;
+                }).join('');
+                
                 document.getElementById('genresList').innerHTML = tagsHtml || '<span class="tag">N/A</span>';
                 document.getElementById('readLink').href = `reader.html?id=${encodeURIComponent(mangaId)}`;
             } catch (err) { document.getElementById('loading').innerText = "ERROR."; }
