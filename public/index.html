@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hentyx</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --bg: #0a0a0a; --surface: #161616; --accent: #ed2553; --text: #e5e5e5; }
         body { margin: 0; background: var(--bg); color: var(--text); font-family: sans-serif; overflow-x: hidden; }
@@ -50,6 +51,7 @@
         <div class="drawer-header">HENTY<span style="color:#fff">X</span></div>
         <a href="index.html" class="drawer-item">🏠 Home</a>
         <div class="drawer-item" onclick="goTrueRandom()">🎲 Random Gallery</div>
+        <div class="drawer-item" id="authBtn" onclick="handleAuth()">🔑 Login / Sign Up</div>
     </div>
 
     <header>
@@ -116,8 +118,31 @@
         function triggerSearch() { currentQuery = document.getElementById('searchInput').value.trim(); currentPage = 1; loadGalleries(currentQuery, 1); }
         async function goTrueRandom() { const res = await fetch('/api/random'); const data = await res.json(); window.location.href = `gallery.html?id=${data.id}`; }
 
+        let supabase = null;
+        async function checkAuth() {
+            try {
+                const res = await fetch("/api/config");
+                const config = await res.json();
+                supabase = window.supabase.createClient(config.supabaseUrl, config.supabaseKey);
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session) {
+                    document.getElementById("authBtn").innerText = "🚪 Logout (" + session.user.email.split("@")[0] + ")";
+                }
+            } catch(e) {}
+        }
+        async function handleAuth() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                await supabase.auth.signOut();
+                location.reload();
+            } else {
+                window.location.href = "login.html";
+            }
+        }
+
         window.onload = () => {
             loadPopular();
+            checkAuth();
             const tag = new URLSearchParams(window.location.search).get('q');
             if(tag) { currentQuery = tag; document.getElementById('searchInput').value = tag; }
             loadGalleries(currentQuery, 1);

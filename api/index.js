@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const axios = require("axios");
 const cors = require("cors");
@@ -79,6 +80,13 @@ app.get("/api/proxy", async (req, res) => {
     res.setHeader("Content-Type", response.headers["content-type"]);
     res.send(response.data);
   } catch (err) { res.status(500).send("Proxy failed"); }
+});
+
+app.get("/api/config", (req, res) => {
+  res.json({
+    supabaseUrl: process.env.SUPABASE_URL,
+    supabaseKey: process.env.SUPABASE_KEY
+  });
 });
 
 module.exports = app;

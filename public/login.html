@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hentyx - Auth</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root { --bg: #0a0a0a; --surface: #161616; --accent: #ed2553; --text: #e5e5e5; }
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+        
+        .brand { font-size: 32px; font-weight: 900; color: var(--accent); text-decoration: none; margin-bottom: 30px; letter-spacing: 1px; }
+        .brand span { color: #fff; }
+        
+        .auth-card { background: var(--surface); padding: 30px; border-radius: 6px; border: 1px solid #333; width: 100%; max-width: 320px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .auth-title { font-size: 18px; font-weight: bold; margin-bottom: 20px; text-align: center; text-transform: uppercase; color: #aaa; }
+        
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 12px; color: #888; margin-bottom: 5px; text-transform: uppercase; }
+        .input-group input { width: 100%; padding: 12px; background: #000; border: 1px solid #333; color: #fff; border-radius: 4px; outline: none; box-sizing: border-box; }
+        .input-group input:focus { border-color: var(--accent); }
+        
+        .btn { width: 100%; padding: 14px; background: var(--accent); color: #fff; border: none; font-weight: bold; border-radius: 4px; cursor: pointer; text-transform: uppercase; font-size: 14px; margin-top: 10px; transition: 0.2s; }
+        .btn:hover { background: #d01d46; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .toggle-text { text-align: center; font-size: 12px; color: #888; margin-top: 20px; cursor: pointer; }
+        .toggle-text span { color: var(--accent); font-weight: bold; }
+
+        #msg { text-align: center; margin-top: 15px; font-size: 13px; font-weight: bold; }
+        .error { color: #ff4444; }
+        .success { color: #00C851; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="brand">HENTY<span>X</span></a>
+
+    <div class="auth-card">
+        <div class="auth-title" id="formTitle">Sign In</div>
+        
+        <form id="authForm">
+            <div class="input-group">
+                <label>Email</label>
+                <input type="email" id="email" required placeholder="user@example.com">
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="password" required placeholder="••••••••">
+            </div>
+            <button type="submit" class="btn" id="submitBtn">Login</button>
+        </form>
+
+        <div id="msg"></div>
+
+        <div class="toggle-text" onclick="toggleMode()">
+            <span id="toggleQuestion">Need an account?</span> <span id="toggleAction">Sign up</span>
+        </div>
+    </div>
+
+    <script>
+        let isLogin = true;
+        let supabase = null;
+
+        // Fetch keys and initialize Supabase
+        async function init() {
+            const res = await fetch('/api/config');
+            const config = await res.json();
+            supabase = window.supabase.createClient(config.supabaseUrl, config.supabaseKey);
+            
+            // If already logged in, redirect to home
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) window.location.href = 'index.html';
+        }
+
+        function toggleMode() {
+            isLogin = !isLogin;
+            document.getElementById('formTitle').innerText = isLogin ? "Sign In" : "Create Account";
+            document.getElementById('submitBtn').innerText = isLogin ? "Login" : "Sign Up";
+            document.getElementById('toggleQuestion').innerText = isLogin ? "Need an account?" : "Already have an account?";
+            document.getElementById('toggleAction').innerText = isLogin ? "Sign up" : "Log in";
+            document.getElementById('msg').innerText = '';
+        }
+
+        document.getElementById('authForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const msg = document.getElementById('msg');
+            btn.disabled = true;
+            msg.className = ''; msg.innerText = 'Processing...';
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                let result;
+                if (isLogin) {
+                    result = await supabase.auth.signInWithPassword({ email, password });
+                } else {
+                    result = await supabase.auth.signUp({ email, password });
+                }
+
+                if (result.error) throw result.error;
+
+                msg.className = 'success';
+                msg.innerText = isLogin ? 'Success! Redirecting...' : 'Account created! Redirecting...';
+                
+                setTimeout(() => window.location.href = 'index.html', 1000);
+
+            } catch (err) {
+                msg.className = 'error';
+                msg.innerText = err.message;
+                btn.disabled = false;
+            }
+        });
+
+        init();
+    </script>
+</body>
+</html>
