@@ -5,17 +5,15 @@ const app = express();
 
 app.use(cors());
 
-// The Consumet API Endpoint for Mangapill
-const CONSUMET_URL = "https://private-consumet-api.vercel.app/manga/mangapill";
-
 app.get("/api/galleries", async (req, res) => {
   try {
-    // Fetching the 'trending' or 'popular' list from Mangapill
-    const response = await axios.get(`${CONSUMET_URL}/filter?type=doujinshi`, {
-      timeout: 10000
-    });
-
-    // Consumet usually returns results in a 'results' array
+    // Grab the search query from the frontend, or default to "doujinshi"
+    const searchQuery = req.query.q || "doujinshi";
+    
+    // Consumet's standard route for searching Mangapill
+    const url = `https://private-consumet-api.vercel.app/meta/mangapill/${encodeURIComponent(searchQuery)}`;
+    
+    const response = await axios.get(url, { timeout: 10000 });
     const data = response.data.results || [];
     
     const formatted = data.map(m => ({
@@ -27,8 +25,8 @@ app.get("/api/galleries", async (req, res) => {
 
     res.json(formatted);
   } catch (err) {
-    console.error("Consumet Error:", err.message);
-    res.status(500).json({ error: "Mangapill Source Offline", detail: err.message });
+    console.error("API Error:", err.message);
+    res.status(500).json({ error: "API Offline", message: err.message });
   }
 });
 
