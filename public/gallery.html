@@ -7,36 +7,39 @@
     <style>
         :root { --bg: #1f1f1f; --surface: #2f2f2f; --primary: #ed2553; --text: #f3f3f3; --text-muted: #9e9e9e; }
         body { margin: 0; padding: 0; background-color: var(--bg); color: var(--text); font-family: sans-serif; }
-        header { background-color: #111; padding: 15px 20px; border-bottom: 2px solid var(--primary); display: flex; align-items: center; justify-content: space-between; }
+        header { background-color: #111; padding: 15px 20px; border-bottom: 2px solid var(--primary); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
         .brand { font-size: 24px; font-weight: bold; color: var(--primary); text-transform: uppercase; text-decoration: none; letter-spacing: 1px; }
         
         .container { max-width: 1000px; margin: 30px auto; padding: 0 20px; display: flex; gap: 30px; }
         .cover-box { flex: 0 0 300px; }
-        .cover-box img { width: 100%; border-radius: 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .cover-box img { width: 100%; border-radius: 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); background: #222; min-height: 400px; object-fit: cover; }
         .info-box { flex: 1; }
         
         .title { font-size: 1.8rem; margin: 0 0 10px 0; line-height: 1.3; }
         .id-badge { display: inline-block; background: #111; padding: 5px 10px; border-radius: 5px; font-family: monospace; font-size: 1.1rem; color: var(--text-muted); margin-bottom: 20px; }
         
-        .desc { color: var(--text-muted); line-height: 1.5; margin-bottom: 20px; font-size: 0.95rem; }
+        .desc { color: var(--text-muted); line-height: 1.5; margin-bottom: 20px; font-size: 0.95rem; max-height: 150px; overflow-y: auto; padding-right: 10px; }
         
         .tag-group { margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-        .tag-label { color: var(--text-muted); font-size: 0.9rem; font-weight: bold; width: 80px; text-transform: capitalize; }
+        .tag-label { color: var(--text-muted); font-size: 0.9rem; font-weight: bold; width: 50px; }
         .tag { background: var(--surface); color: var(--text); padding: 5px 10px; border-radius: 4px; font-size: 0.85rem; text-decoration: none; display: inline-flex; transition: background 0.2s; }
         .tag:hover { background: var(--primary); }
         
-        .read-btn { display: inline-block; background: var(--primary); color: white; padding: 15px 40px; border-radius: 5px; text-decoration: none; font-weight: bold; font-size: 1.2rem; text-transform: uppercase; margin-top: 20px; transition: background 0.2s; border: none; cursor: pointer; text-align: center; }
+        .read-btn { display: inline-block; background: var(--primary); color: white; padding: 15px 40px; border-radius: 5px; text-decoration: none; font-weight: bold; font-size: 1.2rem; text-transform: uppercase; margin-top: 10px; transition: background 0.2s; border: none; cursor: pointer; text-align: center; }
         .read-btn:hover { background: #d11f46; }
+
+        /* Chapter List Styles */
+        .chapters-section { margin-top: 40px; border-top: 1px solid #333; padding-top: 20px; }
+        .chapter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; margin-top: 15px; }
+        .ch-btn { background: #222; color: #fff; padding: 12px; text-align: center; border-radius: 4px; text-decoration: none; font-size: 0.9rem; border: 1px solid #444; transition: all 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .ch-btn:hover { background: var(--surface); border-color: var(--primary); color: var(--primary); }
 
         #loading { text-align: center; padding: 100px; font-size: 1.2rem; color: var(--text-muted); }
 
-        /* Mobile responsiveness */
         @media (max-width: 768px) {
             .container { flex-direction: column; align-items: center; }
             .cover-box { max-width: 250px; }
-            .info-box { width: 100%; text-align: center; }
-            .tag-group { flex-direction: column; align-items: center; }
-            .tag-label { width: auto; margin-bottom: 5px; }
+            .info-box { width: 100%; }
             .read-btn { width: 100%; box-sizing: border-box; }
         }
     </style>
@@ -50,7 +53,7 @@
     
     <div class="container" id="content" style="display: none;">
         <div class="cover-box">
-            <img id="coverImg" src="" alt="Cover">
+            <img id="coverImg" src="" alt="Cover" onerror="this.src=this.dataset.raw">
         </div>
         <div class="info-box">
             <h1 class="title" id="mangaTitle"></h1>
@@ -63,7 +66,12 @@
             
             <p class="desc" id="mangaDesc"></p>
             
-            <a href="#" id="readLink" class="read-btn">Read Now</a>
+            <a href="#" id="readLink" class="read-btn">Read Chapter 1</a>
+
+            <div class="chapters-section">
+                <h2 style="font-size: 1.2rem; margin: 0; color: var(--text-muted);">Chapters</h2>
+                <div id="chapterList" class="chapter-grid"></div>
+            </div>
         </div>
     </div>
 
@@ -72,34 +80,47 @@
         const mangaId = params.get("id");
         
         async function loadGallery() {
-            if (!mangaId) {
-                document.getElementById('loading').innerText = "No ID provided.";
-                return;
-            }
+            if (!mangaId) return;
 
             try {
-                // Fetch info from Mangapill via Consumet
-                const res = await fetch(`https://private-consumet-api.vercel.app/manga/mangapill/info?id=${mangaId}`);
+                const res = await fetch(`https://private-consumet-api.vercel.app/manga/mangapill/info?id=${encodeURIComponent(mangaId)}`);
                 const data = await res.json();
                 
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('content').style.display = 'flex';
 
-                // Setup Cover (using the image proxy so it doesn't break!)
-                const proxyUrl = `/api/proxy?url=${encodeURIComponent(data.image)}`;
-                document.getElementById('coverImg').src = proxyUrl;
+                // Setup Cover (safely checking for the image source)
+                const imgTarget = data.image || data.cover || data.thumbnail;
+                const coverEl = document.getElementById('coverImg');
+                coverEl.dataset.raw = imgTarget; // Save raw URL for fallback
+                coverEl.src = `/api/proxy?url=${encodeURIComponent(imgTarget)}`;
                 
                 // Setup Text
                 document.getElementById('mangaTitle').innerText = data.title;
-                document.getElementById('mangaIdLabel').innerText = data.id;
+                document.getElementById('mangaIdLabel').innerText = data.id.split('/').pop() || data.id;
                 document.getElementById('mangaDesc').innerText = data.description || "No description available.";
                 
                 // Setup Tags
                 const genresHtml = (data.genres || []).map(g => `<span class="tag">${g}</span>`).join('');
                 document.getElementById('genresList').innerHTML = genresHtml || '<span class="tag">N/A</span>';
                 
-                // Setup Read Button
-                document.getElementById('readLink').href = `reader.html?id=${data.id}`;
+                // Setup Chapters
+                const chapters = data.chapters || [];
+                if (chapters.length > 0) {
+                    // Mangapill usually lists newest chapters first. Let's get the oldest one (Chapter 1) for the main button
+                    const firstChapter = chapters[chapters.length - 1];
+                    document.getElementById('readLink').href = `reader.html?chapterId=${encodeURIComponent(firstChapter.id)}`;
+                    
+                    // Populate the grid
+                    document.getElementById('chapterList').innerHTML = chapters.map(ch => {
+                        // Extract just the number if possible for a cleaner button
+                        const chTitle = ch.title.replace('Chapter ', 'Ch. ') || 'Read';
+                        return `<a href="reader.html?chapterId=${encodeURIComponent(ch.id)}" class="ch-btn">${chTitle}</a>`;
+                    }).join('');
+                } else {
+                    document.getElementById('readLink').style.display = 'none';
+                    document.getElementById('chapterList').innerHTML = '<span style="color: #ed2553;">No chapters available.</span>';
+                }
 
             } catch (err) {
                 console.error(err);

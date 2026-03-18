@@ -8,63 +8,60 @@
         body { background:#000; margin:0; display:flex; flex-direction:column; align-items:center; font-family: sans-serif; }
         .page-wrap { width:100%; max-width:800px; margin-bottom:5px; }
         img { width:100%; display:block; min-height:300px; background:#111; }
-        .nav-bar { position:fixed; top:0; width:100%; background:rgba(0,0,0,0.8); padding:10px; text-align:left; z-index:10; border-bottom: 2px solid #ed2553; }
-        .btn { color:white; text-decoration:none; font-weight:bold; padding:5px 15px; background:#ed2553; border-radius:4px; text-transform: uppercase; }
+        .nav-bar { position:fixed; top:0; width:100%; background:rgba(0,0,0,0.8); padding:15px; display: flex; justify-content: space-between; z-index:10; border-bottom: 2px solid #ed2553; box-sizing: border-box; }
+        .btn { color:white; text-decoration:none; font-weight:bold; padding:8px 15px; background:#333; border-radius:4px; text-transform: uppercase; font-size: 0.9rem; border: 1px solid #444; }
+        .btn:hover { background: #ed2553; border-color: #ed2553; }
         #loading { color: white; margin-top: 100px; font-size: 18px; }
     </style>
 </head>
 <body>
-    <div class="nav-bar"><a href="index.html" class="btn">← Back</a></div>
-    <div id="loading">Loading Chapter...</div>
-    <div id="pages" style="margin-top:50px; width: 100%; display: flex; flex-direction: column; align-items: center;"></div>
+    <div class="nav-bar">
+        <a href="javascript:history.back()" class="btn">← Back to Gallery</a>
+        <a href="index.html" class="btn">Home</a>
+    </div>
+    
+    <div id="loading">Loading Pages...</div>
+    <div id="pages" style="margin-top:70px; width: 100%; display: flex; flex-direction: column; align-items: center;"></div>
 
     <script>
         const params = new URLSearchParams(location.search);
-        const mangaId = params.get("id");
+        // We now look for the specific chapter ID!
+        const chapterId = params.get("chapterId");
         const CONSUMET_BASE = "https://private-consumet-api.vercel.app/manga/mangapill";
 
         async function loadManga() {
-            try {
-                // 1. Get info to find the first chapter ID
-                const infoRes = await fetch(`${CONSUMET_BASE}/info?id=${mangaId}`);
-                const info = await infoRes.json();
-                
-                if (!info.chapters || info.chapters.length === 0) {
-                    document.getElementById("loading").innerText = "No chapters found.";
-                    return;
-                }
-                
-                // Grabbing the first chapter in the list
-                const firstChapterId = info.chapters[0].id;
+            if (!chapterId) {
+                document.getElementById("loading").innerText = "No Chapter ID provided.";
+                return;
+            }
 
-                // 2. Get the pages for that chapter
-                const pagesRes = await fetch(`${CONSUMET_BASE}/read?chapterId=${firstChapterId}`);
+            try {
+                // Fetch the pages directly for this exact chapter
+                const pagesRes = await fetch(`${CONSUMET_BASE}/read?chapterId=${encodeURIComponent(chapterId)}`);
                 const pagesData = await pagesRes.json();
                 
-                // Handle different array structures
                 const pages = Array.isArray(pagesData) ? pagesData : pagesData.pages || [];
 
                 document.getElementById("loading").style.display = "none";
                 const container = document.getElementById("pages");
                 
-                // 3. Map the pages and wrap the image URLs in our proxy!
+                // Render images with proxy
                 container.innerHTML = pages.map(p => {
                     const imgUrl = p.img || p.url;
                     const proxyUrl = `/api/proxy?url=${encodeURIComponent(imgUrl)}`;
                     return `
                     <div class="page-wrap">
-                        <img src="${proxyUrl}" loading="lazy" alt="manga page">
+                        <img src="${proxyUrl}" loading="lazy" alt="manga page" onerror="this.src='${imgUrl}'">
                     </div>
                     `;
                 }).join('');
             } catch (e) {
                 console.error("Reader failed:", e);
-                document.getElementById("loading").innerText = "Failed to load chapter.";
+                document.getElementById("loading").innerText = "Failed to load pages.";
             }
         }
         
-        if(mangaId) loadManga();
-        else document.getElementById("loading").innerText = "No Manga ID provided.";
+        loadManga();
     </script>
 </body>
 </html>
