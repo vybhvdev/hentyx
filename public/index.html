@@ -34,7 +34,6 @@
         <h2 id="pageTitle">Recent Uploads</h2>
         <div id="loading">Loading...</div>
         <div id="grid" class="grid"></div>
-        <div id="debug" style="font-family: monospace; font-size: 10px; color: #555; margin-top: 20px; word-break: break-all;"></div>
     </div>
 
     <script>
@@ -44,12 +43,10 @@
 
         async function loadGalleries(query = "") {
             const grid = document.getElementById('grid');
-            const debug = document.getElementById('debug');
             const loading = document.getElementById('loading');
             
             grid.innerHTML = '';
             loading.style.display = 'block';
-            debug.innerText = "Initiating fetch...";
 
             try {
                 const apiQuery = query || "english";
@@ -60,7 +57,6 @@
                 }
 
                 const data = await response.json();
-                debug.innerText = "Data received: " + JSON.stringify(data).substring(0, 200) + "...";
 
                 loading.style.display = 'none';
 
@@ -83,7 +79,6 @@
                 });
             } catch (err) {
                 loading.style.display = 'none';
-                debug.innerText = "FETCH FAILED: " + err.message;
                 grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: #ed2553;">Connection Error.</div>`;
             }
         }
