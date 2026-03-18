@@ -90,7 +90,7 @@
                 data.forEach(item => {
                     const card = document.createElement('a');
                     // Point to our new Gallery page!
-                    card.href = `gallery.html?id=${item.id}`; 
+                    card.href = `gallery.html?id=${item.id}&cover=${encodeURIComponent(item.cover)}`; 
                     card.className = 'card';
                     card.innerHTML = `
                         <div class="cover-wrapper"><img src="${item.cover}" loading="lazy" alt="cover"></div>

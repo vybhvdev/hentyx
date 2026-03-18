@@ -57,7 +57,7 @@
             
             <p class="desc" id="mangaDesc"></p>
             
-            <a href="#" id="readLink" class="read-btn">Read Chapter 1</a>
+            <a href="#" id="readLink" class="read-btn" style="display:none;">Read Chapter 1</a>
 
             <div class="chapters-section">
                 <h2 style="font-size: 1.2rem; margin: 0; color: var(--text-muted);">Chapters</h2>
@@ -69,6 +69,7 @@
     <script>
         const params = new URLSearchParams(location.search);
         const mangaId = params.get("id");
+        const passedCover = params.get("cover"); // Grab the working cover from the homepage!
         
         async function loadGallery() {
             if (!mangaId) return;
@@ -80,18 +81,14 @@
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('content').style.display = 'flex';
 
-                // THE COVER FIX: 3-Tier Fallback System
-                const imgTarget = data.image || data.cover || data.thumbnail || "";
+                // YOUR FIX: Use the homepage cover directly!
                 const coverEl = document.getElementById('coverImg');
-                coverEl.onerror = function() {
-                    if (!this.dataset.triedWsrv) {
-                        this.dataset.triedWsrv = "true";
-                        this.src = `https://wsrv.nl/?url=${encodeURIComponent(imgTarget)}`;
-                    } else {
-                        this.src = imgTarget; // Final attempt, raw URL
-                    }
-                };
-                coverEl.src = `/api/proxy?url=${encodeURIComponent(imgTarget)}`;
+                if (passedCover) {
+                    coverEl.src = passedCover;
+                } else {
+                    const imgTarget = data.image || data.cover || data.thumbnail || "";
+                    coverEl.src = `/api/proxy?url=${encodeURIComponent(imgTarget)}`;
+                }
                 
                 document.getElementById('mangaTitle').innerText = data.title;
                 document.getElementById('mangaIdLabel').innerText = data.id.split('/').pop() || data.id;
@@ -103,14 +100,16 @@
                 const chapters = data.chapters || [];
                 if (chapters.length > 0) {
                     const firstChapter = chapters[chapters.length - 1];
-                    // PASS MANGA ID TO READER
-                    document.getElementById('readLink').href = `reader.html?mangaId=${encodeURIComponent(mangaId)}&chapterId=${encodeURIComponent(firstChapter.id)}`;
+                    const readLink = document.getElementById('readLink');
+                    readLink.href = `reader.html?mangaId=${encodeURIComponent(mangaId)}&chapterId=${encodeURIComponent(firstChapter.id)}`;
+                    readLink.style.display = 'inline-block';
                     
                     document.getElementById('chapterList').innerHTML = chapters.map(ch => {
                         const chTitle = ch.title.replace('Chapter ', 'Ch. ') || 'Read';
-                        // PASS MANGA ID TO READER
                         return `<a href="reader.html?mangaId=${encodeURIComponent(mangaId)}&chapterId=${encodeURIComponent(ch.id)}" class="ch-btn">${chTitle}</a>`;
                     }).join('');
+                } else {
+                    document.getElementById('chapterList').innerHTML = '<span style="color: #ed2553;">No chapters available.</span>';
                 }
             } catch (err) {
                 console.error(err);
