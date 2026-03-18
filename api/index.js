@@ -28,24 +28,29 @@ app.get("/api/info", async (req, res) => {
     const res2 = await axios.get(`${JANDA_BASE}/${PROVIDER}/get?book=${req.query.id}`);
     const d = res2.data.data;
     let p = Array.isArray(d.cover) ? d.cover : (d.reader || d.images || []);
-    res.json({ id: d.id, title: d.title, cover: Array.isArray(d.cover) ? d.cover[0] : (d.image || d.cover), pages: p, tags: d.tags || [] });
+    res.json({ 
+        id: d.id, 
+        title: d.title, 
+        cover: Array.isArray(d.cover) ? d.cover[0] : (d.image || d.cover), 
+        pages: p, 
+        tags: d.tags || [] 
+    });
   } catch (err) { res.status(500).json({ error: "Failed" }); }
 });
 
-// ZIP DOWNLOAD ROUTE
 app.get("/api/download", async (req, res) => {
   const { id, title } = req.query;
   try {
     const info = await axios.get(`${JANDA_BASE}/${PROVIDER}/get?book=${id}`);
     const pages = Array.isArray(info.data.data.cover) ? info.data.data.cover : (info.data.data.reader || []);
-    
     res.setHeader('Content-Disposition', `attachment; filename="${title || id}.zip"`);
     const archive = archiver('zip');
     archive.pipe(res);
-
     for (let i = 0; i < pages.length; i++) {
-      const response = await axios.get(pages[i], { responseType: 'arraybuffer', headers: { "Referer": "https://pururin.to/" } });
-      archive.append(response.data, { name: `${i + 1}.jpg` });
+      try {
+        const response = await axios.get(pages[i], { responseType: 'arraybuffer', headers: { "Referer": "https://pururin.to/" } });
+        archive.append(response.data, { name: `${i + 1}.jpg` });
+      } catch(e) {}
     }
     archive.finalize();
   } catch (e) { res.status(500).send("Download failed"); }
@@ -53,8 +58,12 @@ app.get("/api/download", async (req, res) => {
 
 app.get("/api/proxy", async (req, res) => {
   try {
-    const url = req.query.url.replace('/api/proxy?url=', ''); // Prevent double proxying
-    const response = await axios.get(decodeURIComponent(url), { responseType: "arraybuffer", headers: { "Referer": "https://pururin.to/" } });
+    const url = decodeURIComponent(req.query.url);
+    const response = await axios.get(url, { 
+        responseType: "arraybuffer", 
+        headers: { "Referer": "https://pururin.to/" },
+        timeout: 10000 
+    });
     res.setHeader("Content-Type", response.headers["content-type"]);
     res.send(response.data);
   } catch (err) { res.status(500).send("Proxy failed"); }
