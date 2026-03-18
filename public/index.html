@@ -122,10 +122,11 @@
             if (cached) renderPopular(JSON.parse(cached));
             else document.getElementById('popularGrid').innerHTML = skelPopular(6);
             try {
-                const res = await fetch('/api/popular');
+                const res = await fetch('https://jandapress.onrender.com/pururin/search?key=popular&page=1');
                 const data = await res.json();
-                sessionStorage.setItem(cacheKey, JSON.stringify(data));
-                renderPopular(data);
+                const mpop = (data.data || []).slice(0,8).map(m => ({ id: m.id || m.code, title: m.title, cover: m.image || m.cover }));
+                sessionStorage.setItem(cacheKey, JSON.stringify(mpop));
+                renderPopular(mpop);
             } catch(e) {}
         }
 
@@ -141,13 +142,15 @@
             const grid = document.getElementById('grid');
             const cacheKey = 'hentyx_galleries_' + query + '_' + page;
             const cached = sessionStorage.getItem(cacheKey);
-            if (cached) renderGalleries(JSON.parse(cached), page);
+            if (cached) { renderGalleries(JSON.parse(cached), page); }
             else grid.innerHTML = skelCards(12);
             try {
-                const res = await fetch('/api/galleries?q=' + encodeURIComponent(query || 'new') + '&p=' + page + '&lang=' + currentLang);
+                const langSuffix = currentLang === 'en' ? ' english' : currentLang === 'jp' ? ' japanese' : '';
+                const res = await fetch('https://jandapress.onrender.com/pururin/search?key=' + encodeURIComponent((query || 'new') + langSuffix) + '&page=' + page);
                 const data = await res.json();
-                sessionStorage.setItem(cacheKey, JSON.stringify(data));
-                renderGalleries(data, page);
+                const mapped = (data.data || []).map(m => ({ id: m.id || m.code, title: m.title, cover: m.image || m.cover }));
+                sessionStorage.setItem(cacheKey, JSON.stringify(mapped));
+                renderGalleries(mapped, page);
             } catch (err) {
                 if (!cached) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px;color:#444;">OFFLINE.</div>';
             }
@@ -186,9 +189,14 @@
         function triggerSearch() { currentQuery = document.getElementById('searchInput').value.trim(); currentPage = 1; loadGalleries(currentQuery, 1); }
         async function goTrueRandom() {
             try {
-                const res = await fetch('/api/random');
+                const keywords = ['english','uncensored','schoolgirl','milf','fantasy'];
+                const rk = keywords[Math.floor(Math.random()*keywords.length)];
+                const rp = Math.floor(Math.random()*5)+1;
+                const res = await fetch('https://jandapress.onrender.com/pururin/search?key='+rk+'&page='+rp);
                 const data = await res.json();
-                window.location.href = 'gallery.html?id=' + data.id;
+                const results = data.data || [];
+                const pick = results[Math.floor(Math.random()*results.length)];
+                window.location.href = 'gallery.html?id=' + (pick.id || pick.code) + '&cover=' + encodeURIComponent(pick.image || pick.cover);
             } catch(e) {}
         }
 

@@ -49,8 +49,9 @@
 
     async function loadPopular() {
       try {
-        const res = await fetch('/api/popular');
-        const data = await res.json();
+        const res = await fetch('https://jandapress.onrender.com/pururin/search?key=popular&page=1');
+        const raw = await res.json();
+        const data = (raw.data || []).map(m => ({id: m.id||m.code, title: m.title, cover: m.image||m.cover}));
         document.getElementById('grid').innerHTML = data.map((m, i) => `
           <a href="gallery.html?id=${m.id}&cover=${encodeURIComponent(m.cover)}" class="card">
             <div class="cover-wrap">
