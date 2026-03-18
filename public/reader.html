@@ -54,24 +54,37 @@
         const params = new URLSearchParams(location.search);
         const id = params.get("id");
 
-        async function load() {
+        async function load(attempt) {
+            attempt = attempt || 1;
+            const overlay = document.getElementById("loading-overlay");
+            if (!overlay) return;
+            overlay.innerText = attempt === 1 ? "PREPARING GALLERY..." : "CONNECTING... attempt " + attempt + "/4";
             try {
-                const res = await fetch(`/api/info?id=${id}`);
+                const controller = new AbortController();
+                const tid = setTimeout(() => controller.abort(), 25000);
+                const res = await fetch("/api/info?id=" + id, { signal: controller.signal });
+                clearTimeout(tid);
                 const data = await res.json();
-                
-                // YOUR FIX: The essential mapping
                 pages = (data.pages && data.pages.length > 0) ? data.pages : (Array.isArray(data.cover) ? data.cover : []);
-                
                 if (pages.length > 0) {
-                    trackHistory({ id, title: data.title, cover: data.cover });
-                    // Store cover for history page fallback
+                    trackHistory({ id: id, title: data.title, cover: data.cover });
                     const pc = new URLSearchParams(location.search).get("cover");
                     if (pc) localStorage.setItem("cover_" + id, pc);
-                    document.getElementById("loading-overlay").remove();
+                    overlay.remove();
                     updateDisplay();
                 } else {
-                    document.getElementById("loading-overlay").innerText = "NO PAGES FOUND.";
+                    if (attempt < 4) { setTimeout(function(){ load(attempt + 1); }, 2000); }
+                    else { overlay.innerText = "NO PAGES FOUND."; }
                 }
+            } catch(e) {
+                if (attempt < 4) {
+                    overlay.innerText = "RETRYING " + attempt + "/4...";
+                    setTimeout(function(){ load(attempt + 1); }, 3000);
+                } else {
+                    overlay.innerHTML = 'CONNECTION ERROR.<br><br><span onclick="load(1)" style="color:#ed2553;font-size:13px;cursor:pointer;">TAP TO RETRY</span>';
+                }
+            }
+        }
             } catch (e) { document.getElementById("loading-overlay").innerText = "CONNECTION ERROR."; }
         }
 
