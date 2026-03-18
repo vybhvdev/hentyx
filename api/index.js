@@ -40,12 +40,15 @@ app.get("/api/info", async (req, res) => {
     let pages = [];
     let finalCover = "";
 
-    // If 'cover' is an array (like in your curl), those are the pages!
+    // PURURIN FIX: Move the array from 'cover' or 'reader' to 'pages'
     if (Array.isArray(d.cover)) {
         pages = d.cover;
-        finalCover = d.image || d.cover[0];
+        finalCover = d.cover[0]; // Use first page as cover
+    } else if (Array.isArray(d.reader)) {
+        pages = d.reader;
+        finalCover = d.image || d.cover;
     } else {
-        pages = d.reader || d.images || d.data?.images || [];
+        pages = d.images || d.data?.images || [];
         finalCover = d.image || d.cover;
     }
 
@@ -54,7 +57,7 @@ app.get("/api/info", async (req, res) => {
       title: d.title || "Untitled",
       cover: finalCover,
       tags: d.tags || d.genres || [],
-      pages: pages
+      pages: pages // This is the key!
     });
   } catch (err) { res.status(500).json({ error: "Info Failed" }); }
 });
@@ -63,7 +66,7 @@ app.get("/api/proxy", async (req, res) => {
   try {
     const response = await axios.get(req.query.url, {
       responseType: "arraybuffer",
-      headers: { "Referer": `https://${PROVIDER}.to/` },
+      headers: { "Referer": "https://pururin.to/" },
       timeout: 10000
     });
     res.setHeader("Content-Type", response.headers["content-type"]);

@@ -18,37 +18,31 @@
         <a href="javascript:history.back()" class="btn">← BACK</a>
         <a href="index.html" class="btn">HOME</a>
     </div>
-    <div id="loading">LOADING PAGES...</div>
+    <div id="loading">LOADING...</div>
     <div id="pages" style="margin-top:55px; width: 100%; display: flex; flex-direction: column; align-items: center;"></div>
 
     <script>
         const params = new URLSearchParams(location.search);
-        const mangaId = params.get("id");
-        async function loadManga() {
-            if (!mangaId) return;
+        const id = params.get("id");
+        async function load() {
             try {
-                const res = await fetch(`/api/info?id=${encodeURIComponent(mangaId)}`);
+                const res = await fetch(`/api/info?id=${id}`);
                 const data = await res.json();
-                document.getElementById("loading").style.display = "none";
-                const container = document.getElementById("pages");
                 
-                // Jandapress mapping fix
-                const pages = data.pages || [];
-                if(pages.length > 0) {
-                    container.innerHTML = pages.map(imgUrl => {
-                        // Ensure we use the proxy for every page to avoid 403 Forbidden
-                        const proxyUrl = `/api/proxy?url=${encodeURIComponent(imgUrl)}`;
-                        return `<div class="page-wrap"><img src="${proxyUrl}" loading="lazy" onerror="this.src='${imgUrl}'"></div>`;
-                    }).join('');
+                // Smart Check: Look for pages OR the accidental cover array
+                const pages = data.pages || (Array.isArray(data.cover) ? data.cover : []);
+                
+                if (pages.length > 0) {
+                    document.getElementById("loading").style.display = "none";
+                    document.getElementById("pages").innerHTML = pages.map(url => 
+                        `<div class="page-wrap"><img src="/api/proxy?url=${encodeURIComponent(url)}" loading="lazy"></div>`
+                    ).join('');
                 } else {
-                    document.getElementById("loading").innerText = "NO PAGES FOUND IN API.";
-                    document.getElementById("loading").style.display = "block";
+                    document.getElementById("loading").innerText = "NO PAGES FOUND.";
                 }
-            } catch (e) {
-                document.getElementById("loading").innerText = "CONNECTION FAILED.";
-            }
+            } catch (e) { document.getElementById("loading").innerText = "FETCH ERROR."; }
         }
-        loadManga();
+        load();
     </script>
 </body>
 </html>
