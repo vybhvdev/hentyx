@@ -76,7 +76,7 @@
 
             try {
                 // Default to a broad search if empty so the homepage isn't blank
-                const apiQuery = query || "doujinshi";
+                const apiQuery = query || "manga";
                 const response = await fetch(`/api/galleries?q=${encodeURIComponent(apiQuery)}`);
                 const data = await response.json();
                 
