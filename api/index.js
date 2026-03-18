@@ -44,8 +44,9 @@ app.get("/api/info", async (req, res) => {
   try {
     const res2 = await axios.get(`${JANDA_BASE}/${PROVIDER}/get?book=${req.query.id}`);
     const d = res2.data.data;
-    let p = Array.isArray(d.cover) ? d.cover : (d.reader || d.images || []);
-    res.json({ id: d.id, title: d.title, cover: Array.isArray(d.cover) ? d.cover[0] : (d.image || d.cover), pages: p, tags: d.tags || [] });
+    let p = Array.isArray(d.image) ? d.image : (Array.isArray(d.cover) ? d.cover : (d.reader || d.images || []));
+    const thumb = typeof d.cover === 'string' ? d.cover : (Array.isArray(d.cover) ? d.cover[0] : (p[0] || ''));
+    res.json({ id: d.id, title: d.title, cover: thumb, pages: p, tags: d.tags || [] });
   } catch (err) { res.status(500).json({ error: "Failed" }); }
 });
 
@@ -76,7 +77,8 @@ app.get("/api/download", async (req, res) => {
   const { id, title } = req.query;
   try {
     const info = await axios.get(`${JANDA_BASE}/${PROVIDER}/get?book=${id}`);
-    const pages = Array.isArray(info.data.data.cover) ? info.data.data.cover : (info.data.data.reader || []);
+    const d2 = info.data.data;
+    const pages = Array.isArray(d2.image) ? d2.image : (Array.isArray(d2.cover) ? d2.cover : (d2.reader || []));
     res.setHeader('Content-Disposition', `attachment; filename="${title || id}.zip"`);
     const archive = archiver('zip');
     archive.pipe(res);
