@@ -12,8 +12,11 @@ const headers = { "Referer": "https://pururin.to/", "User-Agent": "Mozilla/5.0" 
 
 app.get("/api/galleries", async (req, res) => {
   try {
-    const q = req.query.q || "new";
+    let q = req.query.q || "new";
     const p = req.query.p || 1;
+    const lang = req.query.lang || "all";
+    if (lang === "en") q = q + " english";
+    else if (lang === "jp") q = q + " japanese";
     const res2 = await axios.get(`${JANDA_BASE}/${PROVIDER}/search?key=${encodeURIComponent(q)}&page=${p}`);
     const results = res2.data.data || [];
     res.json(results.map(m => ({

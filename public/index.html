@@ -2,6 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ed2553">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hentyx</title>
     <style>
@@ -34,6 +38,12 @@
         .card-title { padding: 8px; font-size: 10px; line-height: 1.2; height: 28px; overflow: hidden; text-align: center; color: #bbb; }
         @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
         .pagination { display: flex; justify-content: center; align-items: center; gap: 15px; margin: 30px 0; }
+        .filter-bar { padding: 8px 15px; background: #000; display: flex; gap: 8px; align-items: center; border-bottom: 1px solid #1a1a1a; overflow-x: auto; scrollbar-width: none; }
+        .filter-bar::-webkit-scrollbar { display: none; }
+        .filter-group { display: flex; gap: 4px; }
+        .f-btn { background: #111; border: 1px solid #2a2a2a; color: #666; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; cursor: pointer; white-space: nowrap; transition: 0.15s; }
+        .f-btn.active { background: #1f0a10; border-color: var(--accent); color: var(--accent); }
+        .f-divider { width: 1px; background: #222; margin: 0 4px; }
         .page-btn { background: #111; color: var(--accent); border: 1px solid var(--accent); padding: 10px 18px; border-radius: 4px; font-weight: bold; cursor: pointer; }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -59,6 +69,19 @@
         <input type="text" id="searchInput" placeholder="Search galleries...">
         <button class="go-btn" onclick="triggerSearch()">GO</button>
     </div>
+    <div class="filter-bar">
+        <div class="filter-group">
+            <button class="f-btn active" id="lang-all" onclick="setLang('all')">🌐 All</button>
+            <button class="f-btn" id="lang-en" onclick="setLang('en')">🇬🇧 EN</button>
+            <button class="f-btn" id="lang-jp" onclick="setLang('jp')">🇯🇵 JP</button>
+        </div>
+        <div class="f-divider"></div>
+        <div class="filter-group">
+            <button class="f-btn active" id="sort-default" onclick="setSort('default')">Default</button>
+            <button class="f-btn" id="sort-az" onclick="setSort('az')">A→Z</button>
+            <button class="f-btn" id="sort-za" onclick="setSort('za')">Z→A</button>
+        </div>
+    </div>
     <div class="container">
         <div class="section-title">🔥 Popular</div>
         <div class="popular-grid" id="popularGrid"></div>
@@ -71,7 +94,7 @@
         </div>
     </div>
     <script>
-        let currentPage = 1, currentQuery = "";
+        let currentPage = 1, currentQuery = "", currentLang = 'all', currentSort = 'default';
         const proxy = (url) => `/api/proxy?url=${encodeURIComponent(url)}`;
 
         function toggleDrawer() {
@@ -121,7 +144,7 @@
             if (cached) renderGalleries(JSON.parse(cached), page);
             else grid.innerHTML = skelCards(12);
             try {
-                const res = await fetch('/api/galleries?q=' + encodeURIComponent(query || 'new') + '&p=' + page);
+                const res = await fetch('/api/galleries?q=' + encodeURIComponent(query || 'new') + '&p=' + page + '&lang=' + currentLang);
                 const data = await res.json();
                 sessionStorage.setItem(cacheKey, JSON.stringify(data));
                 renderGalleries(data, page);
@@ -130,8 +153,26 @@
             }
         }
 
+        function setLang(lang) {
+            currentLang = lang;
+            ['all','en','jp'].forEach(l => document.getElementById('lang-'+l).classList.toggle('active', l === lang));
+            sessionStorage.clear();
+            currentPage = 1;
+            loadGalleries(currentQuery);
+        }
+
+        function setSort(sort) {
+            currentSort = sort;
+            ['default','az','za'].forEach(s => document.getElementById('sort-'+s).classList.toggle('active', s === sort));
+            const cached = sessionStorage.getItem('hentyx_galleries_' + currentQuery + '_' + currentPage);
+            if (cached) renderGalleries(JSON.parse(cached), currentPage);
+        }
+
         function renderGalleries(data, page) {
-            document.getElementById('grid').innerHTML = data.map(m => `
+            let sorted = [...data];
+            if (currentSort === 'az') sorted.sort((a,b) => a.title.localeCompare(b.title));
+            else if (currentSort === 'za') sorted.sort((a,b) => b.title.localeCompare(a.title));
+            document.getElementById('grid').innerHTML = sorted.map(m => `
                 <a href="gallery.html?id=${m.id}&cover=${encodeURIComponent(m.cover)}" class="card">
                     <div class="cover-wrap"><img src="${proxy(m.cover)}" loading="lazy"></div>
                     <div class="card-title">${m.title}</div>
@@ -151,6 +192,7 @@
             } catch(e) {}
         }
 
+        if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js");
         window.onload = async () => {
             const user = await getUser();
             const drawerAuthLink = document.getElementById('drawerAuthLink');
