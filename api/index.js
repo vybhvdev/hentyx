@@ -23,29 +23,27 @@ app.get("/api/galleries", async (req, res) => {
   } catch (err) { res.status(500).json({ error: "Search Failed" }); }
 });
 
+// TRUE RANDOM ENDPOINT
+app.get("/api/random", async (req, res) => {
+  try {
+    const response = await axios.get(`${JANDA_BASE}/${PROVIDER}/random`, { timeout: 15000 });
+    const d = response.data.data;
+    res.json({ id: d.id || d.code });
+  } catch (err) { res.status(500).json({ error: "Random Failed" }); }
+});
+
 app.get("/api/info", async (req, res) => {
   try {
     const id = req.query.id;
     const url = `${JANDA_BASE}/${PROVIDER}/get?book=${encodeURIComponent(id)}`;
     const response = await axios.get(url, { timeout: 15000 });
-    
-    // Get the raw data from your Render server
     const raw = response.data.data || response.data;
-
-    // THE ABSOLUTE FIX:
-    // We know Pururin puts the list in 'cover'. 
-    // We force 'pages' to take that list.
-    let pagesList = [];
-    if (Array.isArray(raw.cover)) pagesList = raw.cover;
-    else if (Array.isArray(raw.reader)) pagesList = raw.reader;
-    else if (Array.isArray(raw.images)) pagesList = raw.images;
-
+    let p = Array.isArray(raw.cover) ? raw.cover : (Array.isArray(raw.reader) ? raw.reader : []);
     res.json({
       id: raw.id || id,
-      title: raw.title || "Untitled",
-      // If cover was an array, we use the first image for the gallery page cover
+      title: raw.title,
       cover: Array.isArray(raw.cover) ? raw.cover[0] : (raw.image || raw.cover),
-      pages: pagesList,
+      pages: p,
       tags: raw.tags || []
     });
   } catch (err) { res.status(500).json({ error: "Info Failed" }); }

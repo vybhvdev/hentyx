@@ -5,45 +5,81 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hentyx</title>
     <style>
-        :root { --bg: #121212; --surface: #1e1e1e; --accent: #ff00ff; --text: #e5e5e5; }
-        body { margin: 0; background: var(--bg); color: var(--text); font-family: sans-serif; }
-        header { background: #000; padding: 15px; border-bottom: 1px solid var(--accent); position: sticky; top: 0; z-index: 1000; display: flex; flex-direction: column; gap: 10px; }
-        .brand { font-size: 24px; font-weight: 900; color: var(--accent); text-decoration: none; text-align: center; }
+        :root { --bg: #0a0a0a; --surface: #161616; --accent: #ff00ff; --text: #e5e5e5; }
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: sans-serif; transition: 0.3s; }
+        
+        header { background: #000; padding: 12px; border-bottom: 1px solid var(--accent); position: sticky; top: 0; z-index: 1000; display: flex; flex-direction: column; gap: 8px; }
+        .brand { font-size: 24px; font-weight: 900; color: var(--accent); text-decoration: none; text-align: center; letter-spacing: -1px; }
+        
         .search-row { display: flex; gap: 5px; }
-        input { flex: 1; padding: 12px; background: #222; border: 1px solid #333; color: #fff; border-radius: 4px; outline: none; }
-        .btn { background: var(--accent); color: #000; border: none; padding: 0 15px; font-weight: bold; cursor: pointer; border-radius: 4px; height: 42px; }
-        .random-btn { background: #333; color: var(--accent); border: 1px solid var(--accent); }
+        input { flex: 1; padding: 12px; background: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 4px; outline: none; font-size: 14px; }
+        .btn { background: var(--accent); color: #000; border: none; padding: 0 15px; font-weight: bold; cursor: pointer; border-radius: 4px; height: 42px; display: flex; align-items: center; justify-content: center; }
+        .random-btn { background: #222; color: var(--accent); border: 1px solid var(--accent); font-size: 18px; }
+
         .container { max-width: 1200px; margin: 0 auto; padding: 10px; }
-        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        
+        /* POPULAR SECTION */
+        .section-title { font-size: 12px; text-transform: uppercase; color: #666; letter-spacing: 2px; margin: 15px 0 10px 5px; font-weight: bold; border-left: 3px solid var(--accent); padding-left: 10px; }
+        .tag-chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
+        .tag-chips::-webkit-scrollbar { display: none; }
+        .chip { background: var(--surface); color: var(--text); padding: 8px 16px; border-radius: 20px; font-size: 12px; text-decoration: none; border: 1px solid #222; white-space: nowrap; transition: 0.2s; }
+        .chip:hover { border-color: var(--accent); color: var(--accent); }
+
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px; }
         @media (min-width: 600px) { .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); } }
-        .card { background: var(--surface); border-radius: 3px; overflow: hidden; text-decoration: none; color: inherit; position: relative; border: 1px solid #222; }
+        
+        .card { background: var(--surface); border-radius: 4px; overflow: hidden; text-decoration: none; color: inherit; position: relative; border: 1px solid #1a1a1a; transition: 0.2s; }
+        .card:hover { border-color: var(--accent); transform: translateY(-3px); }
         .cover-wrap { position: relative; padding-top: 140%; background: #000; }
         .card img { position: absolute; top:0; left:0; width:100%; height:100%; object-fit: cover; }
         .lang-badge { position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.8); color: var(--accent); padding: 2px 5px; border-radius: 2px; font-size: 9px; font-weight: bold; border: 1px solid var(--accent); }
-        .card-title { padding: 6px; font-size: 10px; line-height: 1.2; height: 28px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-align: center; }
-        #loading { text-align: center; padding: 50px; color: var(--accent); font-family: monospace; }
+        .card-title { padding: 8px; font-size: 10px; line-height: 1.2; height: 24px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-align: center; }
+
+        /* THEME TOGGLE */
+        .theme-toggle { position: fixed; bottom: 20px; right: 20px; width: 45px; height: 45px; border-radius: 50%; background: var(--accent); color: #000; border: none; font-size: 20px; cursor: pointer; box-shadow: 0 0 15px var(--accent); z-index: 2000; }
+        
+        #loading { text-align: center; padding: 50px; color: var(--accent); font-family: monospace; font-size: 12px; letter-spacing: 2px; }
     </style>
 </head>
 <body>
     <header>
         <a href="index.html" class="brand">HENTY<span style="color:#fff">X</span></a>
         <div class="search-row">
-            <input type="text" id="searchInput" placeholder="Search...">
+            <input type="text" id="searchInput" placeholder="Search galleries...">
             <button class="btn" onclick="triggerSearch()">GO</button>
-            <button class="btn random-btn" onclick="goRandom()">🎲</button>
+            <button class="btn random-btn" onclick="goTrueRandom()">🎲</button>
         </div>
     </header>
+
     <div class="container">
-        <div id="loading">CONNECTING...</div>
+        <div class="section-title">Popular Tags</div>
+        <div class="tag-chips" id="popularTags">
+            </div>
+
+        <div class="section-title" id="gridTitle">Recent Uploads</div>
+        <div id="loading">CONNECTING TO PROVIDER...</div>
         <div id="grid" class="grid"></div>
     </div>
+
+    <button class="theme-toggle" onclick="toggleTheme()">✨</button>
+
     <script>
+        const popular = ["English", "Sole Female", "Milf", "Full Color", "Glasses", "Stockings", "Bondage", "Incest"];
+        
+        function initTags() {
+            const container = document.getElementById('popularTags');
+            container.innerHTML = popular.map(t => `<a href="index.html?q=${encodeURIComponent(t)}" class="chip">${t}</a>`).join('');
+        }
+
         async function loadGalleries(query = "") {
             const grid = document.getElementById('grid');
             const loading = document.getElementById('loading');
+            const title = document.getElementById('gridTitle');
+            
             grid.innerHTML = ''; loading.style.display = 'block';
+            title.innerText = query ? `Search: ${query}` : "Recent Uploads";
+
             try {
-                // Default to 'new' if no query is provided
                 const finalQuery = query || "new";
                 const res = await fetch(`/api/galleries?q=${encodeURIComponent(finalQuery)}`);
                 const data = await res.json();
@@ -57,27 +93,34 @@
                 });
             } catch (err) { loading.innerText = "OFFLINE."; }
         }
-        
+
+        async function goTrueRandom() {
+            try {
+                const res = await fetch('/api/random');
+                const data = await res.json();
+                if(data.id) window.location.href = `gallery.html?id=${data.id}`;
+            } catch(e) { alert("Random failed. Try again!"); }
+        }
+
         function triggerSearch() {
-            const q = document.getElementById('searchInput').value.trim();
-            loadGalleries(q);
+            loadGalleries(document.getElementById('searchInput').value.trim());
         }
 
-        function goRandom() {
-            const tags = ["milf", "stockings", "glasses", "sole-female", "full-color"];
-            loadGalleries(tags[Math.floor(Math.random()*tags.length)]);
+        function toggleTheme() {
+            const colors = ['#ff00ff', '#bc13fe', '#00ffff', '#39ff14']; // Pink, Purple, Cyan, Green
+            const current = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+            const next = colors[(colors.indexOf(current) + 1) % colors.length];
+            document.documentElement.style.setProperty('--accent', next);
+            localStorage.setItem('hentyx-accent', next);
         }
 
-        // INITIAL LOAD: Check if there's a tag in the URL
         window.onload = () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const tag = urlParams.get('q');
-            if (tag) {
-                document.getElementById('searchInput').value = tag;
-                loadGalleries(tag);
-            } else {
-                loadGalleries();
-            }
+            initTags();
+            const savedAccent = localStorage.getItem('hentyx-accent');
+            if(savedAccent) document.documentElement.style.setProperty('--accent', savedAccent);
+            
+            const tag = new URLSearchParams(window.location.search).get('q');
+            loadGalleries(tag || "");
         };
     </script>
 </body>
