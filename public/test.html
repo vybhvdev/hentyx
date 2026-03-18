@@ -1,0 +1,24 @@
+<!DOCTYPE html><html><body>
+<h3>Test API</h3>
+<button onclick="testSearch()">Test Search</button>
+<button onclick="testRandom()">Test Random</button>
+<pre id="output"></pre>
+<script>
+async function log(...args) { document.getElementById('output').textContent += args.join(' ') + '\n'; }
+async function testSearch() {
+  log('Fetching...');
+  try {
+    const res = await fetch('/api/search?q=rating:explicit');
+    const data = await res.json();
+    log('SUCCESS:', data.length, 'images');
+    log('First:', data[0]?.full);
+  } catch(e) { log('ERROR:', e); }
+}
+async function testRandom() {
+  try {
+    const data = await fetch('/api/random').then(r=>r.json());
+    log('Random:', data.file_url);
+  } catch(e) { log('ERROR:', e); }
+}
+</script>
+</body></html>

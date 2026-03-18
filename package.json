@@ -5,8 +5,23 @@
     "start": "node api/index.js"
   },
   "dependencies": {
-    "express": "^4.18.2",
     "axios": "^1.4.0",
-    "cors": "^2.8.5"
-  }
+    "cors": "^2.8.6",
+    "express": "^4.22.1",
+    "node-fetch": "^3.3.2"
+  },
+  "description": "",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://vybhvdev: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@github.com/vybhvdev/hentyx.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/vybhvdev/hentyx/issues"
+  },
+  "homepage": "https://github.com/vybhvdev/hentyx#readme"
 }

@@ -1,34 +1,23 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <link rel="stylesheet" href="style.css">
-    <title>Hentyx OS</title>
-</head>
-<body style="background:#111; color:white; font-family:sans-serif; margin:0;">
-<header style="background:#1a1a1a; padding:15px; border-bottom:2px solid #ed2553; text-align:center;">
-    <span style="color:#ed2553; font-weight:bold; font-size:20px;">HENTYX OS</span>
-</header>
-<div id="status" style="text-align:center; padding:20px; color:#666;">Loading Grid...</div>
-<div id="grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:10px;"></div>
-
+<!DOCTYPE html><html><head><title>Hentyx Reader</title><style>img{max-width:300px;height:auto;margin:5px;display:inline-block;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.3);}</style></head><body>
+<h1>🔥 Hentyx Danbooru Reader</h1>
+<input id="tags" value="rating:explicit blonde" placeholder="blonde, schoolgirl, anal..." style="width:400px;padding:10px;font-size:16px;">
+<button onclick="load()" style="padding:10px 20px;font-size:16px;background:#ff6b9d;color:white;border:none;border-radius:5px;cursor:pointer;">Load Gallery</button>
+<button onclick="random()" style="padding:10px 20px;font-size:16px;background:#4ecdc4;color:white;border:none;border-radius:5px;cursor:pointer;margin-left:10px;">Random</button>
+<div id="gallery"></div>
 <script>
-    fetch('/api/galleries?v=' + Date.now())
-        .then(async r => {
-            if (!r.ok) throw new Error('Server Error: ' + r.status);
-            return r.json();
-        })
-        .then(data => {
-            document.getElementById('status').style.display = 'none';
-            document.getElementById('grid').innerHTML = data.map(g => `
-                <div onclick="location.href='reader.html?id=${g.id}'" style="background:#222; border-radius:10px; overflow:hidden; border:1px solid #333;">
-                    <img src="${g.cover || g.thumbnail}" style="width:100%; aspect-ratio:45/64; object-fit:cover; display:block;" onerror="this.src='https://placehold.co/200x300?text=No_Image'">
-                    <div style="padding:10px; font-size:11px; height:35px; overflow:hidden;">${g.title}</div>
-                </div>`).join('');
-        })
-        .catch(err => {
-            document.getElementById('status').innerHTML = '<span style="color:red;">Error: ' + err.message + '</span><br><small>Check Vercel Logs</small>';
-        });
+async function api(path, params='') { return (await fetch(`${path}${params}`)).json(); }
+async function load() {
+  const tags = document.getElementById('tags').value;
+  document.getElementById('gallery').innerHTML = '<p>Loading...</p>';
+  const data = await api(`/api/search?q=${encodeURIComponent(tags)}`);
+  document.getElementById('gallery').innerHTML = data.map(i => 
+    `<img src="${i.full}" title="${i.tags.join(', ')} | Score: ${i.score}" onclick="this.style.maxWidth='90vw';this.style.cursor='zoom-out';">`
+  ).join('');
+}
+async function random() {
+  const data = await api('/api/random?tags=rating:explicit');
+  document.getElementById('gallery').innerHTML = `<img src="${data.file_url}" style="width:90vw;">`;
+}
+load();
 </script>
-</body>
-</html>
+</body></html>

@@ -5,28 +5,30 @@ const app = express();
 
 app.use(cors());
 
+// The Consumet API Endpoint for Mangapill
+const CONSUMET_URL = "https://private-consumet-api.vercel.app/manga/mangapill";
+
 app.get("/api/galleries", async (req, res) => {
   try {
-    // Search for the 'blonde' tag on Pawoo (mastodon-style API)
-    const url = "https://pawoo.net/api/v1/timelines/tag/blonde?limit=40";
-    
-    const response = await axios.get(url, {
-      timeout: 8000
+    // Fetching the 'trending' or 'popular' list from Mangapill
+    const response = await axios.get(`${CONSUMET_URL}/filter?type=doujinshi`, {
+      timeout: 10000
     });
 
-    // Pawoo returns a list of 'statuses'. We filter for ones with media.
-    const results = response.data
-      .filter(post => post.media_attachments.length > 0)
-      .map(post => ({
-        id: post.id,
-        title: post.account.display_name || post.account.username,
-        cover: post.media_attachments[0].url,
-        thumbnail: post.media_attachments[0].preview_url
-      }));
+    // Consumet usually returns results in a 'results' array
+    const data = response.data.results || [];
+    
+    const formatted = data.map(m => ({
+      id: m.id,
+      title: m.title,
+      cover: m.image,
+      thumbnail: m.image
+    }));
 
-    res.status(200).json(results);
+    res.json(formatted);
   } catch (err) {
-    res.status(500).json({ error: "Pawoo API Error", message: err.message });
+    console.error("Consumet Error:", err.message);
+    res.status(500).json({ error: "Mangapill Source Offline", detail: err.message });
   }
 });
 
