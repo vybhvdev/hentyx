@@ -261,16 +261,6 @@ window.HentyxAds = (function() {
             document.getElementById('pageLabel').innerText = 'Page ' + page;
             document.getElementById('prevBtn').disabled = (page === 1);
         }
-                }
-                html += '<a href="gallery.html?id=' + m.id + '&cover=' + encodeURIComponent(m.cover) + '" class="card">' +
-                    '<div class="cover-wrap"><img src="' + proxy(m.cover) + '" loading="lazy"></div>' +
-                    '<div class="card-title">' + m.title + '</div>' +
-                    '</a>';
-            });
-            document.getElementById('grid').innerHTML = html;
-            document.getElementById('pageLabel').innerText = 'Page ' + page;
-            document.getElementById('prevBtn').disabled = (page === 1);
-        }
 
         function changePage(delta) { currentPage += delta; loadGalleries(currentQuery, currentPage); window.scrollTo(0,0); }
         function triggerSearch() { currentQuery = document.getElementById('searchInput').value.trim(); currentPage = 1; loadGalleries(currentQuery, 1); }
