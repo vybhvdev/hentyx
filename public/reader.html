@@ -5,39 +5,48 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Hentyx Reader</title>
     <style>
-        :root { --accent: #ff00ff; }
-        body { background: #000; margin: 0; padding: 0; font-family: sans-serif; overflow: hidden; height: 100vh; color: #fff; }
+        :root { --bg: #212121; --nav-bg: #1f1f1f; --accent: #ed2553; }
+        body { background: var(--bg); margin: 0; padding: 0; font-family: sans-serif; overflow-x: hidden; color: #fff; }
         
-        .nav-bar { position: fixed; top: 0; width: 100%; background: rgba(0,0,0,0.9); padding: 10px; display: flex; justify-content: space-between; z-index: 1000; border-bottom: 1px solid var(--accent); transition: 0.3s; }
-        .nav-bar.hidden { transform: translateY(-100%); }
-        .btn { color: var(--accent); text-decoration: none; font-weight: bold; padding: 8px 12px; background: #111; border-radius: 4px; border: 1px solid #333; font-size: 12px; }
+        /* nhentai Style Top/Bottom Nav */
+        .nav-bar { background: var(--nav-bg); padding: 10px; display: flex; justify-content: center; align-items: center; gap: 15px; border-bottom: 1px solid #333; font-size: 14px; font-weight: bold; }
+        .nav-bar.bottom { border-top: 1px solid #333; border-bottom: none; position: relative; margin-top: 10px; padding-bottom: 20px; }
+        
+        .nav-btn { color: #fff; text-decoration: none; padding: 5px 10px; background: #333; border-radius: 4px; cursor: pointer; transition: 0.2s; border: none; font-size: 18px; }
+        .nav-btn:hover { background: #444; }
+        .nav-btn.home { position: absolute; left: 15px; font-size: 14px; background: transparent; color: var(--accent); }
 
-        #viewer { width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; position: relative; }
-        #page-img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        #viewer { min-height: 80vh; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 10px 0; position: relative; }
+        #page-img { width: 100%; max-width: 800px; display: block; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
 
-        .tap-zone { position: absolute; top: 0; height: 100%; z-index: 50; }
-        #prev-zone { left: 0; width: 35%; }
-        #next-zone { right: 0; width: 65%; }
-
-        .footer { position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: var(--accent); padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; border: 1px solid var(--accent); z-index: 100; pointer-events: none; }
-        #loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--accent); font-family: monospace; }
+        /* Preload container (Hidden) */
+        #preloader { display: none; }
+        
+        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 2000; font-family: monospace; color: var(--accent); }
     </style>
 </head>
 <body>
-    <div class="nav-bar" id="topNav">
-        <a href="javascript:history.back()" class="btn">← BACK</a>
-        <a href="index.html" class="btn">HOME</a>
+
+    <div id="loading-overlay">PREPARING GALLERY...</div>
+
+    <div class="nav-bar">
+        <a href="index.html" class="nav-btn home">BACK</a>
+        <button class="nav-btn" onclick="changePage(-1)">‹</button>
+        <span id="pageLabelTop">1 of 0</span>
+        <button class="nav-btn" onclick="changePage(1)">›</button>
     </div>
 
-    <div id="loading">LOADING...</div>
-
-    <div id="viewer">
-        <div id="prev-zone" class="tap-zone" onclick="changePage(-1)"></div>
-        <div id="next-zone" class="tap-zone" onclick="changePage(1)"></div>
-        <img id="page-img" src="" style="display:none;" onclick="toggleUI()">
+    <div id="viewer" onclick="handleTap(event)">
+        <img id="page-img" src="">
     </div>
 
-    <div class="footer" id="pageCounter">0 / 0</div>
+    <div class="nav-bar bottom">
+        <button class="nav-btn" onclick="changePage(-1)">‹</button>
+        <span id="pageLabelBottom">1 of 0</span>
+        <button class="nav-btn" onclick="changePage(1)">›</button>
+    </div>
+
+    <div id="preloader"></div>
 
     <script>
         let pages = [];
@@ -50,27 +59,41 @@
                 const res = await fetch(`/api/info?id=${id}`);
                 const data = await res.json();
                 
-                // YOUR FIX: Check cover first if pages is empty
+                // YOUR FIX: The essential mapping
                 pages = (data.pages && data.pages.length > 0) ? data.pages : (Array.isArray(data.cover) ? data.cover : []);
                 
                 if (pages.length > 0) {
-                    document.getElementById("loading").style.display = "none";
-                    document.getElementById("page-img").style.display = "block";
+                    document.getElementById("loading-overlay").remove();
                     updateDisplay();
                 } else {
-                    document.getElementById("loading").innerText = "NO PAGES FOUND.";
+                    document.getElementById("loading-overlay").innerText = "NO PAGES FOUND.";
                 }
-            } catch (e) { document.getElementById("loading").innerText = "FETCH ERROR."; }
+            } catch (e) { document.getElementById("loading-overlay").innerText = "CONNECTION ERROR."; }
         }
 
         function updateDisplay() {
             const img = document.getElementById('page-img');
             const url = pages[currentIndex];
             img.src = `/api/proxy?url=${encodeURIComponent(url)}`;
-            document.getElementById('pageCounter').innerText = `${currentIndex + 1} / ${pages.length}`;
             
-            // Auto-hide UI
-            setTimeout(() => document.getElementById('topNav').classList.add('hidden'), 2000);
+            const label = `${currentIndex + 1} of ${pages.length}`;
+            document.getElementById('pageLabelTop').innerText = label;
+            document.getElementById('pageLabelBottom').innerText = label;
+
+            window.scrollTo(0, 0);
+            preloadNext();
+        }
+
+        // PRELOAD LOGIC: Loads the next 3 pages into hidden <img> tags
+        function preloadNext() {
+            const preloader = document.getElementById('preloader');
+            preloader.innerHTML = ''; 
+            for (let i = 1; i <= 3; i++) {
+                if (currentIndex + i < pages.length) {
+                    const preloadImg = new Image();
+                    preloadImg.src = `/api/proxy?url=${encodeURIComponent(pages[currentIndex + i])}`;
+                }
+            }
         }
 
         function changePage(step) {
@@ -78,17 +101,20 @@
             if (next >= 0 && next < pages.length) {
                 currentIndex = next;
                 updateDisplay();
-                // Preload next image
-                if(next + 1 < pages.length) {
-                    const nextImg = new Image();
-                    nextImg.src = `/api/proxy?url=${encodeURIComponent(pages[next + 1])}`;
-                }
             }
         }
 
-        function toggleUI() {
-            document.getElementById('topNav').classList.toggle('hidden');
+        function handleTap(e) {
+            const x = e.clientX;
+            const width = window.innerWidth;
+            if (x < width * 0.4) changePage(-1); // Tap left 40%
+            else changePage(1); // Tap right 60%
         }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === "ArrowRight") changePage(1);
+            if (e.key === "ArrowLeft") changePage(-1);
+        });
 
         load();
     </script>
