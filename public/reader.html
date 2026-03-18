@@ -14,27 +14,22 @@
     </style>
 </head>
 <body>
-    <div class="nav-bar">
-        <a href="javascript:history.back()" class="btn">← BACK</a>
-        <a href="index.html" class="btn">HOME</a>
-    </div>
+    <div class="nav-bar"><a href="javascript:history.back()" class="btn">← BACK</a><a href="index.html" class="btn">HOME</a></div>
     <div id="loading">LOADING...</div>
-    <div id="pages" style="margin-top:55px; width: 100%; display: flex; flex-direction: column; align-items: center;"></div>
-
+    <div id="pages" style="margin-top:55px; width:100%; display:flex; flex-direction:column; align-items:center;"></div>
     <script>
-        const params = new URLSearchParams(location.search);
-        const id = params.get("id");
         async function load() {
+            const id = new URLSearchParams(location.search).get("id");
             try {
                 const res = await fetch(`/api/info?id=${id}`);
                 const data = await res.json();
                 
-                // Smart Check: Look for pages OR the accidental cover array
-                const pages = data.pages || (Array.isArray(data.cover) ? data.cover : []);
+                // WORKAROUND: If pages is empty, check if cover is the array instead
+                const finalPages = (data.pages && data.pages.length > 0) ? data.pages : (Array.isArray(data.cover) ? data.cover : []);
                 
-                if (pages.length > 0) {
+                if (finalPages.length > 0) {
                     document.getElementById("loading").style.display = "none";
-                    document.getElementById("pages").innerHTML = pages.map(url => 
+                    document.getElementById("pages").innerHTML = finalPages.map(url => 
                         `<div class="page-wrap"><img src="/api/proxy?url=${encodeURIComponent(url)}" loading="lazy"></div>`
                     ).join('');
                 } else {

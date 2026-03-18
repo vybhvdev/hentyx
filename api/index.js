@@ -14,14 +14,12 @@ app.get("/api/galleries", async (req, res) => {
     const url = `${JANDA_BASE}/${PROVIDER}/search?key=${encodeURIComponent(query)}`;
     const response = await axios.get(url, { timeout: 15000 });
     const results = response.data.data || [];
-    
-    const formatted = results.map(m => ({
+    res.json(results.map(m => ({
       id: m.id || m.code,
       title: m.title,
       lang: (m.title || "").toLowerCase().includes("english") ? "EN" : "JP",
       cover: `/api/proxy?url=${encodeURIComponent(m.image || m.cover)}`
-    }));
-    res.json(formatted);
+    })));
   } catch (err) { res.status(500).json({ error: "Search Failed" }); }
 });
 
@@ -31,29 +29,23 @@ app.get("/api/info", async (req, res) => {
     const url = `${JANDA_BASE}/${PROVIDER}/get?book=${encodeURIComponent(id)}`;
     const response = await axios.get(url, { timeout: 15000 });
     
-    // Grab the raw data from Janda
+    // Get the raw data from your Render server
     const raw = response.data.data || response.data;
 
-    let finalPages = [];
-    let singleCover = "";
+    // THE ABSOLUTE FIX:
+    // We know Pururin puts the list in 'cover'. 
+    // We force 'pages' to take that list.
+    let pagesList = [];
+    if (Array.isArray(raw.cover)) pagesList = raw.cover;
+    else if (Array.isArray(raw.reader)) pagesList = raw.reader;
+    else if (Array.isArray(raw.images)) pagesList = raw.images;
 
-    // THE WORKAROUND: Re-mapping the fields
-    if (Array.isArray(raw.cover)) {
-        // If cover is the list of images (per your curl), move them to pages
-        finalPages = raw.cover;
-        singleCover = raw.cover[0]; // Set the first image as the cover
-    } else {
-        // Standard fallback for other providers
-        finalPages = raw.reader || raw.images || [];
-        singleCover = raw.image || raw.cover || "";
-    }
-
-    // Send the "Fixed" JSON back to the frontend
     res.json({
       id: raw.id || id,
       title: raw.title || "Untitled",
-      cover: singleCover,
-      pages: finalPages,
+      // If cover was an array, we use the first image for the gallery page cover
+      cover: Array.isArray(raw.cover) ? raw.cover[0] : (raw.image || raw.cover),
+      pages: pagesList,
       tags: raw.tags || []
     });
   } catch (err) { res.status(500).json({ error: "Info Failed" }); }
