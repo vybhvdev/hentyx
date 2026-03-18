@@ -35,29 +35,27 @@ app.get("/api/info", async (req, res) => {
     const id = req.query.id;
     const url = `${JANDA_BASE}/${PROVIDER}/get?book=${encodeURIComponent(id)}`;
     const response = await axios.get(url, { timeout: 15000 });
-    const d = response.data.data || response.data;
+    const d = response.data.data;
 
     let pages = [];
-    let finalCover = "";
+    let coverImg = "";
 
-    // PURURIN FIX: Move the array from 'cover' or 'reader' to 'pages'
+    // FORCE MAPPING: If 'cover' is the array, move it to 'pages'
     if (Array.isArray(d.cover)) {
         pages = d.cover;
-        finalCover = d.cover[0]; // Use first page as cover
-    } else if (Array.isArray(d.reader)) {
-        pages = d.reader;
-        finalCover = d.image || d.cover;
+        coverImg = pages[0]; // Use first page as cover
     } else {
-        pages = d.images || d.data?.images || [];
-        finalCover = d.image || d.cover;
+        pages = d.reader || d.images || [];
+        coverImg = d.image || d.cover || (pages.length > 0 ? pages[0] : "");
     }
 
+    // Direct, clean JSON response
     res.json({
-      id: d.id || d.code || id,
+      id: d.id || id,
       title: d.title || "Untitled",
-      cover: finalCover,
-      tags: d.tags || d.genres || [],
-      pages: pages // This is the key!
+      cover: coverImg,
+      pages: pages,
+      tags: d.tags || []
     });
   } catch (err) { res.status(500).json({ error: "Info Failed" }); }
 });
