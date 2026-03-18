@@ -114,27 +114,30 @@
 
         async function load() {
             try {
-                const res = await fetch(`/api/info?id=${id}`);
+                const res = await fetch(`https://jandapress.onrender.com/pururin/get?book=${id}`);
                 const data = await res.json();
-                galleryData = data;
-                allPages = (data.pages && data.pages.length > 0) ? data.pages : (Array.isArray(data.cover) ? data.cover : []);
+                const d = data.data || data;
+                allPages = Array.isArray(d.image) ? d.image : (Array.isArray(d.cover) ? d.cover : (d.reader || []));
+                const thumb = typeof d.cover === "string" ? d.cover : (passedCover || allPages[0] || "");
+                galleryData = { id: d.id, title: d.title, cover: thumb };
 
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('main').style.display = 'block';
-                document.getElementById('mangaTitle').innerText = data.title;
-                document.getElementById('mangaIdLabel').innerText = data.id;
+                document.getElementById('mangaTitle').innerText = d.title;
+                document.getElementById('mangaIdLabel').innerText = d.id;
                 document.getElementById('pageCountLabel').innerText = allPages.length;
-                document.getElementById('coverImg').src = passedCover ? proxy(passedCover) : proxy(data.cover);
+                document.getElementById('coverImg').src = proxy(thumb);
                 document.getElementById('readLink').href = `reader.html?id=${id}`;
                 document.getElementById('dlBtn').onclick = () => window.location.href = `/api/download?id=${id}&title=${encodeURIComponent(data.title)}`;
 
-                document.getElementById('genresList').innerHTML = (data.tags || []).map(t =>
+                document.getElementById('genresList').innerHTML = (d.tags || []).map(t =>
                     `<a href="index.html?q=${encodeURIComponent(t.name || t)}" class="tag">${t.name || t}</a>`
                 ).join('');
 
                 renderNextBatch();
-                loadRelated(data.tags && data.tags[0] ? (data.tags[0].name || data.tags[0]) : "doujinshi");
+                loadRelated(d.tags && d.tags[0] ? (d.tags[0].name || d.tags[0]) : "doujinshi");
                 syncBookmarkBtn();
+                document.title = 'Hentyx - ' + d.title;
             } catch(e) {
                 document.getElementById('loading').innerText = "FAILED TO LOAD.";
             }

@@ -62,10 +62,13 @@
             try {
                 const controller = new AbortController();
                 const tid = setTimeout(() => controller.abort(), 25000);
-                const res = await fetch("/api/info?id=" + id, { signal: controller.signal });
+                const res = await fetch("https://jandapress.onrender.com/pururin/get?book=" + id, { signal: controller.signal });
                 clearTimeout(tid);
                 const data = await res.json();
-                pages = (data.pages && data.pages.length > 0) ? data.pages : (Array.isArray(data.cover) ? data.cover : []);
+                const d = data.data || data;
+                pages = Array.isArray(d.image) ? d.image : (Array.isArray(d.cover) ? d.cover : (d.reader || d.images || []));
+                const thumb = typeof d.cover === "string" ? d.cover : (Array.isArray(d.cover) ? d.cover[0] : (pages[0] || ""));
+                data.title = d.title; data.cover = thumb; data.id = d.id;
                 if (pages.length > 0) {
                     trackHistory({ id: id, title: data.title, cover: data.cover });
                     const pc = new URLSearchParams(location.search).get("cover");
