@@ -15,17 +15,12 @@ app.get("/api/galleries", async (req, res) => {
     const response = await axios.get(url, { timeout: 15000 });
     const results = response.data.data || [];
     
-    const formatted = results.map(m => {
-      let lang = "JP"; 
-      const title = (m.title || "").toLowerCase();
-      if (title.includes("english")) lang = "EN";
-      return {
-        id: m.id || m.code,
-        title: m.title,
-        lang: lang,
-        cover: `/api/proxy?url=${encodeURIComponent(m.image || m.cover)}`
-      };
-    });
+    const formatted = results.map(m => ({
+      id: m.id || m.code,
+      title: m.title,
+      lang: (m.title || "").toLowerCase().includes("english") ? "EN" : "JP",
+      cover: `/api/proxy?url=${encodeURIComponent(m.image || m.cover)}`
+    }));
     res.json(formatted);
   } catch (err) { res.status(500).json({ error: "Search Failed" }); }
 });
@@ -35,25 +30,24 @@ app.get("/api/info", async (req, res) => {
     const id = req.query.id;
     const url = `${JANDA_BASE}/${PROVIDER}/get?book=${encodeURIComponent(id)}`;
     const response = await axios.get(url, { timeout: 15000 });
-    const d = response.data.data;
+    const d = response.data.data || response.data;
 
     let pages = [];
-    let coverImg = "";
-
-    // FORCE MAPPING: If 'cover' is the array, move it to 'pages'
+    
+    // THE EASY FIX: If cover is an array (per your curl), it's actually the pages.
     if (Array.isArray(d.cover)) {
         pages = d.cover;
-        coverImg = pages[0]; // Use first page as cover
-    } else {
-        pages = d.reader || d.images || [];
-        coverImg = d.image || d.cover || (pages.length > 0 ? pages[0] : "");
+    } else if (Array.isArray(d.reader)) {
+        pages = d.reader;
+    } else if (Array.isArray(d.images)) {
+        pages = d.images;
     }
 
-    // Direct, clean JSON response
     res.json({
       id: d.id || id,
       title: d.title || "Untitled",
-      cover: coverImg,
+      // Set cover to the first page URL since 'cover' is being used for the array
+      cover: pages.length > 0 ? pages[0] : (d.image || ""),
       pages: pages,
       tags: d.tags || []
     });
