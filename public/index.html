@@ -378,6 +378,33 @@ window.HentyxAds = (function() {
         })();
 
         // Unregister old SW caches
+        // PWA Install prompt
+        let deferredPrompt = null;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            if (!localStorage.getItem('hx_install_dismissed')) {
+                setTimeout(() => {
+                    document.getElementById('installBanner').classList.add('show');
+                }, 5000);
+            }
+        });
+
+        document.getElementById('installBtn').addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const result = await deferredPrompt.userChoice;
+                deferredPrompt = null;
+                document.getElementById('installBanner').classList.remove('show');
+                localStorage.setItem('hx_install_dismissed', '1');
+            }
+        });
+
+        function dismissInstall() {
+            document.getElementById('installBanner').classList.remove('show');
+            localStorage.setItem('hx_install_dismissed', '1');
+        }
+
 if ("serviceWorker" in navigator) {
     navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
     setTimeout(() => navigator.serviceWorker.register("/sw.js"), 1000);
