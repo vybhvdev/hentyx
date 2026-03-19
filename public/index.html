@@ -150,8 +150,9 @@ window.HentyxAds = (function() {
         <button class="menu-btn" id="themeBtn" onclick="toggleTheme()" style="font-size:18px;">🌙</button>
     </header>
     <div class="search-row">
-        <input type="text" id="searchInput" placeholder="Search galleries...">
+        <input type="text" id="searchInput" placeholder="Search galleries..." onkeydown="if(event.key==='Enter')triggerSearch()">
         <button class="go-btn" onclick="triggerSearch()">GO</button>
+        <button class="go-btn" id="clearBtn" onclick="clearSearch()" style="display:none;background:#333;">✕</button>
     </div>
     <div class="ad-banner ad-desktop-only"><script>atOptions={'key':'5800a749e3c7dfebbdcfefd833a0e4ff','format':'iframe','height':90,'width':728,'params':{}};</script>
 <script src="https://www.highperformanceformat.com/5800a749e3c7dfebbdcfefd833a0e4ff/invoke.js"></script></div>
@@ -304,7 +305,34 @@ window.HentyxAds = (function() {
         }
 
         function changePage(delta) { currentPage += delta; loadGalleries(currentQuery, currentPage); window.scrollTo(0,0); }
-        function triggerSearch() { currentQuery = document.getElementById('searchInput').value.trim(); currentPage = 1; loadGalleries(currentQuery, 1); }
+        function clearSearch() {
+            currentQuery = '';
+            document.getElementById('searchInput').value = '';
+            document.getElementById('clearBtn').style.display = 'none';
+            document.querySelector('.section-title').parentElement.style.display = 'block';
+            document.getElementById('gridTitle').innerText = 'Recent Uploads';
+            currentPage = 1;
+            loadGalleries('', 1);
+            window.scrollTo(0, 0);
+        }
+
+        function triggerSearch() {
+            currentQuery = document.getElementById('searchInput').value.trim();
+            currentPage = 1;
+            document.getElementById('clearBtn').style.display = currentQuery ? 'block' : 'none';
+            if (currentQuery) {
+                // Hide popular, update title, scroll to results
+                document.querySelector('.section-title').parentElement.style.display = 'none';
+                document.getElementById('gridTitle').innerText = 'Results for "' + currentQuery + '"';
+                document.getElementById('gridTitle').style.borderLeftColor = '#ed2553';
+            } else {
+                // Restore popular and title
+                document.querySelector('.section-title').parentElement.style.display = 'block';
+                document.getElementById('gridTitle').innerText = 'Recent Uploads';
+            }
+            loadGalleries(currentQuery, 1);
+            setTimeout(() => document.getElementById('gridTitle').scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
+        }
         async function goTrueRandom() {
             try {
                 const keywords = ['english','uncensored','schoolgirl','milf','fantasy'];
@@ -370,7 +398,12 @@ if ("serviceWorker" in navigator) {
                 drawerAuthLink.onclick = () => signOut();
             }
             const qParam = new URLSearchParams(location.search).get('q');
-            if (qParam) { document.getElementById('searchInput').value = qParam; currentQuery = qParam; }
+            if (qParam) {
+                document.getElementById('searchInput').value = qParam;
+                currentQuery = qParam;
+                document.querySelector('.section-title').parentElement.style.display = 'none';
+                document.getElementById('gridTitle').innerText = 'Results for "' + qParam + '"';
+            }
             loadPopular();
             loadGalleries(currentQuery);
             checkImagesAndReload();
