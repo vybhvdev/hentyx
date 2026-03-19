@@ -5,6 +5,15 @@
     <meta name="google-site-verification" content="pLfXVZxvjfiWq1XbUzRT-Leq2__OY0Bxjl-UITvYX_s">
     <meta name="juicyads-site-verification" content="1b2ae5c661042730364d960266e80e9c">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Read and download hentai doujinshi on Hentyx.">
+    <meta property="og:site_name" content="Hentyx">
+    <meta property="og:type" content="website">
+    <meta property="og:title" id="og-title" content="Hentyx - Gallery">
+    <meta property="og:description" id="og-desc" content="Read and download hentai doujinshi on Hentyx.">
+    <meta property="og:image" id="og-image" content="https://hentyx.vercel.app/og-image.svg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" id="tw-title" content="Hentyx - Gallery">
+    <meta name="twitter:image" id="tw-image" content="https://hentyx.vercel.app/og-image.svg">
     <title>Hentyx - Gallery</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="auth.js"></script>
@@ -224,6 +233,12 @@ window.HentyxAds = (function() {
                 loadRelated(d.tags && d.tags[0] ? (d.tags[0].name || d.tags[0]) : "doujinshi");
                 syncBookmarkBtn();
                 document.title = 'Hentyx - ' + d.title;
+                const ogImg = '/api/proxy?url=' + encodeURIComponent(galleryData.cover);
+                document.getElementById('og-title').content = 'Hentyx - ' + d.title;
+                document.getElementById('og-desc').content = (d.tags||[]).slice(0,5).map(t=>t.name||t).join(', ');
+                document.getElementById('og-image').content = ogImg;
+                document.getElementById('tw-title').content = 'Hentyx - ' + d.title;
+                document.getElementById('tw-image').content = ogImg;
             } catch(e) {
                 document.getElementById('loading').innerText = "FAILED TO LOAD.";
             }

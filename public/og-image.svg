@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630">
+  <rect width="1200" height="630" fill="#0a0a0a"/>
+  <rect x="0" y="0" width="1200" height="4" fill="#ed2553"/>
+  <rect x="0" y="626" width="1200" height="4" fill="#ed2553"/>
+  <text x="600" y="280" font-family="sans-serif" font-weight="900" font-size="180" fill="#ed2553" text-anchor="middle">HENTYX</text>
+  <text x="600" y="380" font-family="sans-serif" font-size="40" fill="#888" text-anchor="middle">Free Hentai &amp; Doujinshi Gallery</text>
+  <text x="600" y="450" font-family="sans-serif" font-size="28" fill="#444" text-anchor="middle">hentyx.vercel.app</text>
+</svg>
