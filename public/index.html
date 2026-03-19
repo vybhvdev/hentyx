@@ -343,10 +343,10 @@ if ("serviceWorker" in navigator) {
     navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
     setTimeout(() => navigator.serviceWorker.register("/sw.js"), 1000);
 }
-        // Auto-reload once if images fail to load
+        // Auto-reload up to 2 times if images fail to load
         function checkImagesAndReload() {
-            // Only auto-reload if not already reloaded this session
-            if (sessionStorage.getItem('hx_reloaded')) return;
+            const reloadCount = parseInt(sessionStorage.getItem('hx_reloaded') || '0');
+            if (reloadCount >= 2) return;
             setTimeout(() => {
                 const imgs = document.querySelectorAll('#grid img, #popularGrid img');
                 if (imgs.length === 0) return;
@@ -354,12 +354,11 @@ if ("serviceWorker" in navigator) {
                 imgs.forEach(img => {
                     if (!img.complete || img.naturalWidth === 0) failed++;
                 });
-                // If more than 50% failed, reload once
                 if (failed > imgs.length * 0.5) {
-                    sessionStorage.setItem('hx_reloaded', '1');
+                    sessionStorage.setItem('hx_reloaded', String(reloadCount + 1));
                     location.reload();
                 }
-            }, 5000); // Check after 5 seconds
+            }, 10000);
         }
 
         window.onload = async () => {
