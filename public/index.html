@@ -343,6 +343,25 @@ if ("serviceWorker" in navigator) {
     navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
     setTimeout(() => navigator.serviceWorker.register("/sw.js"), 1000);
 }
+        // Auto-reload once if images fail to load
+        function checkImagesAndReload() {
+            // Only auto-reload if not already reloaded this session
+            if (sessionStorage.getItem('hx_reloaded')) return;
+            setTimeout(() => {
+                const imgs = document.querySelectorAll('#grid img, #popularGrid img');
+                if (imgs.length === 0) return;
+                let failed = 0;
+                imgs.forEach(img => {
+                    if (!img.complete || img.naturalWidth === 0) failed++;
+                });
+                // If more than 50% failed, reload once
+                if (failed > imgs.length * 0.5) {
+                    sessionStorage.setItem('hx_reloaded', '1');
+                    location.reload();
+                }
+            }, 5000); // Check after 5 seconds
+        }
+
         window.onload = async () => {
             const user = await getUser();
             const drawerAuthLink = document.getElementById('drawerAuthLink');
@@ -355,6 +374,7 @@ if ("serviceWorker" in navigator) {
             if (qParam) { document.getElementById('searchInput').value = qParam; currentQuery = qParam; }
             loadPopular();
             loadGalleries(currentQuery);
+            checkImagesAndReload();
         };
     </script>
 </body>
