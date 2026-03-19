@@ -403,10 +403,10 @@ window.HentyxAds = (function() {
             localStorage.setItem('hx_install_dismissed', '1');
         }
 
-if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
-    setTimeout(() => navigator.serviceWorker.register("/sw.js"), 1000);
-}
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
+            setTimeout(() => navigator.serviceWorker.register("/sw.js"), 1000);
+        }
         // Show refresh prompt if images fail to load
         function checkImagesAndReload() {
             setTimeout(() => {
