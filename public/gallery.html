@@ -140,7 +140,10 @@ window.HentyxAds = (function() {
 
         <div class="section-title">Previews</div>
         <div class="preview-grid" id="previewGrid"></div>
-        <button id="loadMoreBtn" class="load-more" onclick="renderNextBatch()">Load More Pages</button>
+        <div style="display:flex;gap:10px;">
+    <button id="loadMoreBtn" class="load-more" onclick="renderNextBatch()">Load More</button>
+    <button id="loadAllBtn" class="load-more" onclick="loadAll()" style="background:#1a1a1a;">Load All</button>
+</div>
 
         <div class="ad-banner ad-desktop-only"><script>atOptions={'key':'5800a749e3c7dfebbdcfefd833a0e4ff','format':'iframe','height':90,'width':728,'params':{}};</script>
 <script src="https://www.highperformanceformat.com/5800a749e3c7dfebbdcfefd833a0e4ff/invoke.js"></script></div>
@@ -242,6 +245,24 @@ window.HentyxAds = (function() {
             } catch(e) {
                 document.getElementById('loading').innerText = "FAILED TO LOAD.";
             }
+        }
+
+        function loadAll() {
+            const btn = document.getElementById('loadAllBtn');
+            btn.innerText = 'Loading...';
+            btn.disabled = true;
+            const grid = document.getElementById('previewGrid');
+            const remaining = allPages.slice(loadedCount);
+            remaining.forEach((url, i) => {
+                const card = document.createElement('a');
+                card.href = `reader.html?id=${id}&p=${loadedCount + i}&cover=${encodeURIComponent(url)}`;
+                card.className = 'thumb';
+                card.innerHTML = `<img src="${proxy(url)}" loading="lazy" style="opacity:0;transition:opacity 0.3s" onload="this.style.opacity=1">`;
+                grid.appendChild(card);
+            });
+            loadedCount = allPages.length;
+            document.getElementById('loadMoreBtn').style.display = 'none';
+            document.getElementById('loadAllBtn').style.display = 'none';
         }
 
         function renderNextBatch() {
