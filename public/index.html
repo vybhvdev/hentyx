@@ -213,6 +213,13 @@ window.HentyxAds = (function() {
                     <img src="${proxy(m.cover)}" loading="lazy">
                 </a>
             `).join('');
+            setTimeout(function() {
+                document.querySelectorAll('#popularGrid img').forEach(function(img) {
+                    if (!img.complete || img.naturalWidth === 0) {
+                        img.src = img.src.split('?')[0] + '?r=' + Date.now();
+                    }
+                });
+            }, 3000);
         }
 
         async function loadGalleries(query = "", page = 1) {
@@ -265,6 +272,22 @@ window.HentyxAds = (function() {
             document.getElementById('grid').innerHTML = html;
             document.getElementById('pageLabel').innerText = 'Page ' + page;
             document.getElementById('prevBtn').disabled = (page === 1);
+            // Retry failed images after 3s
+            setTimeout(function() {
+                document.querySelectorAll('#grid img').forEach(function(img) {
+                    if (!img.complete || img.naturalWidth === 0) {
+                        img.src = img.src.split('?')[0] + '?r=' + Date.now();
+                    }
+                });
+            }, 3000);
+            // Second retry after 8s
+            setTimeout(function() {
+                document.querySelectorAll('#grid img').forEach(function(img) {
+                    if (!img.complete || img.naturalWidth === 0) {
+                        img.src = img.src.split('?')[0] + '?r=' + Date.now();
+                    }
+                });
+            }, 8000);
         }
 
         function changePage(delta) { currentPage += delta; loadGalleries(currentQuery, currentPage); window.scrollTo(0,0); }
