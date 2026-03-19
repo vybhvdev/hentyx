@@ -6,247 +6,243 @@
     <meta name="juicyads-site-verification" content="1b2ae5c661042730364d960266e80e9c">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Hentyx Reader</title>
+    <script defer src="/_vercel/insights/script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="auth.js"></script>
     <style>
         :root { --bg: #212121; --nav-bg: #1f1f1f; --accent: #ed2553; }
-        body { background: var(--bg); margin: 0; padding: 0; font-family: sans-serif; overflow-x: hidden; color: #fff; }
-        
-        /* nhentai Style Top/Bottom Nav */
-        .nav-bar { background: var(--nav-bg); padding: 10px; display: flex; justify-content: center; align-items: center; gap: 15px; border-bottom: 1px solid #333; font-size: 14px; font-weight: bold; }
-        .nav-bar.bottom { border-top: 1px solid #333; border-bottom: none; position: relative; margin-top: 10px; padding-bottom: 20px; }
-        
-        .nav-btn { color: #fff; text-decoration: none; padding: 5px 10px; background: #333; border-radius: 4px; cursor: pointer; transition: 0.2s; border: none; font-size: 18px; }
-        .nav-btn:hover { background: #444; }
-        .nav-btn.home { position: absolute; left: 15px; font-size: 14px; background: transparent; color: var(--accent); }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); font-family: sans-serif; overflow-x: hidden; color: #fff; }
 
-        #viewer { min-height: 80vh; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 10px 0; position: relative; }
-        #page-img { width: 100%; max-width: 800px; display: block; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        /* Top bar */
+        .top-bar { background: var(--nav-bg); padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 100; }
+        .top-left { display: flex; align-items: center; gap: 8px; }
+        .back-btn { color: var(--accent); text-decoration: none; font-weight: bold; font-size: 14px; }
+        .mode-btn { background: #333; border: none; color: #aaa; padding: 6px 14px; border-radius: 4px; font-size: 12px; cursor: pointer; }
+        .mode-btn.active { background: var(--accent); color: #fff; }
+        .page-label { font-size: 13px; font-weight: bold; color: #aaa; }
 
-        /* Preload container (Hidden) */
-        #preloader { display: none; }
-        
-        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 2000; font-family: monospace; color: var(--accent); }
+        /* Page viewer */
+        #viewer { position: relative; min-height: 90vh; display: flex; align-items: flex-start; justify-content: center; padding: 0; }
+        #page-img { width: 100%; max-width: 800px; display: block; }
+
+        /* Corner nav buttons - nhentai style */
+        .corner-btn { position: fixed; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); border: none; color: #fff; font-size: 32px; cursor: pointer; z-index: 50; padding: 20px 10px; border-radius: 4px; transition: background 0.2s; user-select: none; }
+        .corner-btn:hover { background: rgba(237,37,83,0.7); }
+        .corner-btn.left { left: 0; border-radius: 0 4px 4px 0; }
+        .corner-btn.right { right: 0; border-radius: 4px 0 0 4px; }
+        .corner-btn:disabled { opacity: 0.2; cursor: default; }
+
+        /* Bottom bar */
+        .bottom-bar { background: var(--nav-bg); padding: 12px 15px; display: flex; justify-content: center; align-items: center; gap: 20px; border-top: 1px solid #333; margin-top: 10px; padding-bottom: 60px; }
+        .nav-btn { background: #333; border: none; color: #fff; font-size: 20px; padding: 8px 20px; border-radius: 4px; cursor: pointer; }
+        .nav-btn:disabled { opacity: 0.3; }
+
+        /* Strip view */
         #strip-view { display: none; flex-direction: column; align-items: center; }
         #strip-view img { width: 100%; max-width: 800px; display: block; }
-        .mode-btn { background: #333; border: none; color: #aaa; padding: 5px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; }
-        .mode-btn.active { background: var(--accent); color: #fff; }
+
+        /* Sticky ad */
+        .ad-sticky { position: fixed; bottom: 0; left: 0; width: 100%; text-align: center; z-index: 40; background: #000; padding: 3px 0; }
+
+        /* Loading overlay */
+        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 2000; font-family: monospace; color: var(--accent); font-size: 14px; text-align: center; padding: 20px; }
+
+        #preloader { display: none; }
     </style>
-<style>
-.ad-banner { text-align:center; margin:10px auto; overflow:hidden; }
-.ad-banner-sticky { position:fixed; bottom:0; left:0; width:100%; text-align:center; z-index:500; background:#000; padding:3px 0; }
-.ad-native { margin:10px 0; text-align:center; }
-@media(min-width:768px) { .ad-mobile-only { display:none; } }
-@media(max-width:767px) { .ad-desktop-only { display:none; } }
-</style>
 <script src="https://pl28940937.profitablecpmratenetwork.com/d9/5d/0f/d95d0f9ee23df009fb658145fe110057.js"></script>
 <script src="https://pl28940957.profitablecpmratenetwork.com/fe/21/c0/fe21c0ae57d3a5a0f8686331d520db98.js"></script>
-
 <script>
-// Ad Manager - frequency capping + geo + session tracking
 window.HentyxAds = (function() {
-    var POP_KEY = 'hx_pop_ts';
-    var SESSION_KEY = 'hx_session_interactions';
-    var PUSH_SHOWN_KEY = 'hx_push_shown';
-    var POP_COOLDOWN = 0; // per session
-
-    function getInteractions() { return parseInt(sessionStorage.getItem(SESSION_KEY) || '0'); }
-    function bumpInteraction() { sessionStorage.setItem(SESSION_KEY, getInteractions() + 1); }
-    function canShowPop() {
-        var last = localStorage.getItem(POP_KEY);
-        return !sessionStorage.getItem('hx_pop_fired');
-    }
+    function canShowPop() { return !sessionStorage.getItem('hx_pop_fired'); }
     function markPopShown() { sessionStorage.setItem('hx_pop_fired', '1'); }
-    function canShowPush() { return !localStorage.getItem(PUSH_SHOWN_KEY); }
-    function markPushShown() { localStorage.setItem(PUSH_SHOWN_KEY, '1'); }
-
-    function triggerPop() {
-        if (canShowPop()) {
-            markPopShown();
-            // popunder fires via its own script on page load
-        }
-    }
-
-    function onInteraction() {
-        bumpInteraction();
-        var n = getInteractions();
-        // Trigger push prompt on 2nd interaction
-        if (n === 2 && canShowPush()) {
-            markPushShown();
-            // PropellerAds push script handles the prompt
-        }
-    }
-
-    // Track clicks globally
-    document.addEventListener('click', onInteraction, { once: false, passive: true });
-
-    return { triggerPop: triggerPop, onInteraction: onInteraction };
+    var interactions = 0;
+    document.addEventListener('click', function() {
+        interactions++;
+    }, { passive: true });
+    return {};
 })();
 </script>
-<script defer src="/_vercel/insights/script.js"></script>
 </head>
 <body>
 
-    <div id="loading-overlay">PREPARING GALLERY...</div>
+<div id="loading-overlay">PREPARING GALLERY...</div>
 
-    <div class="nav-bar">
-        <a href="index.html" class="nav-btn home">← BACK</a>
+<div class="top-bar">
+    <div class="top-left">
+        <a href="javascript:history.back()" class="back-btn">← BACK</a>
         <button class="mode-btn active" id="pageBtn" onclick="setMode('page')">Page</button>
         <button class="mode-btn" id="stripBtn" onclick="setMode('strip')">Strip</button>
     </div>
+    <span class="page-label" id="pageLabel">— / —</span>
+</div>
 
-    <div id="viewer" onclick="handleTap(event)">
-        <img id="page-img" src="">
-    </div>
+<!-- Corner navigation buttons -->
+<button class="corner-btn left" id="prevBtn" onclick="changePage(-1)">‹</button>
+<button class="corner-btn right" id="nextBtn" onclick="changePage(1)">›</button>
 
-    <div class="ad-banner-sticky"><script>atOptions={'key':'87a6a1e6810153943afb34a15a62c6f8','format':'iframe','height':50,'width':320,'params':{}};</script>
-<script src="https://www.highperformanceformat.com/87a6a1e6810153943afb34a15a62c6f8/invoke.js"></script></div>
-<div class="nav-bar bottom">
-        <button class="nav-btn" onclick="changePage(-1)">‹</button>
-        <span id="pageLabelBottom">1 / 0</span>
-        <button class="nav-btn" onclick="changePage(1)">›</button>
-    </div>
+<div id="viewer">
+    <img id="page-img" src="">
+</div>
 
-    <div id="strip-view"></div>
-    <div id="preloader"></div>
+<div id="strip-view"></div>
 
-    <script>
-        let pages = [];
-        let currentIndex = parseInt(new URLSearchParams(location.search).get("p")) || 0;
-        const params = new URLSearchParams(location.search);
-        const id = params.get("id");
+<div class="bottom-bar" id="bottomBar">
+    <button class="nav-btn" id="prevBtnBot" onclick="changePage(-1)">‹ Prev</button>
+    <span id="pageLabelBot" style="font-size:13px;color:#aaa;">— / —</span>
+    <button class="nav-btn" id="nextBtnBot" onclick="changePage(1)">Next ›</button>
+</div>
 
-        let viewMode = 'page';
+<div class="ad-sticky">
+    <script>atOptions={'key':'87a6a1e6810153943afb34a15a62c6f8','format':'iframe','height':50,'width':320,'params':{}};</script>
+    <script src="https://www.highperformanceformat.com/87a6a1e6810153943afb34a15a62c6f8/invoke.js"></script>
+</div>
 
-        function setMode(mode) {
-            viewMode = mode;
-            document.getElementById('pageBtn').classList.toggle('active', mode === 'page');
-            document.getElementById('stripBtn').classList.toggle('active', mode === 'strip');
-            document.getElementById('viewer').style.display = mode === 'page' ? 'flex' : 'none';
-            document.querySelector('.nav-bar.bottom').style.display = mode === 'page' ? 'flex' : 'none';
-            const strip = document.getElementById('strip-view');
-            if (mode === 'strip') {
-                strip.style.display = 'flex';
-                if (strip.children.length === 0) {
-                    pages.forEach((url, i) => {
-                        const img = document.createElement('img');
-                        img.src = url.startsWith('/api/proxy') ? url : `/api/proxy?url=${encodeURIComponent(url)}`;
-                        img.loading = 'lazy';
-                        strip.appendChild(img);
-                    });
-                }
+<div id="preloader"></div>
+
+<script>
+    const params = new URLSearchParams(location.search);
+    const id = params.get("id");
+    const passedCover = params.get("cover");
+    const startPage = parseInt(params.get("p")) || 0;
+    let pages = [];
+    let currentIndex = startPage;
+    let viewMode = 'page';
+
+    const proxy = url => url.startsWith('/api/proxy') ? url : `/api/proxy?url=${encodeURIComponent(url)}`;
+
+    function updateDisplay() {
+        if (!pages.length) return;
+        const img = document.getElementById('page-img');
+        img.style.opacity = '0';
+        img.src = proxy(pages[currentIndex]);
+        img.onload = () => { img.style.opacity = '1'; img.style.transition = 'opacity 0.2s'; };
+        const label = `${currentIndex + 1} / ${pages.length}`;
+        document.getElementById('pageLabel').innerText = label;
+        document.getElementById('pageLabelBot').innerText = label;
+        document.getElementById('prevBtn').disabled = currentIndex === 0;
+        document.getElementById('nextBtn').disabled = currentIndex >= pages.length - 1;
+        document.getElementById('prevBtnBot').disabled = currentIndex === 0;
+        document.getElementById('nextBtnBot').disabled = currentIndex >= pages.length - 1;
+        window.scrollTo(0, 0);
+        preloadNext();
+    }
+
+    function preloadNext() {
+        const preloader = document.getElementById('preloader');
+        preloader.innerHTML = '';
+        for (let i = 1; i <= 3; i++) {
+            if (currentIndex + i < pages.length) {
+                const img = new Image();
+                img.src = proxy(pages[currentIndex + i]);
+            }
+        }
+    }
+
+    function changePage(step) {
+        const next = currentIndex + step;
+        if (next >= 0 && next < pages.length) {
+            currentIndex = next;
+            updateDisplay();
+        }
+    }
+
+    function setMode(mode) {
+        viewMode = mode;
+        document.getElementById('pageBtn').classList.toggle('active', mode === 'page');
+        document.getElementById('stripBtn').classList.toggle('active', mode === 'strip');
+        document.getElementById('viewer').style.display = mode === 'page' ? 'flex' : 'none';
+        document.getElementById('bottomBar').style.display = mode === 'page' ? 'flex' : 'none';
+        document.getElementById('prevBtn').style.display = mode === 'page' ? 'block' : 'none';
+        document.getElementById('nextBtn').style.display = mode === 'page' ? 'block' : 'none';
+        const strip = document.getElementById('strip-view');
+        if (mode === 'strip') {
+            strip.style.display = 'flex';
+            if (strip.children.length === 0) {
+                pages.forEach(url => {
+                    const img = document.createElement('img');
+                    img.src = proxy(url);
+                    img.loading = 'lazy';
+                    strip.appendChild(img);
+                });
+            }
+        } else {
+            strip.style.display = 'none';
+        }
+    }
+
+    // Keyboard navigation
+    document.addEventListener('keydown', e => {
+        if (e.key === "ArrowRight" || e.key === "ArrowDown") changePage(1);
+        if (e.key === "ArrowLeft" || e.key === "ArrowUp") changePage(-1);
+    });
+
+    function removeOverlay() {
+        const o = document.getElementById('loading-overlay');
+        if (o) o.remove();
+    }
+
+    function loadFromCache() {
+        const cached = sessionStorage.getItem('pages_' + id);
+        if (cached) {
+            pages = JSON.parse(cached);
+            currentIndex = Math.min(startPage, pages.length - 1);
+            removeOverlay();
+            updateDisplay();
+            return true;
+        }
+        return false;
+    }
+
+    async function load(attempt) {
+        attempt = attempt || 1;
+
+        // Try cache first
+        if (attempt === 1 && loadFromCache()) return;
+
+        // Show cover immediately
+        if (attempt === 1 && passedCover) {
+            pages = [decodeURIComponent(passedCover)];
+            currentIndex = 0;
+            removeOverlay();
+            updateDisplay();
+            document.getElementById('pageLabel').innerText = 'Loading...';
+            document.getElementById('pageLabelBot').innerText = 'Loading...';
+        } else {
+            const o = document.getElementById('loading-overlay');
+            if (o) o.innerText = attempt === 1 ? 'PREPARING GALLERY...' : `CONNECTING... ${attempt}/5`;
+        }
+
+        try {
+            const controller = new AbortController();
+            const tid = setTimeout(() => controller.abort(), 40000);
+            const res = await fetch("https://jandapress.onrender.com/pururin/get?book=" + id, { signal: controller.signal });
+            clearTimeout(tid);
+            const data = await res.json();
+            const d = data.data || data;
+            const loaded = Array.isArray(d.image) ? d.image : (Array.isArray(d.cover) ? d.cover : (d.reader || []));
+            if (loaded.length > 0) {
+                pages = loaded;
+                sessionStorage.setItem('pages_' + id, JSON.stringify(pages));
+                currentIndex = Math.min(startPage, pages.length - 1);
+                const thumb = typeof d.cover === 'string' ? d.cover : (passedCover ? decodeURIComponent(passedCover) : pages[0]);
+                trackHistory({ id, title: d.title || '', cover: thumb });
+                removeOverlay();
+                updateDisplay();
             } else {
-                strip.style.display = 'none';
+                if (attempt < 5) setTimeout(() => load(attempt + 1), 3000);
+                else if (!passedCover) { const o = document.getElementById('loading-overlay'); if(o) o.innerText = 'NO PAGES FOUND.'; }
+            }
+        } catch(e) {
+            if (attempt < 5) setTimeout(() => load(attempt + 1), 4000);
+            else if (!passedCover) {
+                const o = document.getElementById('loading-overlay');
+                if (o) o.innerHTML = 'CONNECTION ERROR.<br><br><span onclick="load(1)" style="color:#ed2553;cursor:pointer;">TAP TO RETRY</span>';
             }
         }
+    }
 
-        // Use preloaded pages from gallery page if available
-        function loadFromCache() {
-            const cached = sessionStorage.getItem('pages_' + id);
-            if (cached) {
-                pages = JSON.parse(cached);
-                const pParam = parseInt(new URLSearchParams(location.search).get("p")) || 0;
-                currentIndex = Math.min(pParam, pages.length - 1);
-                const overlay = document.getElementById('loading-overlay');
-                if (overlay) overlay.remove();
-                updateDisplay();
-                return true;
-            }
-            return false;
-        }
-
-        async function load(attempt) {
-            attempt = attempt || 1;
-            const overlay = document.getElementById("loading-overlay");
-            const params2 = new URLSearchParams(location.search);
-            const passedCover = params2.get("cover");
-
-            // Show cover immediately as page 1 while we wait for full list
-            if (attempt === 1 && passedCover) {
-                pages = ['/api/proxy?url=' + passedCover];
-                if (overlay) overlay.remove();
-                updateDisplay();
-    
-                document.getElementById("pageLabelBottom").innerText = "Loading...";
-            } else if (overlay) {
-                overlay.innerText = attempt === 1 ? "PREPARING GALLERY..." : "CONNECTING... " + attempt + "/5";
-            }
-
-            try {
-                const controller = new AbortController();
-                const tid = setTimeout(() => controller.abort(), 40000);
-                const res = await fetch("https://jandapress.onrender.com/pururin/get?book=" + id, { signal: controller.signal });
-                clearTimeout(tid);
-                const data = await res.json();
-                const d = data.data || data;
-                const loaded = Array.isArray(d.image) ? d.image : (Array.isArray(d.cover) ? d.cover : (d.reader || d.images || []));
-                if (loaded.length > 0) {
-                    pages = loaded;
-                    const thumb = typeof d.cover === "string" ? d.cover : (passedCover || pages[0] || "");
-                    trackHistory({ id: id, title: d.title || "", cover: thumb });
-                    if (overlay) overlay.remove();
-                    // Jump to correct page from ?p= param
-                    const pParam = parseInt(new URLSearchParams(location.search).get("p")) || 0;
-                    currentIndex = Math.min(pParam, pages.length - 1);
-                    updateDisplay();
-                } else {
-                    if (attempt < 5) setTimeout(function(){ load(attempt + 1); }, 3000);
-                    else if (!passedCover) {
-                        const o = document.getElementById("loading-overlay");
-                        if (o) o.innerText = "NO PAGES FOUND.";
-                    }
-                }
-            } catch(e) {
-                if (attempt < 5) {
-                    setTimeout(function(){ load(attempt + 1); }, 4000);
-                } else if (!passedCover) {
-                    const o = document.getElementById("loading-overlay");
-                    if (o) o.innerHTML = 'CONNECTION ERROR.<br><br><span onclick="load(1)" style="color:#ed2553;font-size:13px;cursor:pointer;">TAP TO RETRY</span>';
-                }
-            }
-        }
-            function updateDisplay() {
-            const img = document.getElementById('page-img');
-            const url = pages[currentIndex];
-            img.src = url.startsWith('/api/proxy') ? url : `/api/proxy?url=${encodeURIComponent(url)}`;
-            
-            document.getElementById('pageLabelBottom').innerText = `${currentIndex + 1} / ${pages.length}`;
-
-            window.scrollTo(0, 0);
-            preloadNext();
-        }
-
-        // PRELOAD LOGIC: Loads the next 3 pages into hidden <img> tags
-        function preloadNext() {
-            const preloader = document.getElementById('preloader');
-            preloader.innerHTML = ''; 
-            for (let i = 1; i <= 3; i++) {
-                if (currentIndex + i < pages.length) {
-                    const preloadImg = new Image();
-                    preloadImg.src = `/api/proxy?url=${encodeURIComponent(pages[currentIndex + i])}`;
-                }
-            }
-        }
-
-        function changePage(step) {
-            const next = currentIndex + step;
-            if (next >= 0 && next < pages.length) {
-                currentIndex = next;
-                updateDisplay();
-            }
-        }
-
-        function handleTap(e) {
-            const x = e.clientX;
-            const width = window.innerWidth;
-            if (x < width * 0.4) changePage(-1); // Tap left 40%
-            else changePage(1); // Tap right 60%
-        }
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === "ArrowRight") changePage(1);
-            if (e.key === "ArrowLeft") changePage(-1);
-        });
-
-        load();
-    </script>
+    load();
+</script>
 </body>
 </html>
