@@ -197,7 +197,11 @@ window.HentyxAds = (function() {
                 document.getElementById('mangaTitle').innerText = d.title;
                 document.getElementById('mangaIdLabel').innerText = d.id;
                 document.getElementById('pageCountLabel').innerText = allPages.length;
-                document.getElementById('coverImg').src = proxy(thumb);
+                const ci = document.getElementById('coverImg');
+                ci.style.opacity = '0';
+                ci.style.transition = 'opacity 0.3s';
+                ci.onload = () => ci.style.opacity = '1';
+                ci.src = proxy(thumb);
                 document.getElementById("readLink").href = `reader.html?id=${id}&cover=${encodeURIComponent(galleryData.cover)}`;
                 document.getElementById('dlBtn').onclick = () => window.location.href = `/api/download?id=${id}&title=${encodeURIComponent(data.title)}`;
 
@@ -228,14 +232,12 @@ window.HentyxAds = (function() {
         function renderNextBatch() {
             const grid = document.getElementById('previewGrid');
             const batch = allPages.slice(loadedCount, loadedCount + 10);
-            batch.forEach((url, i) => {
+            batch.forEach((url, card_i) => {
                 const card = document.createElement('a');
                 card.href = `reader.html?id=${id}&p=${loadedCount + i}&cover=${encodeURIComponent(url)}`;
                 card.className = 'thumb';
-                card.innerHTML = `<img src="${proxy(url)}" loading="lazy"
-            onload="this.classList.add('loaded')"
-            onerror="var el=this;var t=parseInt(el.dataset.t||0);if(t<3){el.dataset.t=t+1;setTimeout(function(){el.src=el.src.split('?')[0]+'?r='+Date.now();},2000*(t+1));}"
-        >`;
+                const isEager = (loadedCount + card_i) < 6;
+                card.innerHTML = `<img src="${proxy(url)}" loading="${isEager ? 'eager' : 'lazy'}" style="opacity:0;transition:opacity 0.3s" onload="this.style.opacity=1">`;
                 grid.appendChild(card);
             });
             loadedCount += 10;
@@ -247,7 +249,7 @@ window.HentyxAds = (function() {
             const data = await res.json();
             document.getElementById('relatedGrid').innerHTML = data.slice(0, 6).map(item => `
                 <a href="gallery.html?id=${item.id}&cover=${encodeURIComponent(item.cover)}" class="rel-card">
-                    <div class="rel-cover"><img src="${proxy(item.cover)}" loading="lazy"></div>
+                    <div class="rel-cover"><img src="${proxy(item.cover)}" loading="lazy" style="opacity:0;transition:opacity 0.3s" onload="this.style.opacity=1"></div>
                     <div class="rel-title">${item.title}</div>
                 </a>
             `).join('');
