@@ -1,11 +1,11 @@
 {
   "version": 2,
   "rewrites": [
+    { "source": "/api/proxy", "destination": "/api/edge/proxy.js" },
     { "source": "/api/(.*)", "destination": "/api/index.js" }
   ],
   "functions": {
-    "api/index.js": {
-      "maxDuration": 30
-    }
+    "api/index.js": { "maxDuration": 30 },
+    "api/edge/proxy.js": { "maxDuration": 30 }
   }
 }
