@@ -265,7 +265,7 @@ window.HentyxAds = (function() {
                     html += '<div style="grid-column:1/-1;text-align:center;"><ins id="1113410" data-width="300" data-height="250"></ins></div>';
                 }
                 html += '<a href="gallery.html?id=' + m.id + '&cover=' + encodeURIComponent(m.cover) + '" class="card">' +
-                    '<div class="cover-wrap"><img src="/api/proxy?url=' + encodeURIComponent(m.cover) + '" loading="lazy"></div>' +
+                    '<div class="cover-wrap"><img src="/api/proxy?url=' + encodeURIComponent(m.cover) + '" loading="lazy" onload="this.style.opacity=1" style="opacity:0;transition:opacity 0.3s"></div>' +
                     '<div class="card-title">' + m.title + '</div>' +
                     '</a>';
             });
