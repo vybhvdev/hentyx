@@ -74,15 +74,15 @@ window.HentyxAds = (function() {
     var POP_KEY = 'hx_pop_ts';
     var SESSION_KEY = 'hx_session_interactions';
     var PUSH_SHOWN_KEY = 'hx_push_shown';
-    var POP_COOLDOWN = 24 * 60 * 60 * 1000; // 24h
+    var POP_COOLDOWN = 0; // per session
 
     function getInteractions() { return parseInt(sessionStorage.getItem(SESSION_KEY) || '0'); }
     function bumpInteraction() { sessionStorage.setItem(SESSION_KEY, getInteractions() + 1); }
     function canShowPop() {
         var last = localStorage.getItem(POP_KEY);
-        return !last || (Date.now() - parseInt(last)) > POP_COOLDOWN;
+        return !sessionStorage.getItem('hx_pop_fired');
     }
-    function markPopShown() { localStorage.setItem(POP_KEY, Date.now()); }
+    function markPopShown() { sessionStorage.setItem('hx_pop_fired', '1'); }
     function canShowPush() { return !localStorage.getItem(PUSH_SHOWN_KEY); }
     function markPushShown() { localStorage.setItem(PUSH_SHOWN_KEY, '1'); }
 
