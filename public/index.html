@@ -195,6 +195,24 @@ window.HentyxAds = (function() {
         </div>
     </div>
     <script>
+        // PWA Install prompt - must be registered immediately
+        let deferredPrompt = null;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            if (!localStorage.getItem('hx_install_dismissed')) {
+                setTimeout(() => {
+                    const banner = document.getElementById('installBanner');
+                    if (banner) banner.classList.add('show');
+                }, 5000);
+            }
+        });
+
+        function dismissInstall() {
+            document.getElementById('installBanner').classList.remove('show');
+            localStorage.setItem('hx_install_dismissed', '1');
+        }
+
         let currentPage = 1, currentQuery = "", currentLang = 'all', currentSort = 'default';
         const proxy = (url) => `/api/proxy?url=${encodeURIComponent(url)}`;
 
@@ -374,35 +392,6 @@ window.HentyxAds = (function() {
             }
         })();
 
-        // Unregister old SW caches
-        // PWA Install prompt
-        let deferredPrompt = null;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            if (!localStorage.getItem('hx_install_dismissed')) {
-                setTimeout(() => {
-                    document.getElementById('installBanner').classList.add('show');
-                }, 5000);
-            }
-        });
-
-        const installBtn = document.getElementById('installBtn');
-        if (installBtn) installBtn.addEventListener('click', async () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const result = await deferredPrompt.userChoice;
-                deferredPrompt = null;
-                document.getElementById('installBanner').classList.remove('show');
-                localStorage.setItem('hx_install_dismissed', '1');
-            }
-        });
-
-        function dismissInstall() {
-            document.getElementById('installBanner').classList.remove('show');
-            localStorage.setItem('hx_install_dismissed', '1');
-        }
-
         if ("serviceWorker" in navigator) {
             navigator.serviceWorker.getRegistrations().then(regs => {
                 regs.forEach(r => r.unregister());
@@ -424,6 +413,16 @@ window.HentyxAds = (function() {
         }
 
         window.onload = async () => {
+            const installBtn = document.getElementById('installBtn');
+            if (installBtn) installBtn.addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const result = await deferredPrompt.userChoice;
+                    deferredPrompt = null;
+                    document.getElementById('installBanner').classList.remove('show');
+                    localStorage.setItem('hx_install_dismissed', '1');
+                }
+            });
             try {
                 const user = await getUser();
                 const drawerAuthLink = document.getElementById('drawerAuthLink');
