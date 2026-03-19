@@ -181,8 +181,10 @@ window.HentyxAds = (function() {
         </div>
     </div>
     <div class="container">
+        <div id="popularSection">
         <div class="section-title">🔥 Popular</div>
         <div class="popular-grid" id="popularGrid"></div>
+        </div>
         <div class="section-title" id="gridTitle">Recent Uploads</div>
         <div id="grid" class="grid"></div>
         <div class="ad-banner"><script>atOptions={'key':'092e22fa11d47c01621e6392a384ba6e','format':'iframe','height':250,'width':300,'params':{}};</script>
@@ -318,7 +320,7 @@ window.HentyxAds = (function() {
             currentQuery = '';
             document.getElementById('searchInput').value = '';
             document.getElementById('clearBtn').style.display = 'none';
-            document.querySelector('.section-title').parentElement.style.display = 'block';
+            document.getElementById('popularSection').style.display = 'block';
             document.getElementById('gridTitle').innerText = 'Recent Uploads';
             currentPage = 1;
             loadGalleries('', 1);
@@ -331,12 +333,12 @@ window.HentyxAds = (function() {
             document.getElementById('clearBtn').style.display = currentQuery ? 'block' : 'none';
             if (currentQuery) {
                 // Hide popular, update title, scroll to results
-                document.querySelector('.section-title').parentElement.style.display = 'none';
+                document.getElementById('popularSection').style.display = 'none';
                 document.getElementById('gridTitle').innerText = 'Results for "' + currentQuery + '"';
                 document.getElementById('gridTitle').style.borderLeftColor = '#ed2553';
             } else {
                 // Restore popular and title
-                document.querySelector('.section-title').parentElement.style.display = 'block';
+                document.getElementById('popularSection').style.display = 'block';
                 document.getElementById('gridTitle').innerText = 'Recent Uploads';
             }
             loadGalleries(currentQuery, 1);
@@ -410,7 +412,7 @@ if ("serviceWorker" in navigator) {
             if (qParam) {
                 document.getElementById('searchInput').value = qParam;
                 currentQuery = qParam;
-                document.querySelector('.section-title').parentElement.style.display = 'none';
+                document.getElementById('popularSection').style.display = 'none';
                 document.getElementById('gridTitle').innerText = 'Results for "' + qParam + '"';
             }
             loadPopular();
