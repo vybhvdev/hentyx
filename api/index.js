@@ -67,11 +67,15 @@ app.get("/api/proxy", async (req, res) => {
   try {
     const targetUrl = req.query.url;
     if (!targetUrl) return res.status(400).send("No URL");
-    const response = await axios.get(targetUrl, { responseType: "arraybuffer", headers: headers, timeout: 15000 });
-    res.setHeader("Content-Type", response.headers["content-type"]);
-    res.setHeader("Cache-Control", "public, max-age=86400, stale-while-revalidate=604800");
-    res.setHeader("CDN-Cache-Control", "public, max-age=86400");
-    res.send(response.data);
+    const response = await axios.get(targetUrl, {
+      responseType: "stream",
+      headers: headers,
+      timeout: 20000
+    });
+    res.setHeader("Content-Type", response.headers["content-type"] || "image/jpeg");
+    res.setHeader("Cache-Control", "public, max-age=604800, stale-while-revalidate=86400");
+    res.setHeader("CDN-Cache-Control", "public, max-age=604800");
+    response.data.pipe(res);
   } catch (err) { res.status(500).send("Proxy failed"); }
 });
 
