@@ -420,13 +420,15 @@ window.HentyxAds = (function() {
         }
 
         window.onload = async () => {
-            const user = await getUser();
-            const drawerAuthLink = document.getElementById('drawerAuthLink');
-            if (user) {
-                drawerAuthLink.textContent = '👤 Sign Out';
-                drawerAuthLink.href = '#';
-                drawerAuthLink.onclick = () => signOut();
-            }
+            try {
+                const user = await getUser();
+                const drawerAuthLink = document.getElementById('drawerAuthLink');
+                if (user) {
+                    drawerAuthLink.textContent = '👤 Sign Out';
+                    drawerAuthLink.href = '#';
+                    drawerAuthLink.onclick = () => signOut();
+                }
+            } catch(e) {}
             const qParam = new URLSearchParams(location.search).get('q');
             if (qParam) {
                 document.getElementById('searchInput').value = qParam;
