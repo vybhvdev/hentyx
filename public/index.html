@@ -161,8 +161,8 @@ window.HentyxAds = (function() {
         <button class="go-btn" onclick="triggerSearch()">GO</button>
         <button class="go-btn" id="clearBtn" onclick="clearSearch()" style="display:none;background:#333;">✕</button>
     </div>
-    <div class="ad-banner ad-desktop-only" id="ad-desktop"></div>
-<div class="ad-banner ad-mobile-only" id="ad-mobile"></div>
+    <div class="ad-banner ad-desktop-only"><script>atOptions={'key':'5800a749e3c7dfebbdcfefd833a0e4ff','format':'iframe','height':90,'width':728,'params':{}};</script><script src="https://www.highperformanceformat.com/5800a749e3c7dfebbdcfefd833a0e4ff/invoke.js"></script></div>
+<div class="ad-banner ad-mobile-only"><script>atOptions={'key':'87a6a1e6810153943afb34a15a62c6f8','format':'iframe','height':50,'width':320,'params':{}};</script><script src="https://www.highperformanceformat.com/87a6a1e6810153943afb34a15a62c6f8/invoke.js"></script></div>
 <div class="filter-bar">
         <div class="filter-group">
             <button class="f-btn active" id="lang-all" onclick="setLang('all')">🌐 All</button>
@@ -183,6 +183,11 @@ window.HentyxAds = (function() {
         </div>
         <div class="section-title" id="gridTitle">Recent Uploads</div>
         <div id="grid" class="grid"></div>
+        <div class="ad-banner" style="margin:15px 0;">
+            <script type="text/javascript" data-cfasync="false" async src="https://poweredby.jads.co/js/jads.js"></script>
+            <ins id="1113410" data-width="300" data-height="250"></ins>
+            <script type="text/javascript" data-cfasync="false" async>(adsbyjuicy = window.adsbyjuicy || []).push({'adzone':1113410});</script>
+        </div>
         <div class="pagination">
             <button class="page-btn" id="prevBtn" onclick="changePage(-1)">PREV</button>
             <span id="pageLabel">Page 1</span>
@@ -438,18 +443,6 @@ window.HentyxAds = (function() {
             loadPopular();
             loadGalleries(currentQuery);
             checkImagesAndReload();
-            // Load ads after content
-            setTimeout(() => {
-                const isMobile = window.innerWidth < 768;
-                const adDiv = document.getElementById(isMobile ? 'ad-mobile' : 'ad-desktop');
-                const key = isMobile ? '87a6a1e6810153943afb34a15a62c6f8' : '5800a749e3c7dfebbdcfefd833a0e4ff';
-                const h = isMobile ? 50 : 90;
-                const w = isMobile ? 320 : 728;
-                window.atOptions = {key, format:'iframe', height:h, width:w, params:{}};
-                const s = document.createElement('script');
-                s.src = 'https://www.highperformanceformat.com/' + key + '/invoke.js';
-                adDiv.appendChild(s);
-            }, 2000);
         };
     </script>
 <div id="refreshPrompt" style="display:none;position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:#111;border:1px solid #ed2553;border-radius:8px;padding:12px 16px;z-index:998;align-items:center;gap:12px;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.5);">
