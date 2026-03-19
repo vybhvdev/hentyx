@@ -255,13 +255,10 @@ window.HentyxAds = (function() {
             let html = '';
             sorted.forEach((m, i) => {
                 if (i > 0 && i % 8 === 0) {
-                    html += '<div style="grid-column:1/-1;text-align:center;padding:5px 0;"><ins id="1113410" data-width="300" data-height="250"></ins></div>';
+                    html += '<div style="grid-column:1/-1;text-align:center;"><ins id="1113410" data-width="300" data-height="250"></ins></div>';
                 }
                 html += '<a href="gallery.html?id=' + m.id + '&cover=' + encodeURIComponent(m.cover) + '" class="card">' +
-                    '<div class="cover-wrap"><img src="' + proxy(m.cover) + '" loading="lazy" ' +
-                    'onload="this.classList.add('loaded')" ' +
-                    'onerror="var el=this;var t=parseInt(el.dataset.t||0);if(t<3){el.dataset.t=t+1;setTimeout(function(){el.src=el.src.split('?')[0]+'?r='+Date.now();},2000*(t+1));}" ' +
-                    '></div>' +
+                    '<div class="cover-wrap"><img src="' + proxy(m.cover) + '" loading="lazy"></div>' +
                     '<div class="card-title">' + m.title + '</div>' +
                     '</a>';
             });
