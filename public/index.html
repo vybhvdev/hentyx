@@ -382,7 +382,8 @@ window.HentyxAds = (function() {
             }
         });
 
-        document.getElementById('installBtn').addEventListener('click', async () => {
+        const installBtn = document.getElementById('installBtn');
+        if (installBtn) installBtn.addEventListener('click', async () => {
             if (deferredPrompt) {
                 deferredPrompt.prompt();
                 const result = await deferredPrompt.userChoice;
