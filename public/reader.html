@@ -143,6 +143,8 @@ window.HentyxAds = (function() {
             const cached = sessionStorage.getItem('pages_' + id);
             if (cached) {
                 pages = JSON.parse(cached);
+                const pParam = parseInt(new URLSearchParams(location.search).get("p")) || 0;
+                currentIndex = Math.min(pParam, pages.length - 1);
                 const overlay = document.getElementById('loading-overlay');
                 if (overlay) overlay.remove();
                 updateDisplay();
@@ -181,6 +183,9 @@ window.HentyxAds = (function() {
                     const thumb = typeof d.cover === "string" ? d.cover : (passedCover || pages[0] || "");
                     trackHistory({ id: id, title: d.title || "", cover: thumb });
                     if (overlay) overlay.remove();
+                    // Jump to correct page from ?p= param
+                    const pParam = parseInt(new URLSearchParams(location.search).get("p")) || 0;
+                    currentIndex = Math.min(pParam, pages.length - 1);
                     updateDisplay();
                 } else {
                     if (attempt < 5) setTimeout(function(){ load(attempt + 1); }, 3000);
