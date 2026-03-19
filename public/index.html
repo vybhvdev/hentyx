@@ -210,7 +210,7 @@ window.HentyxAds = (function() {
         function renderPopular(data) {
             document.getElementById('popularGrid').innerHTML = data.map(m => `
                 <a href="gallery.html?id=${m.id}&cover=${encodeURIComponent(m.cover)}" class="pop-card">
-                    <img src="${proxy(m.cover)}" loading="lazy">
+                    <img src="${m.cover}" loading="lazy" onerror="this.src='/api/proxy?url='+encodeURIComponent(this.dataset.src)" data-src="${m.cover}">
                 </a>
             `).join('');
             setTimeout(function() {
@@ -265,7 +265,7 @@ window.HentyxAds = (function() {
                     html += '<div style="grid-column:1/-1;text-align:center;"><ins id="1113410" data-width="300" data-height="250"></ins></div>';
                 }
                 html += '<a href="gallery.html?id=' + m.id + '&cover=' + encodeURIComponent(m.cover) + '" class="card">' +
-                    '<div class="cover-wrap"><img src="' + proxy(m.cover) + '" loading="lazy"></div>' +
+                    '<div class="cover-wrap"><img src="' + m.cover + '" loading="lazy" onerror="this.onerror=null;this.src=\'\'/api/proxy?url=\'+encodeURIComponent(this.src);"></div>' +
                     '<div class="card-title">' + m.title + '</div>' +
                     '</a>';
             });
