@@ -234,7 +234,7 @@ window.HentyxAds = (function() {
             const batch = allPages.slice(loadedCount, loadedCount + 10);
             batch.forEach((url, card_i) => {
                 const card = document.createElement('a');
-                card.href = `reader.html?id=${id}&p=${loadedCount + i}&cover=${encodeURIComponent(url)}`;
+                card.href = `reader.html?id=${id}&p=${loadedCount + card_i}&cover=${encodeURIComponent(url)}`;
                 card.className = 'thumb';
                 const isEager = (loadedCount + card_i) < 6;
                 card.innerHTML = `<img src="${proxy(url)}" loading="${isEager ? 'eager' : 'lazy'}" style="opacity:0;transition:opacity 0.3s" onload="this.style.opacity=1">`;
