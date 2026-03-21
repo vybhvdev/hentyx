@@ -95,6 +95,47 @@
 <script defer src="https://pl28940937.profitablecpmratenetwork.com/d9/5d/0f/d95d0f9ee23df009fb658145fe110057.js"></script>
 <script defer src="https://pl28940957.profitablecpmratenetwork.com/fe/21/c0/fe21c0ae57d3a5a0f8686331d520db98.js"></script>
 
+<script>
+// Ad Manager - frequency capping + geo + session tracking
+window.HentyxAds = (function() {
+    var POP_KEY = 'hx_pop_ts';
+    var SESSION_KEY = 'hx_session_interactions';
+    var PUSH_SHOWN_KEY = 'hx_push_shown';
+    var POP_COOLDOWN = 0; // per session
+
+    function getInteractions() { return parseInt(sessionStorage.getItem(SESSION_KEY) || '0'); }
+    function bumpInteraction() { sessionStorage.setItem(SESSION_KEY, getInteractions() + 1); }
+    function canShowPop() {
+        var last = localStorage.getItem(POP_KEY);
+        return !sessionStorage.getItem('hx_pop_fired');
+    }
+    function markPopShown() { sessionStorage.setItem('hx_pop_fired', '1'); }
+    function canShowPush() { return !localStorage.getItem(PUSH_SHOWN_KEY); }
+    function markPushShown() { localStorage.setItem(PUSH_SHOWN_KEY, '1'); }
+
+    function triggerPop() {
+        if (canShowPop()) {
+            markPopShown();
+            // popunder fires via its own script on page load
+        }
+    }
+
+    function onInteraction() {
+        bumpInteraction();
+        var n = getInteractions();
+        // Trigger push prompt on 2nd interaction
+        if (n === 2 && canShowPush()) {
+            markPushShown();
+            // PropellerAds push script handles the prompt
+        }
+    }
+
+    // Track clicks globally
+    document.addEventListener('click', onInteraction, { once: false, passive: true });
+
+    return { triggerPop: triggerPop, onInteraction: onInteraction };
+})();
+</script>
 <script defer src="/_vercel/insights/script.js"></script>
     <script type="application/ld+json">
     {
@@ -166,6 +207,267 @@
             <button class="page-btn" id="nextBtn" onclick="changePage(1)">NEXT</button>
         </div>
     </div>
+    <script>
+        // PWA Install prompt - must be registered immediately
+        let deferredPrompt = null;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            if (!localStorage.getItem('hx_install_dismissed')) {
+                setTimeout(() => {
+                    const banner = document.getElementById('installBanner');
+                    if (banner) banner.classList.add('show');
+                }, 5000);
+            }
+        });
+
+        function dismissInstall() {
+            document.getElementById('installBanner').classList.remove('show');
+            localStorage.setItem('hx_install_dismissed', '1');
+        }
+
+        let currentPage = 1, currentQuery = "", currentLang = 'all', currentSort = 'default';
+        const proxy = (url) => `/api/proxy?url=${encodeURIComponent(url)}`;
+
+        function toggleDrawer() {
+            document.getElementById('drawer').classList.toggle('open');
+            document.getElementById('overlay').classList.toggle('active');
+        }
+
+        function skelCards(n) {
+            return Array(n).fill(0).map(() => `
+                <div class="card">
+                    <div class="cover-wrap" style="background:linear-gradient(90deg,#161616 25%,#222 50%,#161616 75%);background-size:200% 100%;animation:shimmer 1.2s infinite;"></div>
+                    <div class="card-title" style="background:#222;border-radius:2px;height:12px;margin:8px;animation:shimmer 1.2s infinite;background-size:200% 100%;background-image:linear-gradient(90deg,#1a1a1a 25%,#2a2a2a 50%,#1a1a1a 75%);"></div>
+                </div>`).join('');
+        }
+
+        function skelPopular(n) {
+            return Array(n).fill(0).map(() => `
+                <div class="pop-card" style="background:linear-gradient(90deg,#161616 25%,#222 50%,#161616 75%);background-size:200% 100%;animation:shimmer 1.2s infinite;"></div>
+            `).join('');
+        }
+
+        async function loadPopular() {
+            const cacheKey = 'hentyx_popular';
+            const cached = sessionStorage.getItem(cacheKey);
+            if (cached) renderPopular(JSON.parse(cached));
+            else document.getElementById('popularGrid').innerHTML = skelPopular(6);
+            try {
+                const res = await fetch('https://jandapress.onrender.com/pururin/search?key=popular&page=1');
+                const data = await res.json();
+                const mpop = (data.data || []).slice(0,8).map(m => ({ id: m.id || m.code, title: m.title, cover: m.image || m.cover }));
+                sessionStorage.setItem(cacheKey, JSON.stringify(mpop));
+                renderPopular(mpop);
+            } catch(e) {}
+        }
+
+        function renderPopular(data) {
+            document.getElementById('popularGrid').innerHTML = data.map(m => `
+                <a href="gallery.html?id=${m.id}&cover=${encodeURIComponent(m.cover)}" class="pop-card">
+                    <img src="/api/proxy?url=${encodeURIComponent(m.cover)}" loading="lazy" style="opacity:0;transition:opacity 0.3s" onload="this.style.opacity=1">
+                </a>
+            `).join('');
+            setTimeout(function() {
+                document.querySelectorAll('#popularGrid img').forEach(function(img) {
+                    if (!img.complete || img.naturalWidth === 0) {
+                        img.src = img.src.split('?')[0] + '?r=' + Date.now();
+                    }
+                });
+            }, 3000);
+        }
+
+        async function loadGalleries(query = "", page = 1) {
+            const grid = document.getElementById('grid');
+            const cacheKey = 'hentyx_galleries_' + query + '_' + page;
+            const cached = sessionStorage.getItem(cacheKey);
+            if (cached) { renderGalleries(JSON.parse(cached), page); }
+            else grid.innerHTML = skelCards(12);
+            try {
+                const langSuffix = currentLang === 'en' ? ' english' : currentLang === 'jp' ? ' japanese' : '';
+                const res = await fetch('https://jandapress.onrender.com/pururin/search?key=' + encodeURIComponent((query || 'new') + langSuffix) + '&page=' + page);
+                const data = await res.json();
+                const mapped = (data.data || []).map(m => ({ id: m.id || m.code, title: m.title, cover: m.image || m.cover }));
+                sessionStorage.setItem(cacheKey, JSON.stringify(mapped));
+                renderGalleries(mapped, page);
+            } catch (err) {
+                if (!cached) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px;color:#444;">OFFLINE.</div>';
+            }
+        }
+
+        function setLang(lang) {
+            currentLang = lang;
+            ['all','en','jp'].forEach(l => document.getElementById('lang-'+l).classList.toggle('active', l === lang));
+            sessionStorage.clear();
+            currentPage = 1;
+            loadGalleries(currentQuery);
+        }
+
+        function setSort(sort) {
+            currentSort = sort;
+            ['default','az','za'].forEach(s => document.getElementById('sort-'+s).classList.toggle('active', s === sort));
+            const cached = sessionStorage.getItem('hentyx_galleries_' + currentQuery + '_' + currentPage);
+            if (cached) renderGalleries(JSON.parse(cached), currentPage);
+        }
+
+        function renderGalleries(data, page) {
+            let sorted = [...data];
+            if (currentSort === 'az') sorted.sort((a,b) => a.title.localeCompare(b.title));
+            else if (currentSort === 'za') sorted.sort((a,b) => b.title.localeCompare(a.title));
+            let html = '';
+            sorted.forEach((m, i) => {
+
+                html += '<a href="gallery.html?id=' + m.id + '&cover=' + encodeURIComponent(m.cover) + '" class="card">' +
+                    '<div class="cover-wrap"><img src="/api/proxy?url=' + encodeURIComponent(m.cover) + '" loading="lazy" onload="this.style.opacity=1" style="opacity:0;transition:opacity 0.3s"></div>' +
+                    '<div class="card-title">' + m.title + '</div>' +
+                    '</a>';
+            });
+            document.getElementById('grid').innerHTML = html;
+            document.getElementById('pageLabel').innerText = 'Page ' + page;
+            document.getElementById('prevBtn').disabled = (page === 1);
+            // Retry failed images after 3s
+            setTimeout(function() {
+                document.querySelectorAll('#grid img').forEach(function(img) {
+                    if (!img.complete || img.naturalWidth === 0) {
+                        img.src = img.src.split('?')[0] + '?r=' + Date.now();
+                    }
+                });
+            }, 3000);
+            // Second retry after 8s
+            setTimeout(function() {
+                document.querySelectorAll('#grid img').forEach(function(img) {
+                    if (!img.complete || img.naturalWidth === 0) {
+                        img.src = img.src.split('?')[0] + '?r=' + Date.now();
+                    }
+                });
+            }, 8000);
+        }
+
+        function changePage(delta) { currentPage += delta; loadGalleries(currentQuery, currentPage); window.scrollTo(0,0); }
+        function clearSearch() {
+            currentQuery = '';
+            document.getElementById('searchInput').value = '';
+            document.getElementById('clearBtn').style.display = 'none';
+            document.getElementById('popularSection').style.display = 'block';
+            document.getElementById('gridTitle').innerText = 'Recent Uploads';
+            currentPage = 1;
+            loadGalleries('', 1);
+            window.scrollTo(0, 0);
+        }
+
+        function triggerSearch() {
+            currentQuery = document.getElementById('searchInput').value.trim();
+            currentPage = 1;
+            document.getElementById('clearBtn').style.display = currentQuery ? 'block' : 'none';
+            if (currentQuery) {
+                // Hide popular, update title, scroll to results
+                document.getElementById('popularSection').style.display = 'none';
+                document.getElementById('gridTitle').innerText = 'Results for "' + currentQuery + '"';
+                document.getElementById('gridTitle').style.borderLeftColor = '#ed2553';
+            } else {
+                // Restore popular and title
+                document.getElementById('popularSection').style.display = 'block';
+                document.getElementById('gridTitle').innerText = 'Recent Uploads';
+            }
+            loadGalleries(currentQuery, 1);
+            setTimeout(() => document.getElementById('gridTitle').scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
+        }
+        async function goTrueRandom() {
+            try {
+                const keywords = ['english','uncensored','schoolgirl','milf','fantasy'];
+                const rk = keywords[Math.floor(Math.random()*keywords.length)];
+                const rp = Math.floor(Math.random()*5)+1;
+                const res = await fetch('https://jandapress.onrender.com/pururin/search?key='+rk+'&page='+rp);
+                const data = await res.json();
+                const results = data.data || [];
+                const pick = results[Math.floor(Math.random()*results.length)];
+                window.location.href = 'gallery.html?id=' + (pick.id || pick.code) + '&cover=' + encodeURIComponent(pick.image || pick.cover);
+            } catch(e) {}
+        }
+
+        function toggleTheme() {
+            const isLight = document.documentElement.classList.toggle('light');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            document.getElementById('themeBtn').innerText = isLight ? '☀️' : '🌙';
+            document.getElementById('brandX').style.color = isLight ? '#333' : '#fff';
+        }
+
+        // Apply saved theme immediately
+        (function() {
+            if (localStorage.getItem('theme') === 'light') {
+                document.documentElement.classList.add('light');
+                document.addEventListener('DOMContentLoaded', () => {
+                    const btn = document.getElementById('themeBtn');
+                    const x = document.getElementById('brandX');
+                    if (btn) btn.innerText = '☀️';
+                    if (x) x.style.color = '#333';
+                });
+            }
+        })();
+
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.getRegistrations().then(regs => {
+                regs.forEach(r => r.unregister());
+            });
+        }
+        // Show refresh prompt if images fail to load
+        function checkImagesAndReload() {
+            setTimeout(() => {
+                const imgs = document.querySelectorAll('#grid img, #popularGrid img');
+                if (imgs.length === 0) return;
+                let failed = 0;
+                imgs.forEach(img => {
+                    if (!img.complete || img.naturalWidth === 0) failed++;
+                });
+                if (failed > imgs.length * 0.5) {
+                    document.getElementById('refreshPrompt').style.display = 'flex';
+                }
+            }, 10000);
+        }
+
+        window.onload = async () => {
+            const installBtn = document.getElementById('installBtn');
+            if (installBtn) installBtn.addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const result = await deferredPrompt.userChoice;
+                    deferredPrompt = null;
+                    document.getElementById('installBanner').classList.remove('show');
+                    localStorage.setItem('hx_install_dismissed', '1');
+                }
+            });
+            try {
+                const user = await getUser();
+                const drawerAuthLink = document.getElementById('drawerAuthLink');
+                if (user) {
+                    drawerAuthLink.textContent = '👤 Sign Out';
+                    drawerAuthLink.href = '#';
+                    drawerAuthLink.onclick = () => signOut();
+                }
+            } catch(e) {}
+            const qParam = new URLSearchParams(location.search).get('q');
+            if (qParam) {
+                document.getElementById('searchInput').value = qParam;
+                currentQuery = qParam;
+                document.getElementById('popularSection').style.display = 'none';
+                document.getElementById('gridTitle').innerText = 'Results for "' + qParam + '"';
+            }
+            loadPopular();
+            loadGalleries(currentQuery);
+            checkImagesAndReload();
+            // Load banner ads after content renders
+            setTimeout(() => {
+                const slot = document.getElementById('top-ad-slot');
+                const isMobile = window.innerWidth < 768;
+                const key = isMobile ? '87a6a1e6810153943afb34a15a62c6f8' : '5800a749e3c7dfebbdcfefd833a0e4ff';
+                const h = isMobile ? 50 : 90; const w = isMobile ? 320 : 728;
+                window.atOptions = {key, format:'iframe', height:h, width:w, params:{}};
+                const s = document.createElement('script');
+                s.src = 'https://www.highperformanceformat.com/' + key + '/invoke.js';
+                if(slot) slot.appendChild(s);
+            }, 3000);
+        };
+    </script>
 <div id="refreshPrompt" style="display:none;position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:#111;border:1px solid #ed2553;border-radius:8px;padding:12px 16px;z-index:998;align-items:center;gap:12px;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.5);">
     <span style="font-size:13px;color:#ccc;">Images not loading?</span>
     <button onclick="location.reload()" style="background:#ed2553;color:#fff;border:none;padding:6px 14px;border-radius:4px;font-weight:bold;font-size:12px;cursor:pointer;">Refresh</button>
@@ -193,3 +495,11 @@
 </div>
 </body>
 </html>
+<script>
+// Delay popunder ad by 30 seconds
+setTimeout(() => {
+  // Trigger popunder ad here (adjust to your ad network)
+  // For JuicyAds or similar, the ad script should trigger automatically
+  // This just ensures it waits 30 seconds
+}, 30000); // 30 seconds in milliseconds
+</script>
