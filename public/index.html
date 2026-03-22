@@ -318,7 +318,7 @@ window.HentyxAds = (function() {
             sorted.forEach((m, i) => {
 
                 html += '<a href="gallery.html?id=' + m.id + '&cover=' + encodeURIComponent(m.cover) + '" class="card">' +
-                    '<div class="cover-wrap"><img src="/api/proxy?url=' + encodeURIComponent(m.cover) + '" loading="lazy" onload="this.style.opacity=1" style="opacity:0;transition:opacity 0.3s" onerror="var t=parseInt(this.dataset.retry||0);if(t<3){this.dataset.retry=t+1;var s=this;setTimeout(function(){this.src=this.src.split('?')[0]+'?r='+Date.now();}.bind(this),3000*(t+1));}"></div>' +
+                    '<div class="cover-wrap"><img src="/api/proxy?url=' + encodeURIComponent(m.cover) + '" loading="lazy" onload="this.style.opacity=1" style="opacity:0;transition:opacity 0.3s"></div>' +
                     '<div class="card-title">' + m.title + '</div>' +
                     '</a>';
             });
