@@ -318,13 +318,26 @@ window.HentyxAds = (function() {
             sorted.forEach((m, i) => {
 
                 html += '<a href="gallery.html?id=' + m.id + '&cover=' + encodeURIComponent(m.cover) + '" class="card">' +
-                    '<div class="cover-wrap"><img src="/api/proxy?url=' + encodeURIComponent(m.cover) + '" loading="lazy" onload="this.style.opacity=1" style="opacity:0;transition:opacity 0.3s"></div>' +
+                    '<div class="cover-wrap"><img data-src="/api/proxy?url=' + encodeURIComponent(m.cover) + '" src="" loading="lazy" onload="this.style.opacity=1" style="opacity:0;transition:opacity 0.3s" onerror="var t=parseInt(this.dataset.retry||0);if(t<3){this.dataset.retry=t+1;var s=this;setTimeout(function(){s.src=s.dataset.src+'?r='+Date.now();},3000*(t+1));}"></div>' +
                     '<div class="card-title">' + m.title + '</div>' +
                     '</a>';
             });
             document.getElementById('grid').innerHTML = html;
             document.getElementById('pageLabel').innerText = 'Page ' + page;
             document.getElementById('prevBtn').disabled = (page === 1);
+            // Lazy load with intersection observer
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(e => {
+                    if (e.isIntersecting) {
+                        const img = e.target;
+                        if (!img.src || img.src === window.location.href) {
+                            img.src = img.dataset.src;
+                        }
+                        observer.unobserve(img);
+                    }
+                });
+            }, { rootMargin: '200px' });
+            document.querySelectorAll('#grid img[data-src]').forEach(img => observer.observe(img));
             // Retry failed images after 3s
             setTimeout(function() {
                 document.querySelectorAll('#grid img').forEach(function(img) {
