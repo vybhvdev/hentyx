@@ -325,18 +325,20 @@ window.HentyxAds = (function() {
             document.getElementById('grid').innerHTML = html;
             document.getElementById('pageLabel').innerText = 'Page ' + page;
             document.getElementById('prevBtn').disabled = (page === 1);
-            // Stagger image loading to avoid proxy overload
-            const imgs = document.querySelectorAll('#grid img');
-            imgs.forEach((img, i) => {
-                const src = img.src;
-                img.src = '';
-                img.style.opacity = '0';
-                setTimeout(() => {
-                    img.src = src;
-                    img.onload = () => { img.style.opacity = '1'; img.style.transition = 'opacity 0.3s'; };
-                    img.onerror = () => { setTimeout(() => { img.src = src.split('?')[0] + '?r=' + Date.now(); }, 3000); };
-                }, i * 100);
-            });
+            // Retry failed images on scroll into view
+            const retryObserver = new IntersectionObserver((entries) => {
+                entries.forEach(e => {
+                    if (e.isIntersecting) {
+                        const img = e.target;
+                        if (!img.complete || img.naturalWidth === 0) {
+                            img.src = img.src.split('?')[0] + '?r=' + Date.now();
+                        } else {
+                            retryObserver.unobserve(img);
+                        }
+                    }
+                });
+            }, { rootMargin: '100px' });
+            document.querySelectorAll('#grid img').forEach(img => retryObserver.observe(img));
 
             // Retry failed images after 3s
             setTimeout(function() {
