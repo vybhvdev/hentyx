@@ -287,7 +287,7 @@ window.HentyxAds = (function() {
                 const langSuffix = currentLang === 'en' ? ' english' : currentLang === 'jp' ? ' japanese' : '';
                 const res = await fetch('https://jandapress.onrender.com/pururin/search?key=' + encodeURIComponent((query || 'new') + langSuffix) + '&page=' + page);
                 const data = await res.json();
-                const mapped = (data.data || []).map(m => ({ id: m.id || m.code, title: m.title, cover: m.image || m.cover }));
+                const mapped = (data.data || []).slice(0, 12).map(m => ({ id: m.id || m.code, title: m.title, cover: m.image || m.cover }));
                 sessionStorage.setItem(cacheKey, JSON.stringify(mapped));
                 renderGalleries(mapped, page);
             } catch (err) {
@@ -325,20 +325,6 @@ window.HentyxAds = (function() {
             document.getElementById('grid').innerHTML = html;
             document.getElementById('pageLabel').innerText = 'Page ' + page;
             document.getElementById('prevBtn').disabled = (page === 1);
-            // Retry failed images on scroll into view
-            const retryObserver = new IntersectionObserver((entries) => {
-                entries.forEach(e => {
-                    if (e.isIntersecting) {
-                        const img = e.target;
-                        if (!img.complete || img.naturalWidth === 0) {
-                            img.src = img.src.split('?')[0] + '?r=' + Date.now();
-                        } else {
-                            retryObserver.unobserve(img);
-                        }
-                    }
-                });
-            }, { rootMargin: '100px' });
-            document.querySelectorAll('#grid img').forEach(img => retryObserver.observe(img));
 
             // Retry failed images after 3s
             setTimeout(function() {
