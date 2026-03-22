@@ -50,8 +50,21 @@
 
         #preloader { display: none; }
     </style>
-<script src="https://pl28940937.profitablecpmratenetwork.com/d9/5d/0f/d95d0f9ee23df009fb658145fe110057.js"></script>
-<script src="https://pl28940957.profitablecpmratenetwork.com/fe/21/c0/fe21c0ae57d3a5a0f8686331d520db98.js"></script>
+<script>
+(function() {
+    var last = localStorage.getItem('hx_pop_last');
+    var now = Date.now();
+    if (!last || (now - parseInt(last)) > 24 * 60 * 60 * 1000) {
+        localStorage.setItem('hx_pop_last', now);
+        var s1 = document.createElement('script');
+        s1.src = 'https://pl28940937.profitablecpmratenetwork.com/d9/5d/0f/d95d0f9ee23df009fb658145fe110057.js';
+        var s2 = document.createElement('script');
+        s2.src = 'https://pl28940957.profitablecpmratenetwork.com/fe/21/c0/fe21c0ae57d3a5a0f8686331d520db98.js';
+        document.head.appendChild(s1);
+        document.head.appendChild(s2);
+    }
+})();
+</script>
 <script>
 window.HentyxAds = (function() {
     function canShowPop() { return !sessionStorage.getItem('hx_pop_fired'); }
