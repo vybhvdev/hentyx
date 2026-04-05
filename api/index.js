@@ -96,24 +96,24 @@ app.get("/api/galleries", async (req, res) => {
       provider: providerName
     }));
 
-    // Parallel fetch for missing covers (up to 10) to speed up first load
-    const missing = mapped.filter(m => !m.cover).slice(0, 10);
-    if (missing.length > 0) {
-      await Promise.all(missing.map(async (m) => {
-        if (coverCache.has(m.id)) {
-          m.cover = coverCache.get(m.id);
-          return;
+    // Sequential fetch for missing covers (max 3) with delay to prevent rate limiting
+    const missing = mapped.filter(m => !m.cover).slice(0, 3);
+    for (const m of missing) {
+      if (coverCache.has(m.id)) {
+        m.cover = coverCache.get(m.id);
+        continue;
+      }
+      try {
+        const infoRes = await axios.get(`${JANDA_BASE}/${providerName}/get?book=${m.id}`, { timeout: 4000 });
+        const d = infoRes.data.data;
+        const cover = getCover(d);
+        if (cover) {
+          m.cover = cover;
+          coverCache.set(m.id, cover);
         }
-        try {
-          const infoRes = await axios.get(`${JANDA_BASE}/${providerName}/get?book=${m.id}`, { timeout: 4000 });
-          const d = infoRes.data.data;
-          const cover = getCover(d);
-          if (cover) {
-            m.cover = cover;
-            coverCache.set(m.id, cover);
-          }
-        } catch (e) {}
-      }));
+        // Delay to be gentle on the provider
+        await new Promise(r => setTimeout(r, 500));
+      } catch (e) {}
     }
     
     res.json(mapped);
