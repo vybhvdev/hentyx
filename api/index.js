@@ -80,6 +80,25 @@ app.get("/api/galleries", async (req, res) => {
       cover: getCover(m),
       provider: providerName
     }));
+
+    // Sequential fetch with memory cache for missing covers
+    const missing = mapped.filter(m => !m.cover).slice(0, 6);
+    for (const m of missing) {
+      if (coverCache.has(m.id)) {
+        m.cover = coverCache.get(m.id);
+        continue;
+      }
+      try {
+        const infoRes = await axios.get(`${JANDA_BASE}/${providerName}/get?book=${m.id}`, { timeout: 5000 });
+        const d = infoRes.data.data;
+        const cover = Array.isArray(d.image) ? d.image[0] : (Array.isArray(d.cover) ? d.cover[0] : "");
+        if (cover) {
+          m.cover = cover;
+          coverCache.set(m.id, cover);
+        }
+        await new Promise(r => setTimeout(r, 200));
+      } catch (e) {}
+    }
     
     res.json(mapped);
   } catch (err) { res.json([]); }
@@ -90,13 +109,19 @@ app.get("/api/popular", async (req, res) => {
     const searchRes = await axios.get(`${JANDA_BASE}/hentaifox/search?key=popular`, { timeout: 10000 });
     const results = (searchRes.data.data || []).slice(0, 4);
     const withCovers = [];
+    
     for (const m of results) {
+      if (coverCache.has(m.id)) {
+        withCovers.push({ id: m.id, title: m.title, cover: coverCache.get(m.id) });
+        continue;
+      }
       try {
         const info = await axios.get(`${JANDA_BASE}/hentaifox/get?book=${m.id}`, { timeout: 8000 });
         const d = info.data.data;
         const cover = Array.isArray(d.image) ? d.image[0] : '';
+        if (cover) coverCache.set(m.id, cover);
         withCovers.push({ id: m.id, title: m.title || d.title, cover });
-        await new Promise(r => setTimeout(r, 300));
+        await new Promise(r => setTimeout(r, 200));
       } catch(e) {
         withCovers.push({ id: m.id, title: m.title, cover: '' });
       }
