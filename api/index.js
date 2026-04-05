@@ -9,8 +9,8 @@ app.use(cors());
 const JANDA_BASE = "https://jandapress.onrender.com";
 // Primary first, then backups
 const PROVIDERS = [
-  { name: "hentaifox", referer: "https://hentaifox.com/" },
   { name: "asmhentai", referer: "https://asmhentai.com/" },
+  { name: "hentaifox", referer: "https://hentaifox.com/" },
   { name: "3hentai", referer: "http://3hentai.net/" },
   { name: "pururin", referer: "https://pururin.to/" },
   { name: "nhentai", referer: "https://nhentai.net/" },
@@ -26,7 +26,7 @@ async function fetchFromProviders(searchPath, queryParams) {
     try {
       let finalParams = queryParams;
       // hentaifox and 3hentai support sort=latest
-      if ((provider.name === "hentaifox" || provider.name === "3hentai") && !finalParams.includes("sort=")) {
+      if ((provider.name === "hentaifox" || provider.name === "3hentai" || provider.name === "asmhentai") && !finalParams.includes("sort=")) {
         finalParams += "&sort=latest";
       }
       // Ensure page is always part of the URL if not provided
@@ -80,12 +80,11 @@ app.get("/api/galleries", async (req, res) => {
     const p = req.query.p || 1;
     const lang = req.query.lang || "all";
     let searchKey = q;
-    if (searchKey === "new" || searchKey === "all") searchKey = "a"; // "a" is a better generic search for Hentaifox
+    if (searchKey === "new" || searchKey === "all") searchKey = "a"; // "a" is a better generic search for Hentaifox/AsmHentai
     if (lang === "en") searchKey = searchKey + " english";
     else if (lang === "jp") searchKey = searchKey + " japanese";
     
-    // Explicitly add sort=latest for hentaifox to get new content
-    const { data, provider } = await fetchFromProviders("search", `key=${encodeURIComponent(searchKey)}&page=${p}&sort=latest`);
+    const { data, provider } = await fetchFromProviders("search", `key=${encodeURIComponent(searchKey)}&page=${p}`);
     const providerName = provider ? provider.name : "unknown";
     
     const mapped = data.map(m => ({
@@ -101,8 +100,8 @@ app.get("/api/galleries", async (req, res) => {
     for (let i = 0; i < mapped.length && fetched < 3; i++) {
       if (!mapped[i].cover) {
         try {
-          const info = await axios.get(`${JANDA_BASE}/hentaifox/get?book=${mapped[i].id}`, { timeout: 6000 });
-          mapped[i].cover = Array.isArray(info.data.data.image) ? info.data.data.image[0] : '';
+          const info = await axios.get(`${JANDA_BASE}/${providerName}/get?book=${mapped[i].id}`, { timeout: 6000 });
+          mapped[i].cover = getCover(info.data.data);
           fetched++;
           if (fetched < 3) await new Promise(r => setTimeout(r, 400));
         } catch(e) {}
@@ -114,24 +113,39 @@ app.get("/api/galleries", async (req, res) => {
 
 app.get("/api/popular", async (req, res) => {
   try {
-    const searchRes = await axios.get(`${JANDA_BASE}/hentaifox/search?key=popular`, { timeout: 10000 });
-    const results = (searchRes.data.data || []).slice(0, 4);
+    // Try multiple providers for popular content
+    const providersToTry = ["asmhentai", "hentaifox", "3hentai"];
+    let results = [];
+    let usedProvider = "asmhentai";
+
+    for (const pName of providersToTry) {
+      try {
+        const searchRes = await axios.get(`${JANDA_BASE}/${pName}/search?key=popular`, { timeout: 8000 });
+        if (searchRes.data && searchRes.data.data && searchRes.data.data.length > 0) {
+          results = searchRes.data.data.slice(0, 4);
+          usedProvider = pName;
+          break;
+        }
+      } catch(e) {}
+    }
+
+    if (results.length === 0) return res.json([]);
+
     const withCovers = [];
-    
     for (const m of results) {
       if (coverCache.has(m.id)) {
         withCovers.push({ id: m.id, title: m.title, cover: coverCache.get(m.id) });
         continue;
       }
       try {
-        const info = await axios.get(`${JANDA_BASE}/hentaifox/get?book=${m.id}`, { timeout: 8000 });
+        const info = await axios.get(`${JANDA_BASE}/${usedProvider}/get?book=${m.id}`, { timeout: 5000 });
         const d = info.data.data;
-        const cover = Array.isArray(d.image) ? d.image[0] : '';
+        const cover = getCover(d);
         if (cover) coverCache.set(m.id, cover);
         withCovers.push({ id: m.id, title: m.title || d.title, cover });
         await new Promise(r => setTimeout(r, 200));
       } catch(e) {
-        withCovers.push({ id: m.id, title: m.title, cover: '' });
+        withCovers.push({ id: m.id, title: m.title, cover: getCover(m) });
       }
     }
     res.json(withCovers);
