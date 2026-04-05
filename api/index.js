@@ -6,7 +6,7 @@ const app = express();
 
 app.use(cors());
 
-const JANDA_BASE = "https://janda.ezee.li";
+const JANDA_BASE = "https://jandapress.onrender.com";
 const PROVIDER = "pururin";
 const REFERER = "https://pururin.to/";
 
@@ -149,13 +149,17 @@ app.get("/api/download", async (req, res) => {
   }
 });
 
+const coverCache = new Map();
 app.get("/api/covers", async (req, res) => {
   try {
     const ids = (req.query.ids || "").split(",").filter(Boolean).slice(0, 12);
     const results = await Promise.all(ids.map(async id => {
+      if (coverCache.has(id)) return { id, cover: coverCache.get(id) };
       try {
         const r = await axios.get(`${JANDA_BASE}/${PROVIDER}/get?book=${id}`, { timeout: 5000 });
-        return { id, cover: getCover(r.data.data) };
+        const c = getCover(r.data.data);
+        if (c) coverCache.set(id, c);
+        return { id, cover: c };
       } catch (e) {
         return { id, cover: "" };
       }
