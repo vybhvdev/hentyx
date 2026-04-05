@@ -69,7 +69,8 @@ app.get("/api/galleries", async (req, res) => {
     if (lang === "en") searchKey = searchKey + " english";
     else if (lang === "jp") searchKey = searchKey + " japanese";
     
-    const { data, provider } = await fetchFromProviders("search", `key=${encodeURIComponent(searchKey)}&page=${p}`);
+    // Explicitly add sort=latest for hentaifox to get new content
+    const { data, provider } = await fetchFromProviders("search", `key=${encodeURIComponent(searchKey)}&page=${p}&sort=latest`);
     const providerName = provider ? provider.name : "unknown";
     
     const mapped = data.map(m => ({
@@ -79,18 +80,6 @@ app.get("/api/galleries", async (req, res) => {
       cover: getCover(m),
       provider: providerName
     }));
-
-    // Fix missing covers for up to 3 items to avoid rate limiting
-    const missing = mapped.filter(m => !m.cover).slice(0, 3);
-    for (const m of missing) {
-      try {
-        const infoRes = await axios.get(`${JANDA_BASE}/${providerName}/get?book=${m.id}`, { timeout: 8000 });
-        const d = infoRes.data.data;
-        const cover = Array.isArray(d.image) ? d.image[0] : (Array.isArray(d.cover) ? d.cover[0] : "");
-        if (cover) m.cover = cover;
-        await new Promise(r => setTimeout(r, 300));
-      } catch (e) {}
-    }
     
     res.json(mapped);
   } catch (err) { res.json([]); }
