@@ -277,6 +277,7 @@ window.HentyxAds = (function() {
         }
 
         function renderPopular(data) {
+            if (!data || data.length === 0) return;
             document.getElementById('popularGrid').innerHTML = data.map(m => `
                 <a href="gallery.html?id=${m.id}&cover=${encodeURIComponent(m.cover)}" class="pop-card">
                     <img src="/api/proxy?url=${encodeURIComponent(m.cover)}" loading="lazy" style="opacity:0;transition:opacity 0.3s" onload="this.style.opacity=1">
