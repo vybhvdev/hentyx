@@ -43,7 +43,7 @@ async function fetchFromProviders(searchPath, queryParams) {
     for (const provider of PROVIDERS) {
       try {
         let finalParams = queryParams;
-        if ((provider.name === "hentaifox" || provider.name === "3hentai" || provider.name === "asmhentai") && !finalParams.includes("sort=")) {
+        if ((provider.name === "hentaifox" || provider.name === "3hentai" || provider.name === "asmhentai" || provider.name === "pururin") && !finalParams.includes("sort=")) {
           finalParams += "&sort=latest";
         }
         if (!finalParams.includes("page=")) {
@@ -51,14 +51,13 @@ async function fetchFromProviders(searchPath, queryParams) {
         }
 
         const url = `${baseUrl}/${provider.name}/search?${finalParams}`;
-        const res = await axios.get(url, { timeout: 10000 });
+        const res = await axios.get(url, { timeout: 8000 });
         if (res.data && res.data.data && res.data.data.length > 0) {
           return { data: res.data.data, provider: provider };
         }
       } catch (err) {
-        if (err.response && err.response.status === 429) {
-          break; // Rate limited on this instance, rotate
-        }
+        // If we hit a rate limit or a timeout, try next instance immediately
+        if (err.response && err.response.status === 429) break;
         continue;
       }
     }
