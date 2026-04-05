@@ -8,10 +8,10 @@ app.use(cors());
 
 // Primary first, then backups
 const PROVIDERS = [
+  { name: "pururin", referer: "https://pururin.to/" },
   { name: "asmhentai", referer: "https://asmhentai.com/" },
   { name: "hentaifox", referer: "https://hentaifox.com/" },
   { name: "3hentai", referer: "http://3hentai.net/" },
-  { name: "pururin", referer: "https://pururin.to/" },
   { name: "nhentai", referer: "https://nhentai.net/" },
   { name: "simply-hentai", referer: "https://simply-hentai.com/" },
   { name: "hentai2read", referer: "https://hentai2read.com/" }
