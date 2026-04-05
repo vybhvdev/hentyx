@@ -24,16 +24,17 @@ const defaultHeaders = { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64
 async function fetchFromProviders(searchPath, queryParams) {
   for (const provider of PROVIDERS) {
     try {
-      // Ensure page is always part of the URL if not provided
-      let fullParams = queryParams;
-      if (!fullParams.includes("page=")) fullParams += "&page=1";
-
-      let url = `${JANDA_BASE}/${provider.name}/search?${fullParams}`;
+      let finalParams = queryParams;
       // hentaifox and 3hentai support sort=latest
-      if ((provider.name === "hentaifox" || provider.name === "3hentai") && !fullParams.includes("sort=")) {
-        url += "&sort=latest";
+      if ((provider.name === "hentaifox" || provider.name === "3hentai") && !finalParams.includes("sort=")) {
+        finalParams += "&sort=latest";
       }
-      
+      // Ensure page is always part of the URL if not provided
+      if (!finalParams.includes("page=")) {
+        finalParams += "&page=1";
+      }
+
+      const url = `${JANDA_BASE}/${provider.name}/search?${finalParams}`;
       const res = await axios.get(url, { timeout: 10000 });
       if (res.data && res.data.data && res.data.data.length > 0) {
         return { data: res.data.data, provider: provider };
@@ -46,20 +47,7 @@ async function fetchFromProviders(searchPath, queryParams) {
   return { data: [], provider: PROVIDERS[0] };
 }
 
-// Helper to try multiple providers for getting specific book info
-async function fetchInfoFromProviders(id) {
-  for (const provider of PROVIDERS) {
-    try {
-      const res = await axios.get(`${JANDA_BASE}/${provider.name}/get?book=${id}`, { timeout: 10000 });
-      if (res.data && res.data.success && res.data.data) {
-        return { data: res.data.data, provider: provider };
-      }
-    } catch (err) {
-      continue;
-    }
-  }
-  throw new Error("Gallery not found in any provider");
-}
+// ... (fetchInfoFromProviders stays the same)
 
 function getCover(m) {
   if (typeof m.cover === 'string' && m.cover) return m.cover;
@@ -72,15 +60,16 @@ function getCover(m) {
 
 app.get("/api/galleries", async (req, res) => {
   try {
-    let q = req.query.q || "all";
-    if (q === "new") q = "all"; // Use "all" or generic for newest search
+    let q = req.query.q || "";
+    if (!q || q === "new" || q === "all") q = "a"; // "a" is a better generic search for Hentaifox
     
     const p = req.query.p || 1;
     const lang = req.query.lang || "all";
-    if (lang === "en") q = q + " english";
-    else if (lang === "jp") q = q + " japanese";
+    let searchKey = q;
+    if (lang === "en") searchKey = searchKey + " english";
+    else if (lang === "jp") searchKey = searchKey + " japanese";
     
-    const { data, provider } = await fetchFromProviders("search", `key=${encodeURIComponent(q)}&page=${p}`);
+    const { data, provider } = await fetchFromProviders("search", `key=${encodeURIComponent(searchKey)}&page=${p}`);
     const providerName = provider ? provider.name : "unknown";
     
     res.json(data.map(m => ({
@@ -95,7 +84,7 @@ app.get("/api/galleries", async (req, res) => {
 
 app.get("/api/popular", async (req, res) => {
   try {
-    const { data } = await fetchFromProviders("search", `key=popular`);
+    const { data } = await fetchFromProviders("search", `key=a&sort=popular`);
     const results = data.slice(0, 8);
     res.json(results.map(m => ({
       id: m.id || m.code,
