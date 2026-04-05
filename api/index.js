@@ -191,23 +191,32 @@ const coverCache = new Map();
 
 app.get("/api/covers", async (req, res) => {
   try {
-    const ids = (req.query.ids || "").split(",").filter(Boolean).slice(0, 15);
-    const results = await Promise.all(ids.map(async (id) => {
-      if (coverCache.has(id)) return { id, cover: coverCache.get(id) };
+    const ids = (req.query.ids || "").split(",").filter(Boolean).slice(0, 12);
+    const results = [];
+    
+    for (const id of ids) {
+      if (coverCache.has(id)) {
+        results.push({ id, cover: coverCache.get(id) });
+        continue;
+      }
+      
       try {
-        // Try hentaifox first as it's the primary
+        // Sequential fetch with a short timeout and delay
         const r = await axios.get(`${JANDA_BASE}/hentaifox/get?book=${id}`, { timeout: 5000 });
         const d = r.data.data;
         const c = getCover(d);
         if (c) {
           coverCache.set(id, c);
-          return { id, cover: c };
+          results.push({ id, cover: c });
+        } else {
+          results.push({ id, cover: "" });
         }
-        return { id, cover: "" };
-      } catch(e) { 
-        return { id, cover: "" }; 
+        // Small delay between requests to be gentle on Render/Hentaifox
+        await new Promise(resolve => setTimeout(resolve, 300));
+      } catch(e) {
+        results.push({ id, cover: "" });
       }
-    }));
+    }
     res.json(results);
   } catch(err) { res.json([]); }
 });
