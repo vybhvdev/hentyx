@@ -12,10 +12,13 @@ const PROVIDERS = [
   { name: "hentaifox", referer: "https://hentaifox.com/" },
   { name: "asmhentai", referer: "https://asmhentai.com/" },
   { name: "3hentai", referer: "http://3hentai.net/" },
-  { name: "pururin", referer: "https://pururin.to/" }
+  { name: "pururin", referer: "https://pururin.to/" },
+  { name: "nhentai", referer: "https://nhentai.net/" },
+  { name: "simply-hentai", referer: "https://simply-hentai.com/" },
+  { name: "hentai2read", referer: "https://hentai2read.com/" }
 ];
 
-const defaultHeaders = { "User-Agent": "Mozilla/5.0" };
+const defaultHeaders = { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" };
 
 // Helper to try multiple providers for search
 async function fetchFromProviders(searchPath, queryParams) {
@@ -123,7 +126,7 @@ app.get("/api/proxy", async (req, res) => {
     if (!targetUrl) return res.status(400).send("No URL");
     
     // Determine referer based on URL content
-    let referer = PROVIDERS[0].referer;
+    let referer = "";
     for (const p of PROVIDERS) {
       if (targetUrl.includes(p.name)) {
         referer = p.referer;
@@ -131,16 +134,31 @@ app.get("/api/proxy", async (req, res) => {
       }
     }
 
-    const response = await axios.get(targetUrl, {
+    const axiosConfig = {
       responseType: "stream",
-      headers: { ...defaultHeaders, "Referer": referer },
-      timeout: 20000
-    });
-    res.setHeader("Content-Type", response.headers["content-type"] || "image/jpeg");
-    res.setHeader("Cache-Control", "public, max-age=604800, stale-while-revalidate=86400");
-    res.setHeader("CDN-Cache-Control", "public, max-age=604800");
-    response.data.pipe(res);
-  } catch (err) { res.status(500).send("Proxy failed"); }
+      headers: { ...defaultHeaders },
+      timeout: 15000
+    };
+    if (referer) axiosConfig.headers["Referer"] = referer;
+
+    try {
+      const response = await axios.get(targetUrl, axiosConfig);
+      res.setHeader("Content-Type", response.headers["content-type"] || "image/jpeg");
+      res.setHeader("Cache-Control", "public, max-age=604800, stale-while-revalidate=86400");
+      response.data.pipe(res);
+    } catch (err) {
+      // Retry without referer if it failed (some CDNs don't like it)
+      if (axiosConfig.headers["Referer"]) {
+        delete axiosConfig.headers["Referer"];
+        const response = await axios.get(targetUrl, axiosConfig);
+        res.setHeader("Content-Type", response.headers["content-type"] || "image/jpeg");
+        return response.data.pipe(res);
+      }
+      throw err;
+    }
+  } catch (err) { 
+    res.status(500).send("Proxy failed"); 
+  }
 });
 
 app.get("/api/download", async (req, res) => {
