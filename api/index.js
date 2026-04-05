@@ -75,13 +75,14 @@ app.get("/api/galleries", async (req, res) => {
     else if (lang === "jp") q = q + " japanese";
     
     const { data, provider } = await fetchFromProviders("search", `key=${encodeURIComponent(q)}&page=${p}`);
+    const providerName = provider ? provider.name : "unknown";
     
     res.json(data.map(m => ({
       id: m.id || m.code,
       title: m.title,
       lang: (m.title || "").toLowerCase().includes("english") ? "EN" : "JP",
       cover: getCover(m),
-      provider: provider.name
+      provider: providerName
     })));
   } catch (err) { res.json([]); }
 });
