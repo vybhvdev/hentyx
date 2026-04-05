@@ -24,9 +24,13 @@ const defaultHeaders = { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64
 async function fetchFromProviders(searchPath, queryParams) {
   for (const provider of PROVIDERS) {
     try {
-      let url = `${JANDA_BASE}/${provider.name}/search?${queryParams}`;
+      // Ensure page is always part of the URL if not provided
+      let fullParams = queryParams;
+      if (!fullParams.includes("page=")) fullParams += "&page=1";
+
+      let url = `${JANDA_BASE}/${provider.name}/search?${fullParams}`;
       // hentaifox and 3hentai support sort=latest
-      if ((provider.name === "hentaifox" || provider.name === "3hentai") && !queryParams.includes("sort=")) {
+      if ((provider.name === "hentaifox" || provider.name === "3hentai") && !fullParams.includes("sort=")) {
         url += "&sort=latest";
       }
       
