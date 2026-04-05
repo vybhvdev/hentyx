@@ -8,9 +8,9 @@ app.use(cors());
 
 // Primary first, then backups
 const PROVIDERS = [
-  { name: "pururin", referer: "https://pururin.to/" },
   { name: "asmhentai", referer: "https://asmhentai.com/" },
   { name: "hentaifox", referer: "https://hentaifox.com/" },
+  { name: "pururin", referer: "https://pururin.to/" },
   { name: "3hentai", referer: "http://3hentai.net/" },
   { name: "nhentai", referer: "https://nhentai.net/" },
   { name: "simply-hentai", referer: "https://simply-hentai.com/" },
@@ -43,9 +43,12 @@ async function fetchFromProviders(searchPath, queryParams) {
     for (const provider of PROVIDERS) {
       try {
         let finalParams = queryParams;
-        if ((provider.name === "hentaifox" || provider.name === "3hentai" || provider.name === "asmhentai" || provider.name === "pururin") && !finalParams.includes("sort=")) {
+        // hentaifox and 3hentai support sort=latest, pururin doesn't via search query
+        if ((provider.name === "hentaifox" || provider.name === "3hentai" || provider.name === "asmhentai") && !finalParams.includes("sort=")) {
           finalParams += "&sort=latest";
         }
+        // If queryParams already has page, it will be included. 
+        // We only add &page=1 if it's completely missing.
         if (!finalParams.includes("page=")) {
           finalParams += "&page=1";
         }
@@ -151,7 +154,7 @@ app.get("/api/popular", async (req, res) => {
       try {
         const searchRes = await axios.get(`${getJandaBase()}/${pName}/search?key=popular`, { timeout: 8000 });
         if (searchRes.data && searchRes.data.data && searchRes.data.data.length > 0) {
-          results = searchRes.data.data.slice(0, 4);
+          results = searchRes.data.data.slice(0, 10);
           usedProvider = pName;
           break;
         }
