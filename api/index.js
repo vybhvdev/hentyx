@@ -47,14 +47,29 @@ async function fetchFromProviders(searchPath, queryParams) {
   return { data: [], provider: PROVIDERS[0] };
 }
 
-// ... (fetchInfoFromProviders stays the same)
+// Helper to try multiple providers for gallery info
+async function fetchInfoFromProviders(id) {
+  for (const provider of PROVIDERS) {
+    try {
+      const url = `${JANDA_BASE}/${provider.name}/get?book=${id}`;
+      const res = await axios.get(url, { timeout: 10000 });
+      if (res.data && res.data.data) {
+        return { data: res.data.data, provider: provider };
+      }
+    } catch (err) {
+      continue;
+    }
+  }
+  throw new Error("Gallery not found");
+}
 
 function getCover(m) {
+  if (!m) return "";
   if (typeof m.cover === 'string' && m.cover) return m.cover;
   if (typeof m.image === 'string' && m.image) return m.image;
   if (Array.isArray(m.image) && m.image.length > 0) return m.image[0];
   if (Array.isArray(m.cover) && m.cover.length > 0) return m.cover[0];
-  const imgs = m.reader || m.images || [];
+  const imgs = m.reader || m.images || m.pages || [];
   return imgs[0] || "";
 }
 
@@ -81,23 +96,24 @@ app.get("/api/galleries", async (req, res) => {
       provider: providerName
     }));
 
-    // Sequential fetch with memory cache for missing covers
-    const missing = mapped.filter(m => !m.cover).slice(0, 6);
-    for (const m of missing) {
-      if (coverCache.has(m.id)) {
-        m.cover = coverCache.get(m.id);
-        continue;
-      }
-      try {
-        const infoRes = await axios.get(`${JANDA_BASE}/${providerName}/get?book=${m.id}`, { timeout: 5000 });
-        const d = infoRes.data.data;
-        const cover = Array.isArray(d.image) ? d.image[0] : (Array.isArray(d.cover) ? d.cover[0] : "");
-        if (cover) {
-          m.cover = cover;
-          coverCache.set(m.id, cover);
+    // Parallel fetch for missing covers (up to 10) to speed up first load
+    const missing = mapped.filter(m => !m.cover).slice(0, 10);
+    if (missing.length > 0) {
+      await Promise.all(missing.map(async (m) => {
+        if (coverCache.has(m.id)) {
+          m.cover = coverCache.get(m.id);
+          return;
         }
-        await new Promise(r => setTimeout(r, 200));
-      } catch (e) {}
+        try {
+          const infoRes = await axios.get(`${JANDA_BASE}/${providerName}/get?book=${m.id}`, { timeout: 4000 });
+          const d = infoRes.data.data;
+          const cover = getCover(d);
+          if (cover) {
+            m.cover = cover;
+            coverCache.set(m.id, cover);
+          }
+        } catch (e) {}
+      }));
     }
     
     res.json(mapped);

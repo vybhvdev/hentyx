@@ -212,17 +212,23 @@ window.HentyxAds = (function() {
             if (passedCover) {
                 document.getElementById('readLink').href = `reader.html?id=${id}&cover=${encodeURIComponent(passedCover)}`;
             }
+            if (!id) {
+                document.getElementById('loading').innerText = "ID MISSING.";
+                return;
+            }
             try {
                 const res = await fetch(`/api/info?id=${id}`);
                 const d = await res.json();
+                if (d.error) throw new Error(d.error);
+                
                 allPages = d.pages || [];
                 const thumb = d.cover || (passedCover || allPages[0] || "");
                 galleryData = { id: d.id, title: d.title, cover: thumb };
 
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('main').style.display = 'block';
-                document.getElementById('mangaTitle').innerText = d.title;
-                document.getElementById('mangaIdLabel').innerText = d.id;
+                document.getElementById('mangaTitle').innerText = d.title || 'Unknown Title';
+                document.getElementById('mangaIdLabel').innerText = d.id || id;
                 document.getElementById('pageCountLabel').innerText = allPages.length;
                 const ci = document.getElementById('coverImg');
                 ci.style.opacity = '0';
