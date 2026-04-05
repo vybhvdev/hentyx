@@ -60,12 +60,12 @@ function getCover(m) {
 
 app.get("/api/galleries", async (req, res) => {
   try {
-    let q = req.query.q || "";
-    if (!q || q === "new" || q === "all") q = "a"; // "a" is a better generic search for Hentaifox
+    let q = req.query.q || "new";
     
     const p = req.query.p || 1;
     const lang = req.query.lang || "all";
     let searchKey = q;
+    if (searchKey === "new" || searchKey === "all") searchKey = "a"; // "a" is a better generic search for Hentaifox
     if (lang === "en") searchKey = searchKey + " english";
     else if (lang === "jp") searchKey = searchKey + " japanese";
     

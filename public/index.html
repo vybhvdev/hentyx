@@ -345,22 +345,6 @@ window.HentyxAds = (function() {
             document.getElementById('grid').innerHTML = html;
             document.getElementById('pageLabel').innerText = 'Page ' + page;
             document.getElementById('prevBtn').disabled = (page === 1);
-            // Fetch covers if missing
-            const missingCovers = sorted.filter(m => !m.cover);
-            if (missingCovers.length > 0) {
-                const ids = missingCovers.map(m => m.id).join(',');
-                fetch('/api/covers?ids=' + ids).then(r => r.json()).then(covers => {
-                    covers.forEach(c => {
-                        if (c.cover) {
-                            const img = document.querySelector('#grid img[data-id="' + c.id + '"]');
-                            if (img) {
-                                img.src = '/api/proxy?url=' + encodeURIComponent(c.cover);
-                                img.onload = () => { img.style.opacity = '1'; };
-                            }
-                        }
-                    });
-                }).catch(() => {});
-            }
 
             // Retry failed images after 3s
             setTimeout(function() {
