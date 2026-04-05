@@ -232,16 +232,15 @@ window.HentyxAds = (function() {
         try {
             const controller = new AbortController();
             const tid = setTimeout(() => controller.abort(), 40000);
-            const res = await fetch("https://jandapress.onrender.com/pururin/get?book=" + id, { signal: controller.signal });
+            const res = await fetch("/api/info?id=" + id, { signal: controller.signal });
             clearTimeout(tid);
-            const data = await res.json();
-            const d = data.data || data;
-            const loaded = Array.isArray(d.image) ? d.image : (Array.isArray(d.cover) ? d.cover : (d.reader || []));
+            const d = await res.json();
+            const loaded = d.pages || [];
             if (loaded.length > 0) {
                 pages = loaded;
                 sessionStorage.setItem('pages_' + id, JSON.stringify(pages));
                 currentIndex = Math.min(startPage, pages.length - 1);
-                const thumb = typeof d.cover === 'string' ? d.cover : (passedCover ? decodeURIComponent(passedCover) : pages[0]);
+                const thumb = d.cover || (passedCover ? decodeURIComponent(passedCover) : pages[0]);
                 trackHistory({ id, title: d.title || '', cover: thumb });
                 removeOverlay();
                 updateDisplay();

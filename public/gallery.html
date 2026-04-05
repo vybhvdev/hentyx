@@ -213,11 +213,10 @@ window.HentyxAds = (function() {
                 document.getElementById('readLink').href = `reader.html?id=${id}&cover=${encodeURIComponent(passedCover)}`;
             }
             try {
-                const res = await fetch(`https://jandapress.onrender.com/pururin/get?book=${id}`);
-                const data = await res.json();
-                const d = data.data || data;
-                allPages = Array.isArray(d.image) ? d.image : (Array.isArray(d.cover) ? d.cover : (d.reader || []));
-                const thumb = typeof d.cover === "string" ? d.cover : (passedCover || allPages[0] || "");
+                const res = await fetch(`/api/info?id=${id}`);
+                const d = await res.json();
+                allPages = d.pages || [];
+                const thumb = d.cover || (passedCover || allPages[0] || "");
                 galleryData = { id: d.id, title: d.title, cover: thumb };
 
                 document.getElementById('loading').style.display = 'none';
@@ -231,7 +230,7 @@ window.HentyxAds = (function() {
                 ci.onload = () => ci.style.opacity = '1';
                 ci.src = proxy(thumb);
                 document.getElementById("readLink").href = `reader.html?id=${id}&cover=${encodeURIComponent(galleryData.cover)}`;
-                document.getElementById('dlBtn').onclick = () => window.location.href = `/api/download?id=${id}&title=${encodeURIComponent(data.title)}`;
+                document.getElementById('dlBtn').onclick = () => window.location.href = `/api/download?id=${id}&title=${encodeURIComponent(d.title)}`;
 
                 document.getElementById('genresList').innerHTML = (d.tags || []).map(t =>
                     `<a href="index.html?q=${encodeURIComponent(t.name || t)}" class="tag">${t.name || t}</a>`
