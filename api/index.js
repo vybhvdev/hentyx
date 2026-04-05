@@ -80,17 +80,16 @@ app.get("/api/galleries", async (req, res) => {
       provider: providerName
     }));
 
-    // Fix missing covers for up to 4 items to avoid rate limiting
-    const missing = mapped.filter(m => !m.cover).slice(0, 4);
-    if (missing.length > 0) {
-      await Promise.allSettled(missing.map(async (m) => {
-        try {
-          const infoRes = await axios.get(`${JANDA_BASE}/${providerName}/get?book=${m.id}`, { timeout: 8000 });
-          const d = infoRes.data.data;
-          const cover = Array.isArray(d.image) ? d.image[0] : (Array.isArray(d.cover) ? d.cover[0] : "");
-          if (cover) m.cover = cover;
-        } catch (e) {}
-      }));
+    // Fix missing covers for up to 3 items to avoid rate limiting
+    const missing = mapped.filter(m => !m.cover).slice(0, 3);
+    for (const m of missing) {
+      try {
+        const infoRes = await axios.get(`${JANDA_BASE}/${providerName}/get?book=${m.id}`, { timeout: 8000 });
+        const d = infoRes.data.data;
+        const cover = Array.isArray(d.image) ? d.image[0] : (Array.isArray(d.cover) ? d.cover[0] : "");
+        if (cover) m.cover = cover;
+        await new Promise(r => setTimeout(r, 300));
+      } catch (e) {}
     }
     
     res.json(mapped);
@@ -100,17 +99,19 @@ app.get("/api/galleries", async (req, res) => {
 app.get("/api/popular", async (req, res) => {
   try {
     const searchRes = await axios.get(`${JANDA_BASE}/hentaifox/search?key=popular`, { timeout: 10000 });
-    const results = (searchRes.data.data || []).slice(0, 8);
-    const withCovers = await Promise.all(results.map(async (m) => {
+    const results = (searchRes.data.data || []).slice(0, 4);
+    const withCovers = [];
+    for (const m of results) {
       try {
         const info = await axios.get(`${JANDA_BASE}/hentaifox/get?book=${m.id}`, { timeout: 8000 });
         const d = info.data.data;
         const cover = Array.isArray(d.image) ? d.image[0] : '';
-        return { id: m.id, title: m.title, cover };
+        withCovers.push({ id: m.id, title: m.title || d.title, cover });
+        await new Promise(r => setTimeout(r, 300));
       } catch(e) {
-        return { id: m.id, title: m.title, cover: '' };
+        withCovers.push({ id: m.id, title: m.title, cover: '' });
       }
-    }));
+    }
     res.json(withCovers);
   } catch(err) { res.json([]); }
 });
