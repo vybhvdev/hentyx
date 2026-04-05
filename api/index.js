@@ -192,7 +192,22 @@ app.get("/api/download", async (req, res) => {
   } catch (e) { res.status(500).send("Download Error"); }
 });
 
-app.get("/api/tags", async (req, res) => {
+app.get("/api/covers", async (req, res) => {
+  try {
+    const ids = (req.query.ids || "").split(",").filter(Boolean).slice(0, 12);
+    const results = await Promise.allSettled(ids.map(async (id) => {
+      try {
+        const r = await axios.get(`${JANDA_BASE}/hentaifox/get?book=${id}`, { timeout: 8000 });
+        const d = r.data.data;
+        const imgs = Array.isArray(d.image) ? d.image : (Array.isArray(d.cover) ? d.cover : []);
+        return { id, cover: getCover(d) || imgs[0] || "" };
+      } catch(e) { return { id, cover: "" }; }
+    }));
+    res.json(results.map(r => r.status === 'fulfilled' ? r.value : { id: '', cover: '' }));
+  } catch(err) { res.json([]); }
+});
+
+app.get("/api/tags"``, async (req, res) => {
   try {
     const keywords = ["english","uncensored","schoolgirl","milf","fantasy","romance","netorare","yaoi","yuri","monster","elf","maid","office","sister","nurse","bikini","stockings","ahegao","futanari","rape","mind break","harem","vanilla","cheating","orgy","pregnant","loli","shotacon","furry","femdom","bondage","slave","public","exhibitionism","glasses","tsundere","catgirl","demon","angel","vampire","zombie","tentacle","gangbang","creampie","blowjob","paizuri","handjob","footjob","anal","group","threesome"];
     res.json(keywords.map(t => ({ name: t, url: t })));
