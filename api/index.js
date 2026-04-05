@@ -60,7 +60,9 @@ async function fetchInfoFromProviders(id) {
 function getCover(m) {
   if (typeof m.cover === 'string' && m.cover) return m.cover;
   if (typeof m.image === 'string' && m.image) return m.image;
-  const imgs = Array.isArray(m.image) ? m.image : (Array.isArray(m.cover) ? m.cover : (m.reader || m.images || []));
+  if (Array.isArray(m.image) && m.image.length > 0) return m.image[0];
+  if (Array.isArray(m.cover) && m.cover.length > 0) return m.cover[0];
+  const imgs = m.reader || m.images || [];
   return imgs[0] || "";
 }
 
