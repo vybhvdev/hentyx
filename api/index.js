@@ -86,11 +86,26 @@ app.get("/api/popular", async (req, res) => {
   try {
     const { data } = await fetchFromProviders("search", `key=a&sort=popular`);
     const results = data.slice(0, 8);
-    res.json(results.map(m => ({
-      id: m.id || m.code,
-      title: m.title,
-      cover: getCover(m)
-    })));
+    
+    // Fetch full gallery info for each popular result to get the cover image
+    const fullResults = await Promise.all(results.map(async (m) => {
+      try {
+        const { data: info } = await fetchInfoFromProviders(m.id || m.code);
+        return {
+          id: info.id,
+          title: info.title,
+          cover: getCover(info)
+        };
+      } catch (err) {
+        return {
+          id: m.id || m.code,
+          title: m.title,
+          cover: getCover(m)
+        };
+      }
+    }));
+    
+    res.json(fullResults);
   } catch (err) { res.json([]); }
 });
 
