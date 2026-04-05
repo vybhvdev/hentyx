@@ -3,176 +3,83 @@ const axios = require("axios");
 const cors = require("cors");
 const archiver = require("archiver");
 const app = express();
-
 app.use(cors());
 
-const JANDA_BASE = "https://jandapress.onrender.com";
-const PROVIDER = "pururin";
-const REFERER = "https://pururin.to/";
-
-const defaultHeaders = { 
-  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" 
-};
-
-function getCover(m) {
-  if (!m) return "";
-  if (typeof m.cover === 'string' && m.cover) return m.cover;
-  if (typeof m.image === 'string' && m.image) return m.image;
-  if (Array.isArray(m.image) && m.image.length > 0) return m.image[0];
-  if (Array.isArray(m.cover) && m.cover.length > 0) return m.cover[0];
-  const imgs = m.reader || m.images || m.pages || [];
-  return imgs[0] || "";
-}
+const JANDA = "https://jandapress.onrender.com";
+const HEADERS = { "Referer": "https://pururin.to/", "User-Agent": "Mozilla/5.0" };
 
 app.get("/api/galleries", async (req, res) => {
   try {
-    const q = req.query.q || "new";
+    let q = req.query.q || "new";
     const p = req.query.p || 1;
     const lang = req.query.lang || "all";
-    
-    let searchKey = q;
-    if (searchKey === "new" || searchKey === "all") searchKey = "a";
-    if (lang === "en") searchKey += " english";
-    else if (lang === "jp") searchKey += " japanese";
-
-    const url = `${JANDA_BASE}/${PROVIDER}/search?key=${encodeURIComponent(searchKey)}&page=${p}`;
-    const response = await axios.get(url, { timeout: 10000 });
-    const data = response.data.data || [];
-
-    const mapped = data.map(m => ({
-      id: m.id || m.code,
-      title: m.title,
-      cover: getCover(m),
-      lang: (m.title || "").toLowerCase().includes("english") ? "EN" : "JP"
-    }));
-
-    res.json(mapped);
-  } catch (err) {
-    res.json([]);
-  }
+    if (lang === "en") q += " english";
+    else if (lang === "jp") q += " japanese";
+    const r = await axios.get(`${JANDA}/pururin/search?key=${encodeURIComponent(q)}&page=${p}`, { timeout: 15000 });
+    const data = r.data.data || [];
+    res.json(data.map(m => ({ id: m.id, title: m.title, lang: (m.title||"").toLowerCase().includes("english")?"EN":"JP", cover: m.cover || m.image || "" })));
+  } catch(e) { res.json([]); }
 });
 
 app.get("/api/popular", async (req, res) => {
   try {
-    const url = `${JANDA_BASE}/${PROVIDER}/search?key=popular`;
-    const response = await axios.get(url, { timeout: 10000 });
-    const data = (response.data.data || []).slice(0, 10);
-
-    const mapped = data.map(m => ({
-      id: m.id || m.code,
-      title: m.title,
-      cover: getCover(m)
-    }));
-
-    res.json(mapped);
-  } catch (err) {
-    res.json([]);
-  }
+    const r = await axios.get(`${JANDA}/pururin/search?key=popular`, { timeout: 15000 });
+    res.json((r.data.data || []).slice(0, 8).map(m => ({ id: m.id, title: m.title, cover: m.cover || m.image || "" })));
+  } catch(e) { res.json([]); }
 });
 
 app.get("/api/info", async (req, res) => {
   try {
-    const id = req.query.id;
-    const url = `${JANDA_BASE}/${PROVIDER}/get?book=${id}`;
-    const response = await axios.get(url, { timeout: 10000 });
-    const data = response.data.data;
-
-    let images = Array.isArray(data.image) ? data.image : (Array.isArray(data.cover) ? data.cover : (data.reader || data.images || []));
-    const thumb = typeof data.cover === 'string' ? data.cover : (Array.isArray(data.cover) ? data.cover[0] : (images[0] || ''));
-
-    res.json({
-      id: data.id,
-      title: data.title,
-      cover: thumb,
-      pages: images,
-      tags: data.tags || []
-    });
-  } catch (err) {
-    res.status(500).json({ error: "Gallery not found" });
-  }
+    const r = await axios.get(`${JANDA}/pururin/get?book=${req.query.id}`, { timeout: 15000 });
+    const d = r.data.data;
+    const pages = Array.isArray(d.image) ? d.image : (Array.isArray(d.cover) ? d.cover : []);
+    const cover = typeof d.cover === "string" ? d.cover : (pages[0] || "");
+    res.json({ id: d.id, title: d.title, cover, pages, tags: d.tags || [] });
+  } catch(e) { res.status(500).json({ error: "Failed" }); }
 });
 
 app.get("/api/random", async (req, res) => {
   try {
-    const url = `${JANDA_BASE}/${PROVIDER}/random`;
-    const response = await axios.get(url, { timeout: 10000 });
-    const data = response.data.data;
-    res.json({ id: data.id, cover: getCover(data) });
-  } catch (err) {
-    res.status(500).json({ error: "Failed" });
-  }
+    const keys = ["english","uncensored","schoolgirl","milf","fantasy"];
+    const r = await axios.get(`${JANDA}/pururin/search?key=${keys[Math.floor(Math.random()*keys.length)]}&page=${Math.floor(Math.random()*5)+1}`, { timeout: 15000 });
+    const data = r.data.data || [];
+    const pick = data[Math.floor(Math.random()*data.length)];
+    res.json({ id: pick.id, cover: pick.cover || pick.image || "" });
+  } catch(e) { res.status(500).json({ error: "Failed" }); }
 });
 
 app.get("/api/proxy", async (req, res) => {
   try {
-    const targetUrl = req.query.url;
-    if (!targetUrl) return res.status(400).send("No URL");
-
-    const response = await axios.get(targetUrl, {
-      responseType: "stream",
-      headers: { ...defaultHeaders, "Referer": REFERER },
-      timeout: 15000
-    });
-
-    res.setHeader("Content-Type", response.headers["content-type"] || "image/jpeg");
+    const url = req.query.url;
+    if (!url) return res.status(400).send("No URL");
+    const r = await axios.get(url, { responseType: "stream", headers: HEADERS, timeout: 20000 });
+    res.setHeader("Content-Type", r.headers["content-type"] || "image/jpeg");
     res.setHeader("Cache-Control", "public, max-age=604800");
-    response.data.pipe(res);
-  } catch (err) {
-    res.status(500).send("Proxy failed");
-  }
+    r.data.pipe(res);
+  } catch(e) { res.status(500).send("Failed"); }
 });
 
 app.get("/api/download", async (req, res) => {
   try {
-    const { id, title } = req.query;
-    const infoUrl = `${JANDA_BASE}/${PROVIDER}/get?book=${id}`;
-    const infoResponse = await axios.get(infoUrl, { timeout: 10000 });
-    const data = infoResponse.data.data;
-    const images = Array.isArray(data.image) ? data.image : (Array.isArray(data.cover) ? data.cover : (data.reader || []));
-
-    res.setHeader('Content-Disposition', `attachment; filename="${title || id}.zip"`);
-    const archive = archiver('zip');
+    const r = await axios.get(`${JANDA}/pururin/get?book=${req.query.id}`, { timeout: 15000 });
+    const d = r.data.data;
+    const pages = Array.isArray(d.image) ? d.image : [];
+    res.setHeader("Content-Disposition", `attachment; filename="${req.query.title || req.query.id}.zip"`);
+    const archive = archiver("zip");
     archive.pipe(res);
-
-    for (const url of images) {
+    for (const url of pages) {
       try {
-        const img = await axios.get(url, {
-          responseType: 'arraybuffer',
-          headers: { ...defaultHeaders, "Referer": REFERER }
-        });
-        archive.append(img.data, { name: `${images.indexOf(url) + 1}.jpg` });
-      } catch (e) {}
+        const img = await axios.get(url, { responseType: "arraybuffer", headers: HEADERS });
+        archive.append(img.data, { name: `${pages.indexOf(url)+1}.jpg` });
+      } catch(e) {}
     }
     archive.finalize();
-  } catch (e) {
-    res.status(500).send("Download Error");
-  }
-});
-
-const coverCache = new Map();
-app.get("/api/covers", async (req, res) => {
-  try {
-    const ids = (req.query.ids || "").split(",").filter(Boolean).slice(0, 12);
-    const results = await Promise.all(ids.map(async id => {
-      if (coverCache.has(id)) return { id, cover: coverCache.get(id) };
-      try {
-        const r = await axios.get(`${JANDA_BASE}/${PROVIDER}/get?book=${id}`, { timeout: 5000 });
-        const c = getCover(r.data.data);
-        if (c) coverCache.set(id, c);
-        return { id, cover: c };
-      } catch (e) {
-        return { id, cover: "" };
-      }
-    }));
-    res.json(results);
-  } catch (err) {
-    res.json([]);
-  }
+  } catch(e) { res.status(500).send("Error"); }
 });
 
 app.get("/api/tags", async (req, res) => {
-  const keywords = ["english","uncensored","schoolgirl","milf","fantasy","romance","netorare","yaoi","yuri","monster","elf","maid","office","sister","nurse","bikini","stockings","ahegao","futanari","rape","mind break","harem","vanilla","cheating","orgy","pregnant","loli","shotacon","furry","femdom","bondage","slave","public","exhibitionism","glasses","tsundere","catgirl","demon","angel","vampire","zombie","tentacle","gangbang","creampie","blowjob","paizuri","handjob","footjob","anal","group","threesome"];
-  res.json(keywords.map(t => ({ name: t, url: t })));
+  const tags = ["english","uncensored","schoolgirl","milf","fantasy","romance","netorare","yaoi","yuri","monster","elf","maid","office","sister","nurse","bikini","stockings","ahegao","futanari","harem","vanilla","cheating","femdom","bondage","tentacle","gangbang","creampie","anal","group","threesome"];
+  res.json(tags.map(t => ({ name: t, url: t })));
 });
 
 module.exports = app;
