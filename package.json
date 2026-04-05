@@ -6,6 +6,7 @@
     "start": "node api/index.js"
   },
   "dependencies": {
+    "@sentry/browser": "^10.47.0",
     "@supabase/supabase-js": "^2.99.2",
     "@vercel/analytics": "^2.0.1",
     "archiver": "^7.0.1",
