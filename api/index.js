@@ -57,6 +57,13 @@ async function fetchInfoFromProviders(id) {
   throw new Error("Gallery not found in any provider");
 }
 
+function getCover(m) {
+  if (typeof m.cover === 'string' && m.cover) return m.cover;
+  if (typeof m.image === 'string' && m.image) return m.image;
+  const imgs = Array.isArray(m.image) ? m.image : (Array.isArray(m.cover) ? m.cover : (m.reader || m.images || []));
+  return imgs[0] || "";
+}
+
 app.get("/api/galleries", async (req, res) => {
   try {
     let q = req.query.q || "all";
@@ -73,7 +80,7 @@ app.get("/api/galleries", async (req, res) => {
       id: m.id || m.code,
       title: m.title,
       lang: (m.title || "").toLowerCase().includes("english") ? "EN" : "JP",
-      cover: m.image || m.cover,
+      cover: getCover(m),
       provider: provider.name
     })));
   } catch (err) { res.json([]); }
@@ -86,7 +93,7 @@ app.get("/api/popular", async (req, res) => {
     res.json(results.map(m => ({
       id: m.id || m.code,
       title: m.title,
-      cover: m.image || m.cover
+      cover: getCover(m)
     })));
   } catch (err) { res.json([]); }
 });
