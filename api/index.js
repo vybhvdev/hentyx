@@ -72,41 +72,47 @@ app.get("/api/galleries", async (req, res) => {
     const { data, provider } = await fetchFromProviders("search", `key=${encodeURIComponent(searchKey)}&page=${p}`);
     const providerName = provider ? provider.name : "unknown";
     
-    res.json(data.map(m => ({
+    const mapped = data.map(m => ({
       id: m.id || m.code,
       title: m.title,
       lang: (m.title || "").toLowerCase().includes("english") ? "EN" : "JP",
       cover: getCover(m),
       provider: providerName
-    })));
+    }));
+
+    // Fix missing covers for up to 4 items to avoid rate limiting
+    const missing = mapped.filter(m => !m.cover).slice(0, 4);
+    if (missing.length > 0) {
+      await Promise.allSettled(missing.map(async (m) => {
+        try {
+          const infoRes = await axios.get(`${JANDA_BASE}/${providerName}/get?book=${m.id}`, { timeout: 8000 });
+          const d = infoRes.data.data;
+          const cover = Array.isArray(d.image) ? d.image[0] : (Array.isArray(d.cover) ? d.cover[0] : "");
+          if (cover) m.cover = cover;
+        } catch (e) {}
+      }));
+    }
+    
+    res.json(mapped);
   } catch (err) { res.json([]); }
 });
 
 app.get("/api/popular", async (req, res) => {
   try {
-    const { data } = await fetchFromProviders("search", `key=a&sort=popular`);
-    const results = data.slice(0, 8);
-    
-    // Fetch full gallery info for each popular result to get the cover image
-    const fullResults = await Promise.all(results.map(async (m) => {
+    const searchRes = await axios.get(`${JANDA_BASE}/hentaifox/search?key=popular`, { timeout: 10000 });
+    const results = (searchRes.data.data || []).slice(0, 8);
+    const withCovers = await Promise.all(results.map(async (m) => {
       try {
-        const { data: info } = await fetchInfoFromProviders(m.id || m.code);
-        return {
-          id: info.id,
-          title: info.title,
-          cover: getCover(info)
-        };
-      } catch (err) {
-        return {
-          id: m.id || m.code,
-          title: m.title,
-          cover: getCover(m)
-        };
+        const info = await axios.get(`${JANDA_BASE}/hentaifox/get?book=${m.id}`, { timeout: 8000 });
+        const d = info.data.data;
+        const cover = Array.isArray(d.image) ? d.image[0] : '';
+        return { id: m.id, title: m.title, cover };
+      } catch(e) {
+        return { id: m.id, title: m.title, cover: '' };
       }
     }));
-    
-    res.json(fullResults);
-  } catch (err) { res.json([]); }
+    res.json(withCovers);
+  } catch(err) { res.json([]); }
 });
 
 app.get("/api/info", async (req, res) => {
