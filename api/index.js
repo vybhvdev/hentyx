@@ -209,7 +209,7 @@ app.get("/api/covers", async (req, res) => {
   } catch(err) { res.json([]); }
 });
 
-app.get("/api/tags"``, async (req, res) => {
+app.get("/api/tags", async (req, res) => {
   try {
     const keywords = ["english","uncensored","schoolgirl","milf","fantasy","romance","netorare","yaoi","yuri","monster","elf","maid","office","sister","nurse","bikini","stockings","ahegao","futanari","rape","mind break","harem","vanilla","cheating","orgy","pregnant","loli","shotacon","furry","femdom","bondage","slave","public","exhibitionism","glasses","tsundere","catgirl","demon","angel","vampire","zombie","tentacle","gangbang","creampie","blowjob","paizuri","handjob","footjob","anal","group","threesome"];
     res.json(keywords.map(t => ({ name: t, url: t })));
