@@ -305,20 +305,31 @@ window.HentyxAds = (function() {
             const grid = document.getElementById('grid');
             const cacheKey = 'hentyx_galleries_' + query + '_' + page;
             const cached = sessionStorage.getItem(cacheKey);
-            if (cached) { renderGalleries(JSON.parse(cached), page); }
-            else grid.innerHTML = skelCards(12);
+            const cacheTs = sessionStorage.getItem(cacheKey + '_ts');
+            const now = Date.now();
+            
+            // 2 hour cache TTL (2 * 60 * 60 * 1000)
+            if (cached && cacheTs && (now - parseInt(cacheTs) < 2 * 60 * 60 * 1000)) { 
+                renderGalleries(JSON.parse(cached), page); 
+            } else {
+                grid.innerHTML = skelCards(12);
+            }
+
             try {
                 const res = await fetch(`/api/galleries?q=${encodeURIComponent(query || 'new')}&p=${page}&lang=${currentLang}`);
                 const data = await res.json();
                 if (data && data.length > 0) {
                     sessionStorage.setItem(cacheKey, JSON.stringify(data));
+                    sessionStorage.setItem(cacheKey + '_ts', Date.now().toString());
                 } else {
                     sessionStorage.removeItem(cacheKey);
                     sessionStorage.removeItem(cacheKey + '_ts');
                 }
                 renderGalleries(data, page);
             } catch (err) {
-                if (!cached) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px;color:#444;">No results found.</div>';
+                if (!cached && document.getElementById('grid').innerHTML === skelCards(12)) {
+                    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px;color:#444;">No results found.</div>';
+                }
             }
         }
 
