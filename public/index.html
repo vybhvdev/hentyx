@@ -336,9 +336,11 @@ window.HentyxAds = (function() {
             else if (currentSort === 'za') sorted.sort((a,b) => b.title.localeCompare(a.title));
             let html = '';
             sorted.forEach((m, i) => {
-
+                const shimmer = 'background:linear-gradient(90deg,#161616 25%,#222 50%,#161616 75%);background-size:200% 100%;animation:shimmer 1.2s infinite;';
+                const imgTag = m.cover ? '<img src="/api/proxy?url=' + encodeURIComponent(m.cover) + '" data-id="' + m.id + '" loading="lazy" onload="this.style.opacity=1" style="opacity:0;transition:opacity 0.3s">' : '';
+                
                 html += '<a href="gallery.html?id=' + m.id + '&cover=' + encodeURIComponent(m.cover) + '" class="card">' +
-                    '<div class="cover-wrap"><img src="' + (m.cover ? '/api/proxy?url=' + encodeURIComponent(m.cover) : '') + '" data-id="' + m.id + '" loading="lazy" onload="this.style.opacity=1" style="opacity:0;transition:opacity 0.3s"></div>' +
+                    '<div class="cover-wrap" style="' + (m.cover ? '' : shimmer) + '">' + imgTag + '</div>' +
                     '<div class="card-title">' + m.title + '</div>' +
                     '</a>';
             });
