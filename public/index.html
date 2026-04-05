@@ -271,7 +271,11 @@ window.HentyxAds = (function() {
             try {
                 const res = await fetch('/api/popular');
                 const data = await res.json();
-                sessionStorage.setItem(cacheKey, JSON.stringify(data));
+                if (data && data.length > 0) {
+                    sessionStorage.setItem(cacheKey, JSON.stringify(data));
+                } else {
+                    sessionStorage.removeItem(cacheKey);
+                }
                 renderPopular(data);
             } catch(e) {}
         }
@@ -306,7 +310,12 @@ window.HentyxAds = (function() {
             try {
                 const res = await fetch(`/api/galleries?q=${encodeURIComponent(query || 'new')}&p=${page}&lang=${currentLang}`);
                 const data = await res.json();
-                if (data && data.length > 0) sessionStorage.setItem(cacheKey, JSON.stringify(data));
+                if (data && data.length > 0) {
+                    sessionStorage.setItem(cacheKey, JSON.stringify(data));
+                } else {
+                    sessionStorage.removeItem(cacheKey);
+                    sessionStorage.removeItem(cacheKey + '_ts');
+                }
                 renderGalleries(data, page);
             } catch (err) {
                 if (!cached) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px;color:#444;">OFFLINE or Error.</div>';
@@ -330,7 +339,7 @@ window.HentyxAds = (function() {
 
         function renderGalleries(data, page) {
             if (!data || data.length === 0) {
-                document.getElementById('grid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px;color:#444;">No galleries found.</div>';
+                document.getElementById('grid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px;color:#444;">No results found.</div>';
                 return;
             }
             let sorted = [...data];
