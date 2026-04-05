@@ -194,18 +194,28 @@ app.get("/api/download", async (req, res) => {
   } catch (e) { res.status(500).send("Download Error"); }
 });
 
+const coverCache = new Map();
+
 app.get("/api/covers", async (req, res) => {
   try {
-    const ids = (req.query.ids || "").split(",").filter(Boolean).slice(0, 12);
-    const results = await Promise.allSettled(ids.map(async (id) => {
+    const ids = (req.query.ids || "").split(",").filter(Boolean).slice(0, 15);
+    const results = await Promise.all(ids.map(async (id) => {
+      if (coverCache.has(id)) return { id, cover: coverCache.get(id) };
       try {
-        const r = await axios.get(`${JANDA_BASE}/hentaifox/get?book=${id}`, { timeout: 8000 });
+        // Try hentaifox first as it's the primary
+        const r = await axios.get(`${JANDA_BASE}/hentaifox/get?book=${id}`, { timeout: 5000 });
         const d = r.data.data;
-        const imgs = Array.isArray(d.image) ? d.image : (Array.isArray(d.cover) ? d.cover : []);
-        return { id, cover: getCover(d) || imgs[0] || "" };
-      } catch(e) { return { id, cover: "" }; }
+        const c = getCover(d);
+        if (c) {
+          coverCache.set(id, c);
+          return { id, cover: c };
+        }
+        return { id, cover: "" };
+      } catch(e) { 
+        return { id, cover: "" }; 
+      }
     }));
-    res.json(results.map(r => r.status === 'fulfilled' ? r.value : { id: '', cover: '' }));
+    res.json(results);
   } catch(err) { res.json([]); }
 });
 

@@ -151,6 +151,10 @@ window.HentyxAds = (function() {
       try {
         const res = await fetch('/api/popular');
         const data = await res.json();
+        if (!data || data.length === 0) {
+           document.getElementById('grid').innerHTML = '<p style="color:#444; padding:40px; text-align:center;">No popular content found.</p>';
+           return;
+        }
         document.getElementById('grid').innerHTML = data.map((m, i) => `
           <a href="gallery.html?id=${m.id}&cover=${encodeURIComponent(m.cover)}" class="card">
             <div class="cover-wrap">

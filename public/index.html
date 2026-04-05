@@ -277,7 +277,10 @@ window.HentyxAds = (function() {
         }
 
         function renderPopular(data) {
-            if (!data || data.length === 0) return;
+            if (!data || data.length === 0) {
+                document.getElementById('popularGrid').innerHTML = '<div style="padding:20px;color:#444;font-size:12px;">No popular content found.</div>';
+                return;
+            }
             document.getElementById('popularGrid').innerHTML = data.map(m => `
                 <a href="gallery.html?id=${m.id}&cover=${encodeURIComponent(m.cover)}" class="pop-card">
                     <img src="/api/proxy?url=${encodeURIComponent(m.cover)}" loading="lazy" style="opacity:0;transition:opacity 0.3s" onload="this.style.opacity=1">
@@ -301,10 +304,10 @@ window.HentyxAds = (function() {
             try {
                 const res = await fetch(`/api/galleries?q=${encodeURIComponent(query || 'new')}&p=${page}&lang=${currentLang}`);
                 const data = await res.json();
-                sessionStorage.setItem(cacheKey, JSON.stringify(data));
+                if (data && data.length > 0) sessionStorage.setItem(cacheKey, JSON.stringify(data));
                 renderGalleries(data, page);
             } catch (err) {
-                if (!cached) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px;color:#444;">OFFLINE.</div>';
+                if (!cached) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px;color:#444;">OFFLINE or Error.</div>';
             }
         }
 
@@ -313,7 +316,7 @@ window.HentyxAds = (function() {
             ['all','en','jp'].forEach(l => document.getElementById('lang-'+l).classList.toggle('active', l === lang));
             sessionStorage.clear();
             currentPage = 1;
-            loadGalleries(currentQuery);
+            loadGalleries(currentQuery, 1);
         }
 
         function setSort(sort) {
@@ -324,7 +327,10 @@ window.HentyxAds = (function() {
         }
 
         function renderGalleries(data, page) {
-            if (!data || data.length === 0) return;
+            if (!data || data.length === 0) {
+                document.getElementById('grid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px;color:#444;">No galleries found.</div>';
+                return;
+            }
             let sorted = [...data];
             if (currentSort === 'az') sorted.sort((a,b) => a.title.localeCompare(b.title));
             else if (currentSort === 'za') sorted.sort((a,b) => b.title.localeCompare(a.title));
