@@ -6,7 +6,6 @@ const app = express();
 
 app.use(cors());
 
-const JANDA_BASE = "https://jandapress.onrender.com";
 // Primary first, then backups
 const PROVIDERS = [
   { name: "asmhentai", referer: "https://asmhentai.com/" },
@@ -20,45 +19,76 @@ const PROVIDERS = [
 
 const defaultHeaders = { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" };
 
+const JANDA_INSTANCES = [
+  "https://jandapress.onrender.com",
+  "https://janda.ezee.li",
+  "https://jandapress.vercel.app"
+];
+let currentInstanceIndex = 0;
+
+function getJandaBase() {
+  return JANDA_INSTANCES[currentInstanceIndex];
+}
+
+function rotateInstance() {
+  currentInstanceIndex = (currentInstanceIndex + 1) % JANDA_INSTANCES.length;
+  return getJandaBase();
+}
+
 // Helper to try multiple providers for search
 async function fetchFromProviders(searchPath, queryParams) {
-  for (const provider of PROVIDERS) {
-    try {
-      let finalParams = queryParams;
-      // hentaifox and 3hentai support sort=latest
-      if ((provider.name === "hentaifox" || provider.name === "3hentai" || provider.name === "asmhentai") && !finalParams.includes("sort=")) {
-        finalParams += "&sort=latest";
-      }
-      // Ensure page is always part of the URL if not provided
-      if (!finalParams.includes("page=")) {
-        finalParams += "&page=1";
-      }
+  let attempts = 0;
+  while (attempts < JANDA_INSTANCES.length) {
+    const baseUrl = getJandaBase();
+    for (const provider of PROVIDERS) {
+      try {
+        let finalParams = queryParams;
+        if ((provider.name === "hentaifox" || provider.name === "3hentai" || provider.name === "asmhentai") && !finalParams.includes("sort=")) {
+          finalParams += "&sort=latest";
+        }
+        if (!finalParams.includes("page=")) {
+          finalParams += "&page=1";
+        }
 
-      const url = `${JANDA_BASE}/${provider.name}/search?${finalParams}`;
-      const res = await axios.get(url, { timeout: 10000 });
-      if (res.data && res.data.data && res.data.data.length > 0) {
-        return { data: res.data.data, provider: provider };
+        const url = `${baseUrl}/${provider.name}/search?${finalParams}`;
+        const res = await axios.get(url, { timeout: 10000 });
+        if (res.data && res.data.data && res.data.data.length > 0) {
+          return { data: res.data.data, provider: provider };
+        }
+      } catch (err) {
+        if (err.response && err.response.status === 429) {
+          break; // Rate limited on this instance, rotate
+        }
+        continue;
       }
-    } catch (err) {
-      console.error(`Search failed for ${provider.name}:`, err.message);
-      continue;
     }
+    rotateInstance();
+    attempts++;
   }
   return { data: [], provider: PROVIDERS[0] };
 }
 
 // Helper to try multiple providers for gallery info
 async function fetchInfoFromProviders(id) {
-  for (const provider of PROVIDERS) {
-    try {
-      const url = `${JANDA_BASE}/${provider.name}/get?book=${id}`;
-      const res = await axios.get(url, { timeout: 10000 });
-      if (res.data && res.data.data) {
-        return { data: res.data.data, provider: provider };
+  let attempts = 0;
+  while (attempts < JANDA_INSTANCES.length) {
+    const baseUrl = getJandaBase();
+    for (const provider of PROVIDERS) {
+      try {
+        const url = `${baseUrl}/${provider.name}/get?book=${id}`;
+        const res = await axios.get(url, { timeout: 10000 });
+        if (res.data && res.data.data) {
+          return { data: res.data.data, provider: provider };
+        }
+      } catch (err) {
+        if (err.response && err.response.status === 429) {
+          break;
+        }
+        continue;
       }
-    } catch (err) {
-      continue;
     }
+    rotateInstance();
+    attempts++;
   }
   throw new Error("Gallery not found");
 }
@@ -100,7 +130,7 @@ app.get("/api/galleries", async (req, res) => {
     for (let i = 0; i < mapped.length && fetched < 3; i++) {
       if (!mapped[i].cover) {
         try {
-          const info = await axios.get(`${JANDA_BASE}/${providerName}/get?book=${mapped[i].id}`, { timeout: 6000 });
+          const info = await axios.get(`${getJandaBase()}/${providerName}/get?book=${mapped[i].id}`, { timeout: 6000 });
           mapped[i].cover = getCover(info.data.data);
           fetched++;
           if (fetched < 3) await new Promise(r => setTimeout(r, 400));
@@ -120,7 +150,7 @@ app.get("/api/popular", async (req, res) => {
 
     for (const pName of providersToTry) {
       try {
-        const searchRes = await axios.get(`${JANDA_BASE}/${pName}/search?key=popular`, { timeout: 8000 });
+        const searchRes = await axios.get(`${getJandaBase()}/${pName}/search?key=popular`, { timeout: 8000 });
         if (searchRes.data && searchRes.data.data && searchRes.data.data.length > 0) {
           results = searchRes.data.data.slice(0, 4);
           usedProvider = pName;
@@ -138,7 +168,7 @@ app.get("/api/popular", async (req, res) => {
         continue;
       }
       try {
-        const info = await axios.get(`${JANDA_BASE}/${usedProvider}/get?book=${m.id}`, { timeout: 5000 });
+        const info = await axios.get(`${getJandaBase()}/${usedProvider}/get?book=${m.id}`, { timeout: 5000 });
         const d = info.data.data;
         const cover = getCover(d);
         if (cover) coverCache.set(m.id, cover);
@@ -177,7 +207,7 @@ app.get("/api/random", async (req, res) => {
     if (data.length === 0) return res.status(404).json({ error: "No results" });
     
     const pick = data[Math.floor(Math.random() * data.length)];
-    res.json({ id: pick.id || pick.code, cover: pick.image || pick.cover });
+    res.json({ id: pick.id || pick.code, cover: getCover(pick) });
   } catch (err) { res.status(500).json({ error: "Failed" }); }
 });
 
@@ -226,19 +256,19 @@ app.get("/api/download", async (req, res) => {
   const { id, title } = req.query;
   try {
     const { data, provider } = await fetchInfoFromProviders(id);
-    const pages = Array.isArray(data.image) ? data.image : (Array.isArray(data.cover) ? data.cover : (data.reader || []));
+    const images = Array.isArray(data.image) ? data.image : (Array.isArray(data.cover) ? data.cover : (data.reader || data.images || []));
     
     res.setHeader('Content-Disposition', `attachment; filename="${title || id}.zip"`);
     const archive = archiver('zip');
     archive.pipe(res);
     
-    for (const url of pages) {
+    for (const url of images) {
       try {
         const img = await axios.get(url, { 
           responseType: 'arraybuffer', 
           headers: { ...defaultHeaders, "Referer": provider.referer } 
         });
-        archive.append(img.data, { name: `${pages.indexOf(url)+1}.jpg` });
+        archive.append(img.data, { name: `${images.indexOf(url)+1}.jpg` });
       } catch(e) {}
     }
     archive.finalize();
@@ -259,8 +289,7 @@ app.get("/api/covers", async (req, res) => {
       }
       
       try {
-        // Sequential fetch with a short timeout and delay
-        const r = await axios.get(`${JANDA_BASE}/hentaifox/get?book=${id}`, { timeout: 5000 });
+        const r = await axios.get(`${getJandaBase()}/asmhentai/get?book=${id}`, { timeout: 5000 });
         const d = r.data.data;
         const c = getCover(d);
         if (c) {
@@ -269,7 +298,6 @@ app.get("/api/covers", async (req, res) => {
         } else {
           results.push({ id, cover: "" });
         }
-        // Small delay between requests to be gentle on Render/Hentaifox
         await new Promise(resolve => setTimeout(resolve, 300));
       } catch(e) {
         results.push({ id, cover: "" });
