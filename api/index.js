@@ -8,9 +8,9 @@ app.use(cors());
 
 // Primary first, then backups
 const PROVIDERS = [
+  { name: "pururin", referer: "https://pururin.to/" },
   { name: "asmhentai", referer: "https://asmhentai.com/" },
   { name: "hentaifox", referer: "https://hentaifox.com/" },
-  { name: "pururin", referer: "https://pururin.to/" },
   { name: "3hentai", referer: "http://3hentai.net/" },
   { name: "nhentai", referer: "https://nhentai.net/" },
   { name: "simply-hentai", referer: "https://simply-hentai.com/" },
@@ -146,9 +146,9 @@ app.get("/api/galleries", async (req, res) => {
 app.get("/api/popular", async (req, res) => {
   try {
     // Try multiple providers for popular content
-    const providersToTry = ["asmhentai", "hentaifox", "3hentai"];
+    const providersToTry = ["pururin", "asmhentai", "hentaifox", "3hentai"];
     let results = [];
-    let usedProvider = "asmhentai";
+    let usedProvider = "pururin";
 
     for (const pName of providersToTry) {
       try {
