@@ -1,147 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-    <meta name="google-site-verification" content="pLfXVZxvjfiWq1XbUzRT-Leq2__OY0Bxjl-UITvYX_s">
-    <meta name="juicyads-site-verification" content="1b2ae5c661042730364d960266e80e9c">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Browse hentai doujinshi by genre and tag. Find exactly what you are looking for.">
-    <meta name="keywords" content="hentai, doujinshi, manga, free hentai, read online, hentyx">
-    <meta name="robots" content="index, follow">
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="Hentyx">
-    <meta property="og:title" content="Browse by Tag - Hentyx">
-    <meta property="og:description" content="Browse hentai doujinshi by genre and tag. Find exactly what you are looking for.">
-    <meta property="og:image" content="https://hentyx.vercel.app/og-image.svg">
-    <meta property="og:url" content="https://hentyx.vercel.app/tags.html">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Browse by Tag - Hentyx">
-    <meta name="twitter:description" content="Browse hentai doujinshi by genre and tag. Find exactly what you are looking for.">
-    <meta name="twitter:image" content="https://hentyx.vercel.app/og-image.svg">
-  <title>Browse by Tag - Hentyx</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="auth.js"></script>
-  <style>
-    :root { --bg: #0a0a0a; --surface: #161616; --accent: #ed2553; --text: #e5e5e5; }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg); color: var(--text); font-family: sans-serif; }
-    header { background: #000; padding: 12px 15px; border-bottom: 1px solid var(--accent); display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; }
-    .back { color: var(--accent); text-decoration: none; font-size: 20px; }
-    .brand { font-size: 20px; font-weight: 900; color: var(--accent); flex: 1; text-align: center; margin-right: 32px; }
-    .search-row { padding: 10px 15px; background: #000; display: flex; gap: 8px; border-bottom: 1px solid #1a1a1a; }
-    input { flex: 1; padding: 10px; background: #1a1a1a; border: 1px solid #2a2a2a; color: #fff; border-radius: 4px; outline: none; font-size: 14px; }
-    input:focus { border-color: var(--accent); }
-    .container { max-width: 900px; margin: 0 auto; padding: 20px 15px; }
-    .section-label { font-size: 11px; text-transform: uppercase; color: #555; letter-spacing: 2px; margin-bottom: 15px; border-left: 3px solid var(--accent); padding-left: 10px; }
-    .tag-cloud { display: flex; flex-wrap: wrap; gap: 8px; }
-    .tag { background: var(--surface); color: #ccc; padding: 8px 14px; border-radius: 4px; font-size: 12px; text-decoration: none; border: 1px solid #222; transition: 0.15s; display: flex; align-items: center; gap: 6px; }
-    .tag:hover { background: #1f0a10; border-color: var(--accent); color: var(--accent); }
-    .tag-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); opacity: 0.5; }
-    .hidden { display: none !important; }
-  </style>
-<style>
-.ad-banner { text-align:center; margin:10px auto; overflow:hidden; }
-.ad-banner-sticky { position:fixed; bottom:0; left:0; width:100%; text-align:center; z-index:500; background:#000; padding:3px 0; }
-.ad-native { margin:10px 0; text-align:center; }
-@media(min-width:768px) { .ad-mobile-only { display:none; } }
-@media(max-width:767px) { .ad-desktop-only { display:none; } }
-</style>
-<script>
-(function() {
-    var last = localStorage.getItem('hx_pop_last');
-    var now = Date.now();
-    if (!last || (now - parseInt(last)) > 24 * 60 * 60 * 1000) {
-        localStorage.setItem('hx_pop_last', now);
-        var s1 = document.createElement('script');
-        s1.src = 'https://pl28940937.profitablecpmratenetwork.com/d9/5d/0f/d95d0f9ee23df009fb658145fe110057.js';
-        var s2 = document.createElement('script');
-        s2.src = 'https://pl28940957.profitablecpmratenetwork.com/fe/21/c0/fe21c0ae57d3a5a0f8686331d520db98.js';
-        document.head.appendChild(s1);
-        document.head.appendChild(s2);
-    }
-})();
-</script>
-<script>
-// Ad Manager - frequency capping + geo + session tracking
-window.HentyxAds = (function() {
-    var POP_KEY = 'hx_pop_ts';
-    var SESSION_KEY = 'hx_session_interactions';
-    var PUSH_SHOWN_KEY = 'hx_push_shown';
-    var POP_COOLDOWN = 0; // per session
-
-    function getInteractions() { return parseInt(sessionStorage.getItem(SESSION_KEY) || '0'); }
-    function bumpInteraction() { sessionStorage.setItem(SESSION_KEY, getInteractions() + 1); }
-    function canShowPop() {
-        var last = localStorage.getItem(POP_KEY);
-        return !sessionStorage.getItem('hx_pop_fired');
-    }
-    function markPopShown() { sessionStorage.setItem('hx_pop_fired', '1'); }
-    function canShowPush() { return !localStorage.getItem(PUSH_SHOWN_KEY); }
-    function markPushShown() { localStorage.setItem(PUSH_SHOWN_KEY, '1'); }
-
-    function triggerPop() {
-        if (canShowPop()) {
-            markPopShown();
-            // popunder fires via its own script on page load
-        }
-    }
-
-    function onInteraction() {
-        bumpInteraction();
-        var n = getInteractions();
-        // Trigger push prompt on 2nd interaction
-        if (n === 2 && canShowPush()) {
-            markPushShown();
-            // PropellerAds push script handles the prompt
-        }
-    }
-
-    // Track clicks globally
-    document.addEventListener('click', onInteraction, { once: false, passive: true });
-
-    return { triggerPop: triggerPop, onInteraction: onInteraction };
-})();
-</script>
-<script defer src="/_vercel/insights/script.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#ed2553">
+    <title>Tags - Hentyx</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="auth.js"></script>
 </head>
 <body>
-  <header>
-    <a href="index.html" class="back">←</a>
-    <span class="brand">HENTY<span style="color:#fff">X</span></span>
-  </header>
-  <div class="search-row">
-    <input type="text" id="filterInput" placeholder="Filter tags..." oninput="filterTags()">
-  </div>
-  <div class="container">
-    <div class="ad-banner"><script>atOptions={'key':'092e22fa11d47c01621e6392a384ba6e','format':'iframe','height':250,'width':300,'params':{}};</script>
-<script src="https://www.highperformanceformat.com/092e22fa11d47c01621e6392a384ba6e/invoke.js"></script></div>
-<div class="section-label">Browse by Tag</div>
-    <div class="tag-cloud" id="tagCloud"></div>
-  </div>
-  <script>
-    let allTags = [];
+    <header>
+        <a href="index.html" class="icon-btn">←</a>
+        <div class="brand">EXPLORE <span>TAGS</span></div>
+        <a href="index.html" class="icon-btn">🏠</a>
+    </header>
 
-    async function loadTags() {
-      const res = await fetch('/api/tags');
-      allTags = await res.json();
-      renderTags(allTags);
-    }
+    <div class="container">
+        <div id="content">
+            <div style="text-align:center; padding:100px 0; color:var(--text-muted);">Loading tags...</div>
+        </div>
+    </div>
 
-    function renderTags(tags) {
-      document.getElementById('tagCloud').innerHTML = tags.map(t => `
-        <a href="index.html?q=${encodeURIComponent(t.name)}" class="tag">
-          <span class="tag-dot"></span>${t.name}
-        </a>
-      `).join('');
-    }
+    <script>
+        async function loadTags() {
+            try {
+                const res = await fetch('/api/tags');
+                const data = await res.json();
+                if (!data || data.length === 0) {
+                    document.getElementById('content').innerHTML = '<div style="text-align:center; padding:100px 0; color:var(--text-muted);">No tags found.</div>';
+                    return;
+                }
+                document.getElementById('content').innerHTML = `<div class="tag-group" style="justify-content:center; gap:12px;">${data.map(t => `
+                    <a href="index.html?q=${encodeURIComponent(t.name)}" class="tag" style="padding:10px 16px; font-size:14px; font-weight:600;">
+                        ${t.name} <span style="color:var(--accent); margin-left:4px; font-size:11px;">${t.count || ''}</span>
+                    </a>`).join('')}</div>`;
+            } catch(e) {
+                document.getElementById('content').innerHTML = '<div style="text-align:center; padding:100px 0; color:var(--accent);">Error loading tags.</div>';
+            }
+        }
 
-    function filterTags() {
-      const q = document.getElementById('filterInput').value.toLowerCase();
-      const filtered = allTags.filter(t => t.name.includes(q));
-      renderTags(filtered);
-    }
-
-    loadTags();
-  </script>
+        loadTags();
+        
+        // Apply saved theme
+        (function() {
+            if (localStorage.getItem('theme') === 'light') {
+                document.documentElement.classList.add('light');
+            }
+        })();
+    </script>
 </body>
 </html>

@@ -1,172 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-    <meta name="google-site-verification" content="pLfXVZxvjfiWq1XbUzRT-Leq2__OY0Bxjl-UITvYX_s">
-    <meta name="juicyads-site-verification" content="1b2ae5c661042730364d960266e80e9c">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Your recently read hentai doujinshi on Hentyx.">
-    <meta name="keywords" content="hentai, doujinshi, manga, free hentai, read online, hentyx">
-    <meta name="robots" content="index, follow">
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="Hentyx">
-    <meta property="og:title" content="Reading History - Hentyx">
-    <meta property="og:description" content="Your recently read hentai doujinshi on Hentyx.">
-    <meta property="og:image" content="https://hentyx.vercel.app/og-image.svg">
-    <meta property="og:url" content="https://hentyx.vercel.app/history.html">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Reading History - Hentyx">
-    <meta name="twitter:description" content="Your recently read hentai doujinshi on Hentyx.">
-    <meta name="twitter:image" content="https://hentyx.vercel.app/og-image.svg">
-  <title>Reading History - Hentyx</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="auth.js"></script>
-  <style>
-    :root { --bg: #0a0a0a; --surface: #161616; --accent: #ed2553; --text: #e5e5e5; }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg); color: var(--text); font-family: sans-serif; }
-    header { background: #000; padding: 12px 15px; border-bottom: 1px solid var(--accent); display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; }
-    .back { color: var(--accent); text-decoration: none; font-size: 20px; }
-    .brand { font-size: 20px; font-weight: 900; color: var(--accent); flex: 1; text-align: center; }
-    .clear-btn { background: none; border: 1px solid #333; color: #666; padding: 6px 12px; border-radius: 4px; font-size: 11px; cursor: pointer; }
-    .clear-btn:hover { border-color: var(--accent); color: var(--accent); }
-    .container { max-width: 1200px; margin: 0 auto; padding: 15px; }
-    .section-label { font-size: 11px; text-transform: uppercase; color: #555; letter-spacing: 2px; margin: 10px 0 15px; border-left: 3px solid var(--accent); padding-left: 10px; }
-    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-    @media (min-width: 600px) { .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); } }
-    .card { background: var(--surface); border-radius: 4px; overflow: hidden; text-decoration: none; color: inherit; border: 1px solid #1a1a1a; position: relative; }
-    .cover-wrap { position: relative; padding-top: 140%; background: #000; cursor: pointer; }
-    .card img { position: absolute; top:0; left:0; width:100%; height:100%; object-fit: cover; }
-    .card-title { padding: 8px; font-size: 10px; line-height: 1.2; height: 28px; overflow: hidden; text-align: center; color: #bbb; }
-    .time-badge { position: absolute; bottom: 5px; left: 5px; background: rgba(0,0,0,0.85); color: #888; font-size: 9px; padding: 3px 6px; border-radius: 3px; }
-    .remove-btn { position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.8); border: none; color: #ed2553; border-radius: 50%; width: 26px; height: 26px; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; }
-    .status { text-align: center; padding: 60px 20px; color: #444; font-size: 14px; }
-    .login-prompt { text-align: center; padding: 60px 20px; }
-    .login-prompt a { color: var(--accent); font-weight: bold; text-decoration: none; }
-  </style>
-<style>
-.ad-banner { text-align:center; margin:10px auto; overflow:hidden; }
-.ad-banner-sticky { position:fixed; bottom:0; left:0; width:100%; text-align:center; z-index:500; background:#000; padding:3px 0; }
-.ad-native { margin:10px 0; text-align:center; }
-@media(min-width:768px) { .ad-mobile-only { display:none; } }
-@media(max-width:767px) { .ad-desktop-only { display:none; } }
-</style>
-<script src="https://pl28940957.profitablecpmratenetwork.com/fe/21/c0/fe21c0ae57d3a5a0f8686331d520db98.js"></script>
-<script>
-// Ad Manager - frequency capping + geo + session tracking
-window.HentyxAds = (function() {
-    var POP_KEY = 'hx_pop_ts';
-    var SESSION_KEY = 'hx_session_interactions';
-    var PUSH_SHOWN_KEY = 'hx_push_shown';
-    var POP_COOLDOWN = 0; // per session
-
-    function getInteractions() { return parseInt(sessionStorage.getItem(SESSION_KEY) || '0'); }
-    function bumpInteraction() { sessionStorage.setItem(SESSION_KEY, getInteractions() + 1); }
-    function canShowPop() {
-        var last = localStorage.getItem(POP_KEY);
-        return !sessionStorage.getItem('hx_pop_fired');
-    }
-    function markPopShown() { sessionStorage.setItem('hx_pop_fired', '1'); }
-    function canShowPush() { return !localStorage.getItem(PUSH_SHOWN_KEY); }
-    function markPushShown() { localStorage.setItem(PUSH_SHOWN_KEY, '1'); }
-
-    function triggerPop() {
-        if (canShowPop()) {
-            markPopShown();
-            // popunder fires via its own script on page load
-        }
-    }
-
-    function onInteraction() {
-        bumpInteraction();
-        var n = getInteractions();
-        // Trigger push prompt on 2nd interaction
-        if (n === 2 && canShowPush()) {
-            markPushShown();
-            // PropellerAds push script handles the prompt
-        }
-    }
-
-    // Track clicks globally
-    document.addEventListener('click', onInteraction, { once: false, passive: true });
-
-    return { triggerPop: triggerPop, onInteraction: onInteraction };
-})();
-</script>
-<script defer src="/_vercel/insights/script.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#ed2553">
+    <title>History - Hentyx</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="auth.js"></script>
 </head>
 <body>
-  <header>
-    <a href="index.html" class="back">←</a>
-    <span class="brand">HENTY<span style="color:#fff">X</span></span>
-    <button class="clear-btn" onclick="clearAll()">Clear All</button>
-  </header>
-  <div class="container">
-    <div class="section-label">📖 Recently Read</div>
-    <div class="ad-banner"><script>atOptions={'key':'092e22fa11d47c01621e6392a384ba6e','format':'iframe','height':250,'width':300,'params':{}};</script>
-<script src="https://www.highperformanceformat.com/092e22fa11d47c01621e6392a384ba6e/invoke.js"></script></div>
-<div id="content"></div>
-  </div>
-  <script>
-    const proxy = url => `/api/proxy?url=${encodeURIComponent(url)}`;
+    <header>
+        <a href="index.html" class="icon-btn">←</a>
+        <div class="brand">READING <span>HISTORY</span></div>
+        <button class="icon-btn" onclick="clearHistory()" title="Clear History">🗑️</button>
+    </header>
 
-    function timeAgo(iso) {
-      const diff = Date.now() - new Date(iso).getTime();
-      const m = Math.floor(diff / 60000);
-      if (m < 1) return 'just now';
-      if (m < 60) return `${m}m ago`;
-      const h = Math.floor(m / 60);
-      if (h < 24) return `${h}h ago`;
-      return `${Math.floor(h / 24)}d ago`;
-    }
+    <div class="container">
+        <div id="content">
+            <div style="text-align:center; padding:100px 0; color:var(--text-muted);">Loading history...</div>
+        </div>
+    </div>
 
-    async function removeEntry(mangaId, el) {
-      const sb = getSupabase();
-      const { data: { user } } = await sb.auth.getUser();
-      await sb.from('history').delete().eq('user_id', user.id).eq('manga_id', String(mangaId));
-      el.closest('.card').remove();
-      if (!document.querySelector('.card')) {
-        document.getElementById('content').innerHTML = '<div class="status">No history yet.</div>';
-      }
-    }
+    <script>
+        const proxy = url => `/api/proxy?url=${encodeURIComponent(url)}`;
 
-    async function clearAll() {
-      if (!confirm('Clear all reading history?')) return;
-      const sb = getSupabase();
-      const { data: { user } } = await sb.auth.getUser();
-      if (!user) return;
-      await sb.from('history').delete().eq('user_id', user.id);
-      document.getElementById('content').innerHTML = '<div class="status">History cleared.</div>';
-    }
+        async function clearHistory() {
+            if (!confirm('Clear all reading history?')) return;
+            const user = await getUser();
+            if (!user) return;
+            const sb = getSupabase();
+            await sb.from('history').delete().eq('user_id', user.id);
+            loadHistory();
+        }
 
-    async function loadHistory() {
-      const user = await getUser();
-      if (!user) {
-        document.getElementById('content').innerHTML = `
-          <div class="login-prompt">
-            <p style="color:#666; margin-bottom:15px;">Sign in to see your reading history</p>
-            <a href="auth.html">SIGN IN →</a>
-          </div>`;
-        return;
-      }
-      const sb = getSupabase();
-      const { data } = await sb.from('history').select('*').eq('user_id', user.id).order('viewed_at', { ascending: false }).limit(100);
-      if (!data || data.length === 0) {
-        document.getElementById('content').innerHTML = '<div class="status">No history yet. Start reading!</div>';
-        return;
-      }
-      document.getElementById('content').innerHTML = `<div class="grid">${data.map(b => `
-        <div class="card">
-          <div class="cover-wrap" onclick="location.href='gallery.html?id=${b.manga_id}&cover=${encodeURIComponent(b.cover)}'">
-            <img src="${proxy(b.cover)}" loading="lazy">
-            <button class="remove-btn" onclick="event.stopPropagation(); removeEntry('${b.manga_id}', this)">✕</button>
-            <span class="time-badge">${timeAgo(b.viewed_at)}</span>
-          </div>
-          <div class="card-title">${b.title}</div>
-        </div>`).join('')}</div>`;
-    }
+        async function loadHistory() {
+            const user = await getUser();
+            if (!user) {
+                document.getElementById('content').innerHTML = `
+                    <div style="text-align:center; padding:100px 20px;">
+                        <p style="color:var(--text-muted); margin-bottom:24px;">Sign in to sync your history</p>
+                        <a href="auth.html" class="btn btn-primary" style="display:inline-flex;">SIGN IN</a>
+                    </div>`;
+                return;
+            }
+            const sb = getSupabase();
+            const { data } = await sb.from('history').select('*').eq('user_id', user.id).order('viewed_at', { ascending: false }).limit(60);
+            if (!data || data.length === 0) {
+                document.getElementById('content').innerHTML = '<div style="text-align:center; padding:100px 0; color:var(--text-muted);">Your history is empty.</div>';
+                return;
+            }
+            document.getElementById('content').innerHTML = `<div class="grid">${data.map(b => `
+                <a href="gallery.html?id=${b.manga_id}&cover=${encodeURIComponent(b.cover)}" class="card">
+                    <div class="cover-wrap">
+                        <img src="${proxy(b.cover)}" loading="lazy" style="opacity:0;" onload="this.style.opacity=1">
+                    </div>
+                    <div class="card-title">${b.title}</div>
+                </a>`).join('')}</div>`;
+        }
 
-    loadHistory();
-  </script>
+        loadHistory();
+        
+        // Apply saved theme
+        (function() {
+            if (localStorage.getItem('theme') === 'light') {
+                document.documentElement.classList.add('light');
+            }
+        })();
+    </script>
 </body>
 </html>

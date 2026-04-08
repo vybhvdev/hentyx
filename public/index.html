@@ -2,228 +2,103 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="google-site-verification" content="pLfXVZxvjfiWq1XbUzRT-Leq2__OY0Bxjl-UITvYX_s">
-    <meta name="juicyads-site-verification" content="1b2ae5c661042730364d960266e80e9c">
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#ed2553">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#ed2553">
     <meta name="description" content="Browse thousands of hentai doujinshi for free. Search by tag, language, and more. Read online or download ZIP.">
     <meta name="keywords" content="hentai, doujinshi, manga, free hentai, read online, hentyx">
-    <meta name="robots" content="index, follow">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Hentyx">
     <meta property="og:title" content="Hentyx - Free Hentai & Doujinshi Gallery">
-    <meta property="og:description" content="Browse thousands of hentai doujinshi for free. Search by tag, language, and more. Read online or download ZIP.">
+    <meta property="og:description" content="Browse thousands of hentai doujinshi for free.">
     <meta property="og:image" content="https://hentyx.vercel.app/og-image.svg">
-    <meta property="og:url" content="https://hentyx.vercel.app/">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Hentyx - Free Hentai & Doujinshi Gallery">
-    <meta name="twitter:description" content="Browse thousands of hentai doujinshi for free. Search by tag, language, and more. Read online or download ZIP.">
-    <meta name="twitter:image" content="https://hentyx.vercel.app/og-image.svg">
     <title>Hentyx - Free Hentai & Doujinshi Gallery</title>
-    <style>
-        :root { --bg: #0a0a0a; --surface: #161616; --accent: #ed2553; --text: #e5e5e5; }
-        :root.light { --bg: #f5f5f5; --surface: #ffffff; --accent: #ed2553; --text: #111111; }
-        :root.light header { background: #fff; }
-        :root.light .search-row { background: #fff; }
-        :root.light .filter-bar { background: #fff; }
-        :root.light input { background: #f0f0f0; border-color: #ddd; color: #111; }
-        :root.light .drawer { background: #fff; }
-        :root.light .drawer-item { color: #111; }
-        :root.light .drawer-item:hover { background: #f5f5f5; }
-        :root.light .drawer-header { color: var(--accent); }
-        :root.light .f-btn { background: #eee; border-color: #ddd; color: #888; }
-        :root.light .f-btn.active { background: #fde8ec; border-color: var(--accent); color: var(--accent); }
-        :root.light .page-btn { background: #fff; }
-        body { margin: 0; background: var(--bg); color: var(--text); font-family: sans-serif; overflow-x: hidden; }
-        header { background: #000; padding: 10px 15px; border-bottom: 1px solid var(--accent); position: sticky; top: 0; z-index: 1000; display: flex; align-items: center; gap: 10px; }
-        .menu-btn { background: none; border: none; color: var(--accent); font-size: 24px; cursor: pointer; padding: 5px; }
-        .brand { font-size: 22px; font-weight: 900; color: var(--accent); text-decoration: none; flex: 1; text-align: center; }
-        :root.light #brandX { color: #333; }
-        .search-row { padding: 10px 15px; background: #000; display: flex; gap: 5px; border-bottom: 1px solid #222; }
-        input { flex: 1; padding: 10px; background: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 4px; outline: none; }
-        .go-btn { background: var(--accent); color: #fff; border: none; padding: 0 15px; font-weight: bold; border-radius: 4px; cursor: pointer; }
-        .drawer { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: #000; z-index: 2000; transition: 0.3s; border-right: 1px solid var(--accent); }
-        .drawer.open { left: 0; }
-        .drawer-header { padding: 30px 20px; border-bottom: 1px solid #222; font-size: 24px; font-weight: 900; color: var(--accent); }
-        .drawer-item { display: block; padding: 15px 25px; color: #fff; text-decoration: none; font-weight: bold; font-size: 14px; cursor: pointer; border-left: 4px solid transparent; }
-        .drawer-item:hover { background: #111; border-left-color: var(--accent); }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1500; display: none; }
-        .overlay.active { display: block; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 10px; }
-        .section-title { font-size: 11px; text-transform: uppercase; color: #666; letter-spacing: 2px; margin: 20px 0 10px 5px; font-weight: bold; border-left: 3px solid var(--accent); padding-left: 10px; }
-        .popular-grid { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
-        .popular-grid::-webkit-scrollbar { display: none; }
-        .pop-card { flex: 0 0 130px; border-radius: 4px; border: 1px solid #333; overflow: hidden; height: 180px; position: relative; }
-        .pop-card img { position: absolute; top:0; left:0; width:100%; height:100%; object-fit: cover; }
-        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-        @media (min-width: 600px) { .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); } }
-        .card { background: var(--surface); border-radius: 4px; overflow: hidden; text-decoration: none; color: inherit; border: 1px solid #1a1a1a; position: relative; }
-        .cover-wrap { position: relative; padding-top: 140%; background: #000; }
-        .card img { position: absolute; top:0; left:0; width:100%; height:100%; object-fit: cover; }
-        .card-title { padding: 8px; font-size: 10px; line-height: 1.2; height: 28px; overflow: hidden; text-align: center; color: #bbb; }
-        @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-        @keyframes fadein { from{opacity:0} to{opacity:1} }
-        .pagination { display: flex; justify-content: center; align-items: center; gap: 15px; margin: 30px 0; }
-        .filter-bar { padding: 8px 15px; background: #000; display: flex; gap: 8px; align-items: center; border-bottom: 1px solid #1a1a1a; overflow-x: auto; scrollbar-width: none; }
-        .filter-bar::-webkit-scrollbar { display: none; }
-        .filter-group { display: flex; gap: 4px; }
-        .f-btn { background: #111; border: 1px solid #2a2a2a; color: #666; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; cursor: pointer; white-space: nowrap; transition: 0.15s; }
-        .f-btn.active { background: #1f0a10; border-color: var(--accent); color: var(--accent); }
-        .f-divider { width: 1px; background: #222; margin: 0 4px; }
-        .page-btn { background: #111; color: var(--accent); border: 1px solid var(--accent); padding: 10px 18px; border-radius: 4px; font-weight: bold; cursor: pointer; }
-        .install-banner { position: fixed; bottom: 0; left: 0; right: 0; background: #111; border-top: 2px solid var(--accent); padding: 12px 15px; display: flex; align-items: center; gap: 12px; z-index: 999; transform: translateY(100%); transition: transform 0.3s; }
-        .install-banner.show { transform: translateY(0); }
-        .install-banner .app-icon { width: 44px; height: 44px; background: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 900; color: #fff; flex-shrink: 0; }
-        .install-banner .info { flex: 1; }
-        .install-banner .info strong { display: block; font-size: 13px; color: #fff; }
-        .install-banner .info span { font-size: 11px; color: #666; }
-        .install-btn { background: var(--accent); color: #fff; border: none; padding: 8px 16px; border-radius: 4px; font-weight: bold; font-size: 13px; cursor: pointer; white-space: nowrap; }
-        .install-dismiss { background: none; border: none; color: #555; font-size: 20px; cursor: pointer; padding: 5px; }
-    </style>
+    
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icon-192.svg" type="image/svg+xml">
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="auth.js"></script>
-<style>
-.ad-banner { text-align:center; margin:10px auto; overflow:hidden; }
-.ad-banner-sticky { position:fixed; bottom:0; left:0; width:100%; text-align:center; z-index:500; background:#000; padding:3px 0; }
-.ad-native { margin:10px 0; text-align:center; }
-@media(min-width:768px) { .ad-mobile-only { display:none; } }
-@media(max-width:767px) { .ad-desktop-only { display:none; } }
-</style>
-<script>
-(function() {
-    var last = localStorage.getItem('hx_pop_last');
-    var now = Date.now();
-    if (!last || (now - parseInt(last)) > 24 * 60 * 60 * 1000) {
-        localStorage.setItem('hx_pop_last', now);
-        var s1 = document.createElement('script');
-        s1.src = 'https://pl28940937.profitablecpmratenetwork.com/d9/5d/0f/d95d0f9ee23df009fb658145fe110057.js';
-        var s2 = document.createElement('script');
-        s2.src = 'https://pl28940957.profitablecpmratenetwork.com/fe/21/c0/fe21c0ae57d3a5a0f8686331d520db98.js';
-        document.head.appendChild(s1);
-        document.head.appendChild(s2);
-    }
-})();
-</script>
-
-<script>
-// Ad Manager - frequency capping + geo + session tracking
-window.HentyxAds = (function() {
-    var POP_KEY = 'hx_pop_ts';
-    var SESSION_KEY = 'hx_session_interactions';
-    var PUSH_SHOWN_KEY = 'hx_push_shown';
-    var POP_COOLDOWN = 0; // per session
-
-    function getInteractions() { return parseInt(sessionStorage.getItem(SESSION_KEY) || '0'); }
-    function bumpInteraction() { sessionStorage.setItem(SESSION_KEY, getInteractions() + 1); }
-    function canShowPop() {
-        var last = localStorage.getItem(POP_KEY);
-        return !sessionStorage.getItem('hx_pop_fired');
-    }
-    function markPopShown() { sessionStorage.setItem('hx_pop_fired', '1'); }
-    function canShowPush() { return !localStorage.getItem(PUSH_SHOWN_KEY); }
-    function markPushShown() { localStorage.setItem(PUSH_SHOWN_KEY, '1'); }
-
-    function triggerPop() {
-        if (canShowPop()) {
-            markPopShown();
-            // popunder fires via its own script on page load
-        }
-    }
-
-    function onInteraction() {
-        bumpInteraction();
-        var n = getInteractions();
-        // Trigger push prompt on 2nd interaction
-        if (n === 2 && canShowPush()) {
-            markPushShown();
-            // PropellerAds push script handles the prompt
-        }
-    }
-
-    // Track clicks globally
-    document.addEventListener('click', onInteraction, { once: false, passive: true });
-
-    return { triggerPop: triggerPop, onInteraction: onInteraction };
-})();
-</script>
-<script defer src="/_vercel/insights/script.js"></script>
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "Hentyx",
-      "url": "https://hentyx.vercel.app",
-      "description": "Browse thousands of hentai doujinshi for free. Search by tag, language, and more.",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "https://hentyx.vercel.app/?q={search_term_string}",
-        "query-input": "required name=search_term_string"
-      }
-    }
-    </script>
-    <script defer src="https://cdn.vercel.com/analytics/v1/web.js"></script>
-    <script src="https://js.sentry-cdn.com/01cac6066ace9de243b995ba5848e2ed.min.js" crossorigin="anonymous"></script>
+    <script defer src="/_vercel/insights/script.js"></script>
 </head>
 <body>
     <div class="overlay" id="overlay" onclick="toggleDrawer()"></div>
+    
     <div class="drawer" id="drawer">
-        <div class="drawer-header">HENTY<span style="color:#fff">X</span></div>
-        <a href="index.html" class="drawer-item">🏠 Home</a>
-        <div class="drawer-item" onclick="goTrueRandom()">🎲 Random Gallery</div>
-        <a href="popular.html" class="drawer-item">🔥 Popular</a>
-        <a href="tags.html" class="drawer-item">🏷 Tags</a>
-        <a href="history.html" class="drawer-item">📖 History</a>
-        <a href="bookmarks.html" class="drawer-item">🔖 Bookmarks</a>
-        <a href="auth.html" class="drawer-item" id="drawerAuthLink">👤 Sign In</a>
-        <a href="about.html" class="drawer-item">ℹ️ About</a>
+        <div class="drawer-header">HENTY<span>X</span></div>
+        <div class="drawer-content">
+            <a href="index.html" class="drawer-item">🏠 Home</a>
+            <div class="drawer-item" onclick="goTrueRandom()" style="cursor:pointer">🎲 Random</div>
+            <a href="popular.html" class="drawer-item">🔥 Popular</a>
+            <a href="tags.html" class="drawer-item">🏷 Tags</a>
+            <a href="history.html" class="drawer-item">📖 History</a>
+            <a href="bookmarks.html" class="drawer-item">🔖 Bookmarks</a>
+            <a href="auth.html" class="drawer-item" id="drawerAuthLink">👤 Sign In</a>
+            <a href="about.html" class="drawer-item">ℹ️ About</a>
+        </div>
     </div>
+
     <header>
         <button class="menu-btn" onclick="toggleDrawer()">☰</button>
         <a href="index.html" class="brand">HENTY<span id="brandX">X</span></a>
-        <button class="menu-btn" id="themeBtn" onclick="toggleTheme()" style="font-size:18px;">🌙</button>
+        <button class="icon-btn" id="themeBtn" onclick="toggleTheme()">🌙</button>
     </header>
+
     <div class="search-row">
-        <input type="text" id="searchInput" placeholder="Search galleries..." onkeydown="if(event.key==='Enter')triggerSearch()">
-        <button class="go-btn" onclick="triggerSearch()">GO</button>
-        <button class="go-btn" id="clearBtn" onclick="clearSearch()" style="display:none;background:#333;">✕</button>
-    </div>
-    <div id="top-ad-slot" class="ad-banner"></div>
-<div class="filter-bar">
-        <div class="filter-group">
-            <button class="f-btn active" id="lang-all" onclick="setLang('all')">🌐 All</button>
-            <button class="f-btn" id="lang-en" onclick="setLang('en')">🇬🇧 EN</button>
-            <button class="f-btn" id="lang-jp" onclick="setLang('jp')">🇯🇵 JP</button>
+        <div class="search-input-wrap">
+            <input type="text" id="searchInput" placeholder="Search galleries..." onkeydown="if(event.key==='Enter')triggerSearch()">
         </div>
-        <div class="f-divider"></div>
-        <div class="filter-group">
-            <button class="f-btn active" id="sort-default" onclick="setSort('default')">Default</button>
-            <button class="f-btn" id="sort-az" onclick="setSort('az')">A→Z</button>
-            <button class="f-btn" id="sort-za" onclick="setSort('za')">Z→A</button>
-        </div>
+        <button class="btn-go" onclick="triggerSearch()">GO</button>
+        <button class="btn-go" id="clearBtn" onclick="clearSearch()" style="display:none;background:var(--surface);">✕</button>
     </div>
+
+    <div class="filter-bar">
+        <button class="f-btn active" id="lang-all" onclick="setLang('all')">🌐 All</button>
+        <button class="f-btn" id="lang-en" onclick="setLang('en')">🇬🇧 EN</button>
+        <button class="f-btn" id="lang-jp" onclick="setLang('jp')">🇯🇵 JP</button>
+        <div style="width:1px; background:var(--border); margin:0 4px;"></div>
+        <button class="f-btn active" id="sort-default" onclick="setSort('default')">Default</button>
+        <button class="f-btn" id="sort-az" onclick="setSort('az')">A→Z</button>
+        <button class="f-btn" id="sort-za" onclick="setSort('za')">Z→A</button>
+    </div>
+
     <div class="container">
         <div id="popularSection">
-        <div class="section-title">🔥 Popular</div>
-        <div class="popular-grid" id="popularGrid"></div>
+            <div class="section-title">🔥 Popular</div>
+            <div class="popular-row" id="popularGrid"></div>
         </div>
+
         <div class="section-title" id="gridTitle">Recent Uploads</div>
         <div id="grid" class="grid"></div>
-        <div class="ad-banner" style="margin:15px 0;">
-            <script type="text/javascript" data-cfasync="false" async src="https://poweredby.jads.co/js/jads.js"></script>
-            <ins id="1113410" data-width="300" data-height="250"></ins>
-            <script type="text/javascript" data-cfasync="false" async>(adsbyjuicy = window.adsbyjuicy || []).push({'adzone':1113410});</script>
-        </div>
+
         <div class="pagination">
             <button class="page-btn" id="prevBtn" onclick="changePage(-1)">PREV</button>
-            <span id="pageLabel">Page 1</span>
+            <span id="pageLabel" class="text-muted" style="font-weight:600; font-size:14px;">Page 1</span>
             <button class="page-btn" id="nextBtn" onclick="changePage(1)">NEXT</button>
         </div>
     </div>
+
+    <!-- Install Banner -->
+    <div class="install-banner" id="installBanner">
+        <div class="app-icon">H</div>
+        <div class="install-info">
+            <strong>Install Hentyx App</strong>
+            <span>Add to home screen for faster access</span>
+        </div>
+        <button class="btn btn-primary" id="installBtn" style="padding:8px 16px; font-size:13px;">Install</button>
+        <button class="icon-btn" onclick="dismissInstall()">✕</button>
+    </div>
+
+    <footer style="text-align:center; padding:40px 16px; border-top:1px solid var(--border); margin-top:40px;">
+        <div style="display:flex; justify-content:center; gap:20px; margin-bottom:16px;">
+            <a href="about.html" class="text-muted" style="font-size:13px; font-weight:600;">About</a>
+            <a href="mailto:relyntstudio@gmail.com" class="text-muted" style="font-size:13px; font-weight:600;">Contact</a>
+            <a href="https://buymeachai.ezee.li/vybhvdev" target="_blank" class="text-muted" style="font-size:13px; font-weight:600;">Donate</a>
+        </div>
+        <div class="text-muted" style="font-size:11px;">&copy; 2026 Hentyx. For educational purposes only.</div>
+    </footer>
+
     <script>
-        // PWA Install prompt - must be registered immediately
         let deferredPrompt = null;
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
@@ -252,14 +127,14 @@ window.HentyxAds = (function() {
         function skelCards(n) {
             return Array(n).fill(0).map(() => `
                 <div class="card">
-                    <div class="cover-wrap" style="background:linear-gradient(90deg,#161616 25%,#222 50%,#161616 75%);background-size:200% 100%;animation:shimmer 1.2s infinite;"></div>
-                    <div class="card-title" style="background:#222;border-radius:2px;height:12px;margin:8px;animation:shimmer 1.2s infinite;background-size:200% 100%;background-image:linear-gradient(90deg,#1a1a1a 25%,#2a2a2a 50%,#1a1a1a 75%);"></div>
+                    <div class="cover-wrap skeleton"></div>
+                    <div class="card-title skeleton" style="margin:10px; height:12px; border-radius:4px;"></div>
                 </div>`).join('');
         }
 
         function skelPopular(n) {
             return Array(n).fill(0).map(() => `
-                <div class="pop-card" style="background:linear-gradient(90deg,#161616 25%,#222 50%,#161616 75%);background-size:200% 100%;animation:shimmer 1.2s infinite;"></div>
+                <div class="pop-card skeleton"></div>
             `).join('');
         }
 
@@ -273,8 +148,6 @@ window.HentyxAds = (function() {
                 const data = await res.json();
                 if (data && data.length > 0) {
                     sessionStorage.setItem(cacheKey, JSON.stringify(data));
-                } else {
-                    sessionStorage.removeItem(cacheKey);
                 }
                 renderPopular(data);
             } catch(e) {}
@@ -282,7 +155,7 @@ window.HentyxAds = (function() {
 
         function renderPopular(data) {
             if (!data || data.length === 0) {
-                document.getElementById('popularGrid').innerHTML = '<div style="padding:20px;color:#444;font-size:12px;">No popular content found.</div>';
+                document.getElementById('popularGrid').innerHTML = '<div style="padding:20px;color:var(--text-muted);font-size:12px;">No popular content found.</div>';
                 return;
             }
             document.getElementById('popularGrid').innerHTML = data.map(m => `
@@ -290,26 +163,14 @@ window.HentyxAds = (function() {
                     <img src="/api/proxy?url=${encodeURIComponent(m.cover)}" loading="lazy" style="opacity:0;transition:opacity 0.3s" onload="this.style.opacity=1">
                 </a>
             `).join('');
-            setTimeout(function() {
-                document.querySelectorAll('#popularGrid img').forEach(function(img) {
-                    if (!img.complete || img.naturalWidth === 0) {
-                        const url = new URL(img.src, window.location.href);
-                        url.searchParams.set('retry', Date.now());
-                        img.src = url.toString();
-                    }
-                });
-            }, 3000);
         }
 
         async function loadGalleries(query = "", page = 1) {
             const grid = document.getElementById('grid');
             const cacheKey = 'hentyx_galleries_' + query + '_' + page;
             const cached = sessionStorage.getItem(cacheKey);
-            const cacheTs = sessionStorage.getItem(cacheKey + '_ts');
-            const now = Date.now();
             
-            // 2 hour cache TTL (2 * 60 * 60 * 1000)
-            if (cached && cacheTs && (now - parseInt(cacheTs) < 2 * 60 * 60 * 1000)) { 
+            if (cached) { 
                 renderGalleries(JSON.parse(cached), page); 
             } else {
                 grid.innerHTML = skelCards(12);
@@ -320,15 +181,11 @@ window.HentyxAds = (function() {
                 const data = await res.json();
                 if (data && data.length > 0) {
                     sessionStorage.setItem(cacheKey, JSON.stringify(data));
-                    sessionStorage.setItem(cacheKey + '_ts', Date.now().toString());
-                } else {
-                    sessionStorage.removeItem(cacheKey);
-                    sessionStorage.removeItem(cacheKey + '_ts');
                 }
                 renderGalleries(data, page);
             } catch (err) {
-                if (!cached && document.getElementById('grid').innerHTML === skelCards(12)) {
-                    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px;color:#444;">No results found.</div>';
+                if (!cached) {
+                    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px;color:var(--text-muted);">No results found.</div>';
                 }
             }
         }
@@ -336,7 +193,6 @@ window.HentyxAds = (function() {
         function setLang(lang) {
             currentLang = lang;
             ['all','en','jp'].forEach(l => document.getElementById('lang-'+l).classList.toggle('active', l === lang));
-            sessionStorage.clear();
             currentPage = 1;
             loadGalleries(currentQuery, 1);
         }
@@ -350,49 +206,28 @@ window.HentyxAds = (function() {
 
         function renderGalleries(data, page) {
             if (!data || data.length === 0) {
-                document.getElementById('grid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px;color:#444;">No results found.</div>';
+                document.getElementById('grid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px;color:var(--text-muted);">No results found.</div>';
                 return;
             }
             let sorted = [...data];
             if (currentSort === 'az') sorted.sort((a,b) => a.title.localeCompare(b.title));
             else if (currentSort === 'za') sorted.sort((a,b) => b.title.localeCompare(a.title));
-            let html = '';
-            sorted.forEach((m, i) => {
-                const shimmer = 'background:linear-gradient(90deg,#161616 25%,#222 50%,#161616 75%);background-size:200% 100%;animation:shimmer 1.2s infinite;';
-                const imgTag = m.cover ? '<img src="/api/proxy?url=' + encodeURIComponent(m.cover) + '" data-id="' + m.id + '" loading="lazy" onload="this.style.opacity=1" style="opacity:0;transition:opacity 0.3s">' : '';
-                
-                html += '<a href="gallery.html?id=' + m.id + '&cover=' + encodeURIComponent(m.cover) + '" class="card">' +
-                    '<div class="cover-wrap" style="' + (m.cover ? '' : shimmer) + '">' + imgTag + '</div>' +
-                    '<div class="card-title">' + m.title + '</div>' +
-                    '</a>';
-            });
-            document.getElementById('grid').innerHTML = html;
+            
+            document.getElementById('grid').innerHTML = sorted.map(m => `
+                <a href="gallery.html?id=${m.id}&cover=${encodeURIComponent(m.cover)}" class="card">
+                    <div class="cover-wrap">
+                        <img src="/api/proxy?url=${encodeURIComponent(m.cover)}" loading="lazy" style="opacity:0;" onload="this.style.opacity=1">
+                    </div>
+                    <div class="card-title">${m.title}</div>
+                </a>
+            `).join('');
+            
             document.getElementById('pageLabel').innerText = 'Page ' + page;
             document.getElementById('prevBtn').disabled = (page === 1);
-
-            // Retry failed images after 3s
-            setTimeout(function() {
-                document.querySelectorAll('#grid img').forEach(function(img) {
-                    if (!img.complete || img.naturalWidth === 0) {
-                        const url = new URL(img.src, window.location.href);
-                        url.searchParams.set('retry', Date.now());
-                        img.src = url.toString();
-                    }
-                });
-            }, 3000);
-            // Second retry after 8s
-            setTimeout(function() {
-                document.querySelectorAll('#grid img').forEach(function(img) {
-                    if (!img.complete || img.naturalWidth === 0) {
-                        const url = new URL(img.src, window.location.href);
-                        url.searchParams.set('retry', Date.now());
-                        img.src = url.toString();
-                    }
-                });
-            }, 8000);
         }
 
         function changePage(delta) { currentPage += delta; loadGalleries(currentQuery, currentPage); window.scrollTo(0,0); }
+        
         function clearSearch() {
             currentQuery = '';
             document.getElementById('searchInput').value = '';
@@ -409,18 +244,16 @@ window.HentyxAds = (function() {
             currentPage = 1;
             document.getElementById('clearBtn').style.display = currentQuery ? 'block' : 'none';
             if (currentQuery) {
-                // Hide popular, update title, scroll to results
                 document.getElementById('popularSection').style.display = 'none';
                 document.getElementById('gridTitle').innerText = 'Results for "' + currentQuery + '"';
-                document.getElementById('gridTitle').style.borderLeftColor = '#ed2553';
             } else {
-                // Restore popular and title
                 document.getElementById('popularSection').style.display = 'block';
                 document.getElementById('gridTitle').innerText = 'Recent Uploads';
             }
             loadGalleries(currentQuery, 1);
             setTimeout(() => document.getElementById('gridTitle').scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
         }
+
         async function goTrueRandom() {
             try {
                 const res = await fetch('/api/random');
@@ -435,62 +268,42 @@ window.HentyxAds = (function() {
             const isLight = document.documentElement.classList.toggle('light');
             localStorage.setItem('theme', isLight ? 'light' : 'dark');
             document.getElementById('themeBtn').innerText = isLight ? '☀️' : '🌙';
-            document.getElementById('brandX').style.color = isLight ? '#333' : '#fff';
+            document.getElementById('brandX').querySelector('span')?.classList.toggle('light-text', isLight);
         }
 
         // Apply saved theme immediately
         (function() {
-            if (localStorage.getItem('theme') === 'light') {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
                 document.documentElement.classList.add('light');
                 document.addEventListener('DOMContentLoaded', () => {
                     const btn = document.getElementById('themeBtn');
-                    const x = document.getElementById('brandX');
                     if (btn) btn.innerText = '☀️';
-                    if (x) x.style.color = '#333';
                 });
             }
         })();
-
-        if ("serviceWorker" in navigator) {
-            navigator.serviceWorker.getRegistrations().then(regs => {
-                regs.forEach(r => r.unregister());
-            });
-        }
-        // Show refresh prompt if images fail to load
-        function checkImagesAndReload() {
-            setTimeout(() => {
-                const imgs = document.querySelectorAll('#grid img, #popularGrid img');
-                if (imgs.length === 0) return;
-                let failed = 0;
-                imgs.forEach(img => {
-                    if (!img.complete || img.naturalWidth === 0) failed++;
-                });
-                if (failed > imgs.length * 0.5) {
-                    document.getElementById('refreshPrompt').style.display = 'flex';
-                }
-            }, 10000);
-        }
 
         window.onload = async () => {
             const installBtn = document.getElementById('installBtn');
             if (installBtn) installBtn.addEventListener('click', async () => {
                 if (deferredPrompt) {
                     deferredPrompt.prompt();
-                    const result = await deferredPrompt.userChoice;
+                    await deferredPrompt.userChoice;
                     deferredPrompt = null;
                     document.getElementById('installBanner').classList.remove('show');
-                    localStorage.setItem('hx_install_dismissed', '1');
                 }
             });
+            
             try {
                 const user = await getUser();
-                const drawerAuthLink = document.getElementById('drawerAuthLink');
                 if (user) {
-                    drawerAuthLink.textContent = '👤 Sign Out';
-                    drawerAuthLink.href = '#';
-                    drawerAuthLink.onclick = () => signOut();
+                    const authLink = document.getElementById('drawerAuthLink');
+                    authLink.textContent = '👤 Sign Out';
+                    authLink.href = '#';
+                    authLink.onclick = () => signOut();
                 }
             } catch(e) {}
+            
             const qParam = new URLSearchParams(location.search).get('q');
             if (qParam) {
                 document.getElementById('searchInput').value = qParam;
@@ -498,54 +311,10 @@ window.HentyxAds = (function() {
                 document.getElementById('popularSection').style.display = 'none';
                 document.getElementById('gridTitle').innerText = 'Results for "' + qParam + '"';
             }
+            
             loadPopular();
             loadGalleries(currentQuery);
-            checkImagesAndReload();
-            // Load banner ads after content renders
-            setTimeout(() => {
-                const slot = document.getElementById('top-ad-slot');
-                const isMobile = window.innerWidth < 768;
-                const key = isMobile ? '87a6a1e6810153943afb34a15a62c6f8' : '5800a749e3c7dfebbdcfefd833a0e4ff';
-                const h = isMobile ? 50 : 90; const w = isMobile ? 320 : 728;
-                window.atOptions = {key, format:'iframe', height:h, width:w, params:{}};
-                const s = document.createElement('script');
-                s.src = 'https://www.highperformanceformat.com/' + key + '/invoke.js';
-                if(slot) slot.appendChild(s);
-            }, 3000);
         };
     </script>
-<div id="refreshPrompt" style="display:none;position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:#111;border:1px solid #ed2553;border-radius:8px;padding:12px 16px;z-index:998;align-items:center;gap:12px;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.5);">
-    <span style="font-size:13px;color:#ccc;">Images not loading?</span>
-    <button onclick="location.reload()" style="background:#ed2553;color:#fff;border:none;padding:6px 14px;border-radius:4px;font-weight:bold;font-size:12px;cursor:pointer;">Refresh</button>
-    <button onclick="this.parentElement.style.display='none'" style="background:none;border:none;color:#555;font-size:18px;cursor:pointer;">✕</button>
-</div>
-
-<div class="install-banner" id="installBanner">
-    <div class="app-icon">H</div>
-    <div class="info">
-        <strong>Install Hentyx App</strong>
-        <span>Add to home screen for faster access</span>
-    </div>
-    <button class="install-btn" id="installBtn">Install</button>
-    <button class="install-dismiss" onclick="dismissInstall()">✕</button>
-</div>
-
-<div style="text-align:center;padding:20px 15px 40px;border-top:1px solid #1a1a1a;margin-top:20px;">
-    <a href="mailto:relyntstudio@gmail.com?subject=Hentyx Problem Report" style="color:#555;font-size:12px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
-        ⚠️ Report a Problem
-    </a>
-    <span style="color:#2a2a2a;margin:0 10px;">·</span>
-    <a href="about.html" style="color:#555;font-size:12px;text-decoration:none;">About Hentyx</a>
-    <span style="color:#2a2a2a;margin:0 10px;">·</span>
-    <a href="https://buymeachai.ezee.li/vybhvdev" target="_blank" style="color:#555;font-size:12px;text-decoration:none;">☕ Buy Me a Chai</a>
-</div>
 </body>
 </html>
-<script>
-// Delay popunder ad by 30 seconds
-setTimeout(() => {
-  // Trigger popunder ad here (adjust to your ad network)
-  // For JuicyAds or similar, the ad script should trigger automatically
-  // This just ensures it waits 30 seconds
-}, 30000); // 30 seconds in milliseconds
-</script>
