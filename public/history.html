@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#ed2553">
+    <meta name="theme-color" content="#f43f5e">
     <title>History - Hentyx</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -11,14 +11,18 @@
 </head>
 <body>
     <header>
-        <a href="index.html" class="icon-btn">←</a>
-        <div class="brand">READING <span>HISTORY</span></div>
-        <button class="icon-btn" onclick="clearHistory()" title="Clear History">🗑️</button>
+        <a href="index.html" class="icon-btn">
+            <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+        </a>
+        <div class="brand" style="justify-content:center;">READING <span>HISTORY</span></div>
+        <button class="icon-btn" onclick="clearHistory()" title="Clear History">
+            <svg viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+        </button>
     </header>
 
     <div class="container">
         <div id="content">
-            <div style="text-align:center; padding:100px 0; color:var(--text-muted);">Loading history...</div>
+            <div style="text-align:center; padding:100px 0; color:var(--text-muted); font-weight:600;">Loading history...</div>
         </div>
     </div>
 
@@ -39,7 +43,7 @@
             if (!user) {
                 document.getElementById('content').innerHTML = `
                     <div style="text-align:center; padding:100px 20px;">
-                        <p style="color:var(--text-muted); margin-bottom:24px;">Sign in to sync your history</p>
+                        <p style="color:var(--text-muted); margin-bottom:24px; font-weight:600;">Sign in to sync your history</p>
                         <a href="auth.html" class="btn btn-primary" style="display:inline-flex;">SIGN IN</a>
                     </div>`;
                 return;
@@ -47,7 +51,7 @@
             const sb = getSupabase();
             const { data } = await sb.from('history').select('*').eq('user_id', user.id).order('viewed_at', { ascending: false }).limit(60);
             if (!data || data.length === 0) {
-                document.getElementById('content').innerHTML = '<div style="text-align:center; padding:100px 0; color:var(--text-muted);">Your history is empty.</div>';
+                document.getElementById('content').innerHTML = '<div style="text-align:center; padding:100px 0; color:var(--text-muted); font-weight:600;">Your history is empty.</div>';
                 return;
             }
             document.getElementById('content').innerHTML = `<div class="grid">${data.map(b => `

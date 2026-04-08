@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#ed2553">
+    <meta name="theme-color" content="#f43f5e">
     <meta name="description" content="Browse thousands of hentai doujinshi for free. Search by tag, language, and more. Read online or download ZIP.">
     <meta name="keywords" content="hentai, doujinshi, manga, free hentai, read online, hentyx">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Hentyx">
-    <meta property="og:title" content="Hentyx - Free Hentai & Doujinshi Gallery">
+    <meta property="og:title" content="Hentyx - Free Doujinshi Gallery">
     <meta property="og:description" content="Browse thousands of hentai doujinshi for free.">
     <meta property="og:image" content="https://hentyx.vercel.app/og-image.svg">
-    <title>Hentyx - Free Hentai & Doujinshi Gallery</title>
+    <title>Hentyx - Free Doujinshi Gallery</title>
     
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
@@ -25,60 +25,94 @@
     <div class="overlay" id="overlay" onclick="toggleDrawer()"></div>
     
     <div class="drawer" id="drawer">
-        <div class="drawer-header">HENTY<span>X</span></div>
+        <div class="drawer-header">
+            <div>HENTY<span>X</span></div>
+            <button class="icon-btn" onclick="toggleDrawer()">
+                <svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </button>
+        </div>
         <div class="drawer-content">
-            <a href="index.html" class="drawer-item">🏠 Home</a>
-            <div class="drawer-item" onclick="goTrueRandom()" style="cursor:pointer">🎲 Random</div>
-            <a href="popular.html" class="drawer-item">🔥 Popular</a>
-            <a href="tags.html" class="drawer-item">🏷 Tags</a>
-            <a href="history.html" class="drawer-item">📖 History</a>
-            <a href="bookmarks.html" class="drawer-item">🔖 Bookmarks</a>
-            <a href="auth.html" class="drawer-item" id="drawerAuthLink">👤 Sign In</a>
-            <a href="about.html" class="drawer-item">ℹ️ About</a>
+            <a href="index.html" class="drawer-item">
+                <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg> Home
+            </a>
+            <div class="drawer-item" onclick="goTrueRandom()" style="cursor:pointer">
+                <svg viewBox="0 0 24 24"><path d="M4 4h16v16H4zM9 9h.01M15 9h.01M9 15h.01M15 15h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg> Random
+            </div>
+            <a href="popular.html" class="drawer-item">
+                <svg viewBox="0 0 24 24"><path d="M12 2c0 0-5 6-5 12a5 5 0 0010 0c0-6-5-12-5-12z" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg> Popular
+            </a>
+            <a href="tags.html" class="drawer-item">
+                <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82zM7 7h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg> Tags
+            </a>
+            <a href="history.html" class="drawer-item">
+                <svg viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg> History
+            </a>
+            <a href="bookmarks.html" class="drawer-item">
+                <svg viewBox="0 0 24 24"><path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg> Bookmarks
+            </a>
+            <a href="auth.html" class="drawer-item" id="drawerAuthLink">
+                <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg> Sign In
+            </a>
         </div>
     </div>
 
     <header>
-        <button class="menu-btn" onclick="toggleDrawer()">☰</button>
+        <button class="menu-btn" onclick="toggleDrawer()">
+            <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
         <a href="index.html" class="brand">HENTY<span id="brandX">X</span></a>
-        <button class="icon-btn" id="themeBtn" onclick="toggleTheme()">🌙</button>
+        <button class="icon-btn" id="themeBtn" onclick="toggleTheme()">
+            <svg viewBox="0 0 24 24" id="moonIcon"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+        </button>
     </header>
 
     <div class="search-row">
         <div class="search-input-wrap">
-            <input type="text" id="searchInput" placeholder="Search galleries..." onkeydown="if(event.key==='Enter')triggerSearch()">
+            <svg viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+            <input type="search" id="searchInput" placeholder="Search galleries, tags, artists..." onkeydown="if(event.key==='Enter')triggerSearch()">
+            <button class="icon-btn" id="clearBtn" onclick="clearSearch()" style="display:none; position:absolute; right:8px; width:24px; height:24px;">
+                <svg viewBox="0 0 24 24" style="width:14px; height:14px;"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </button>
         </div>
-        <button class="btn-go" onclick="triggerSearch()">GO</button>
-        <button class="btn-go" id="clearBtn" onclick="clearSearch()" style="display:none;background:var(--surface);">✕</button>
+        <button class="btn-go" onclick="triggerSearch()">Search</button>
     </div>
 
     <div class="filter-bar">
-        <button class="f-btn active" id="lang-all" onclick="setLang('all')">🌐 All</button>
-        <button class="f-btn" id="lang-en" onclick="setLang('en')">🇬🇧 EN</button>
-        <button class="f-btn" id="lang-jp" onclick="setLang('jp')">🇯🇵 JP</button>
+        <button class="f-btn active" id="lang-all" onclick="setLang('all')">All</button>
+        <button class="f-btn" id="lang-en" onclick="setLang('en')">English</button>
+        <button class="f-btn" id="lang-jp" onclick="setLang('jp')">Japanese</button>
         <div style="width:1px; background:var(--border); margin:0 4px;"></div>
-        <button class="f-btn active" id="sort-default" onclick="setSort('default')">Default</button>
+        <button class="f-btn active" id="sort-default" onclick="setSort('default')">Newest</button>
         <button class="f-btn" id="sort-az" onclick="setSort('az')">A→Z</button>
         <button class="f-btn" id="sort-za" onclick="setSort('za')">Z→A</button>
     </div>
 
     <div class="container">
         <div id="popularSection">
-            <div class="section-title">🔥 Popular</div>
+            <div class="section-title">
+                <div class="section-title-label">
+                    <svg viewBox="0 0 24 24"><path d="M12 2c0 0-5 6-5 12a5 5 0 0010 0c0-6-5-12-5-12z" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+                    Trending Now
+                </div>
+            </div>
             <div class="popular-row" id="popularGrid"></div>
         </div>
 
-        <div class="section-title" id="gridTitle">Recent Uploads</div>
+        <div class="section-title" id="gridTitleLabel">
+            <div class="section-title-label">
+                <svg viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+                <span id="gridTitle">Recent Uploads</span>
+            </div>
+        </div>
         <div id="grid" class="grid"></div>
 
         <div class="pagination">
-            <button class="page-btn" id="prevBtn" onclick="changePage(-1)">PREV</button>
-            <span id="pageLabel" class="text-muted" style="font-weight:600; font-size:14px;">Page 1</span>
+            <button class="page-btn" id="prevBtn" onclick="changePage(-1)">PREVIOUS</button>
+            <span id="pageLabel" class="text-muted" style="font-weight:700; font-size:14px;">Page 1</span>
             <button class="page-btn" id="nextBtn" onclick="changePage(1)">NEXT</button>
         </div>
     </div>
 
-    <!-- Install Banner -->
     <div class="install-banner" id="installBanner">
         <div class="app-icon">H</div>
         <div class="install-info">
@@ -86,7 +120,9 @@
             <span>Add to home screen for faster access</span>
         </div>
         <button class="btn btn-primary" id="installBtn" style="padding:8px 16px; font-size:13px;">Install</button>
-        <button class="icon-btn" onclick="dismissInstall()">✕</button>
+        <button class="icon-btn" onclick="dismissInstall()">
+            <svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
     </div>
 
     <footer style="text-align:center; padding:40px 16px; border-top:1px solid var(--border); margin-top:40px;">
@@ -126,9 +162,10 @@
 
         function skelCards(n) {
             return Array(n).fill(0).map(() => `
-                <div class="card">
+                <div class="card" style="border:none;">
                     <div class="cover-wrap skeleton"></div>
-                    <div class="card-title skeleton" style="margin:10px; height:12px; border-radius:4px;"></div>
+                    <div class="skeleton-text skeleton" style="margin:12px 12px 4px; width:90%;"></div>
+                    <div class="skeleton-text skeleton" style="margin:0 12px 12px; width:60%;"></div>
                 </div>`).join('');
         }
 
@@ -155,12 +192,12 @@
 
         function renderPopular(data) {
             if (!data || data.length === 0) {
-                document.getElementById('popularGrid').innerHTML = '<div style="padding:20px;color:var(--text-muted);font-size:12px;">No popular content found.</div>';
+                document.getElementById('popularGrid').innerHTML = '<div style="padding:20px;color:var(--text-muted);font-size:13px;font-weight:600;">No trending content found.</div>';
                 return;
             }
             document.getElementById('popularGrid').innerHTML = data.map(m => `
                 <a href="gallery.html?id=${m.id}&cover=${encodeURIComponent(m.cover)}" class="pop-card">
-                    <img src="/api/proxy?url=${encodeURIComponent(m.cover)}" loading="lazy" style="opacity:0;transition:opacity 0.3s" onload="this.style.opacity=1">
+                    <img src="${proxy(m.cover)}" loading="lazy" style="opacity:0;" onload="this.style.opacity=1">
                 </a>
             `).join('');
         }
@@ -173,7 +210,7 @@
             if (cached) { 
                 renderGalleries(JSON.parse(cached), page); 
             } else {
-                grid.innerHTML = skelCards(12);
+                grid.innerHTML = skelCards(10);
             }
 
             try {
@@ -185,7 +222,7 @@
                 renderGalleries(data, page);
             } catch (err) {
                 if (!cached) {
-                    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px;color:var(--text-muted);">No results found.</div>';
+                    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px;color:var(--text-muted);font-weight:600;">No results found.</div>';
                 }
             }
         }
@@ -206,7 +243,7 @@
 
         function renderGalleries(data, page) {
             if (!data || data.length === 0) {
-                document.getElementById('grid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px;color:var(--text-muted);">No results found.</div>';
+                document.getElementById('grid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px;color:var(--text-muted);font-weight:600;">No results found.</div>';
                 return;
             }
             let sorted = [...data];
@@ -216,7 +253,7 @@
             document.getElementById('grid').innerHTML = sorted.map(m => `
                 <a href="gallery.html?id=${m.id}&cover=${encodeURIComponent(m.cover)}" class="card">
                     <div class="cover-wrap">
-                        <img src="/api/proxy?url=${encodeURIComponent(m.cover)}" loading="lazy" style="opacity:0;" onload="this.style.opacity=1">
+                        <img src="${proxy(m.cover)}" loading="lazy" style="opacity:0;" onload="this.style.opacity=1">
                     </div>
                     <div class="card-title">${m.title}</div>
                 </a>
@@ -242,7 +279,7 @@
         function triggerSearch() {
             currentQuery = document.getElementById('searchInput').value.trim();
             currentPage = 1;
-            document.getElementById('clearBtn').style.display = currentQuery ? 'block' : 'none';
+            document.getElementById('clearBtn').style.display = currentQuery ? 'flex' : 'none';
             if (currentQuery) {
                 document.getElementById('popularSection').style.display = 'none';
                 document.getElementById('gridTitle').innerText = 'Results for "' + currentQuery + '"';
@@ -251,7 +288,7 @@
                 document.getElementById('gridTitle').innerText = 'Recent Uploads';
             }
             loadGalleries(currentQuery, 1);
-            setTimeout(() => document.getElementById('gridTitle').scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
+            setTimeout(() => document.getElementById('gridTitleLabel').scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
         }
 
         async function goTrueRandom() {
@@ -267,8 +304,9 @@
         function toggleTheme() {
             const isLight = document.documentElement.classList.toggle('light');
             localStorage.setItem('theme', isLight ? 'light' : 'dark');
-            document.getElementById('themeBtn').innerText = isLight ? '☀️' : '🌙';
-            document.getElementById('brandX').querySelector('span')?.classList.toggle('light-text', isLight);
+            const moonSvg = `<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>`;
+            const sunSvg = `<circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>`;
+            document.getElementById('moonIcon').innerHTML = isLight ? sunSvg : moonSvg;
         }
 
         // Apply saved theme immediately
@@ -277,8 +315,8 @@
             if (savedTheme === 'light') {
                 document.documentElement.classList.add('light');
                 document.addEventListener('DOMContentLoaded', () => {
-                    const btn = document.getElementById('themeBtn');
-                    if (btn) btn.innerText = '☀️';
+                    const sunSvg = `<circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>`;
+                    document.getElementById('moonIcon').innerHTML = sunSvg;
                 });
             }
         })();
@@ -298,7 +336,7 @@
                 const user = await getUser();
                 if (user) {
                     const authLink = document.getElementById('drawerAuthLink');
-                    authLink.textContent = '👤 Sign Out';
+                    authLink.innerHTML = `<svg viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg> Sign Out`;
                     authLink.href = '#';
                     authLink.onclick = () => signOut();
                 }
@@ -308,6 +346,7 @@
             if (qParam) {
                 document.getElementById('searchInput').value = qParam;
                 currentQuery = qParam;
+                document.getElementById('clearBtn').style.display = 'flex';
                 document.getElementById('popularSection').style.display = 'none';
                 document.getElementById('gridTitle').innerText = 'Results for "' + qParam + '"';
             }
